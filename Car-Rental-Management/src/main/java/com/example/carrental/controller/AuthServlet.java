@@ -12,10 +12,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
-/**
- * Controller xử lý đăng nhập và đăng xuất
- * Controller trong mô hình MVC
- */
+
 @WebServlet(name = "AuthServlet", urlPatterns = {"/login", "/logout"})
 public class AuthServlet extends HttpServlet {
     private UserDAO userDAO;
@@ -33,10 +30,10 @@ public class AuthServlet extends HttpServlet {
         String path = request.getServletPath();
         
         if ("/logout".equals(path)) {
-            // Xử lý đăng xuất
+            
             logout(request, response);
         } else {
-            // Hiển thị trang đăng nhập
+        
             showLoginPage(request, response);
         }
     }
@@ -55,9 +52,7 @@ public class AuthServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Hiển thị trang đăng nhập
-     */
+   
     private void showLoginPage(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
@@ -83,46 +78,59 @@ public class AuthServlet extends HttpServlet {
         
         String errorMessage = null;
         
+        // Log để debug
+        System.out.println("=== Login Attempt ===");
+        System.out.println("Email/Username: " + emailOrUsername);
+        System.out.println("Password length: " + (password != null ? password.length() : 0));
+        
         // Validate input
         if (emailOrUsername == null || emailOrUsername.trim().isEmpty()) {
             errorMessage = "Vui lòng nhập email hoặc tên đăng nhập";
         } else if (password == null || password.trim().isEmpty()) {
             errorMessage = "Vui lòng nhập mật khẩu";
         } else {
-            // Thực hiện đăng nhập
-            User user = userDAO.login(emailOrUsername.trim(), password);
-            
-            if (user != null) {
-                // Đăng nhập thành công - tạo session
-                HttpSession session = request.getSession();
-                session.setAttribute("user", user);
-                session.setAttribute("userId", user.getId());
-                session.setAttribute("username", user.getUsername());
-                session.setAttribute("fullName", user.getFullName());
-                session.setAttribute("role", user.getRole());
+            try {
+                // Thực hiện đăng nhập
+                User user = userDAO.login(emailOrUsername.trim(), password);
                 
-                // Chuyển hướng về trang chủ hoặc trang được yêu cầu trước đó
-                String redirectUrl = request.getParameter("redirect");
-                if (redirectUrl != null && !redirectUrl.isEmpty()) {
-                    response.sendRedirect(redirectUrl);
+                System.out.println("Login result - User found: " + (user != null));
+                
+                if (user != null) {
+                    System.out.println("Login successful for user: " + user.getUsername());
+                    
+                    // Đăng nhập thành công - tạo session
+                    HttpSession session = request.getSession();
+                    session.setAttribute("user", user);
+                    session.setAttribute("userId", user.getId());
+                    session.setAttribute("username", user.getUsername());
+                    session.setAttribute("fullName", user.getFullName());
+                    session.setAttribute("role", user.getRole());
+                    
+                    // Chuyển hướng về trang chủ hoặc trang được yêu cầu trước đó
+                    String redirectUrl = request.getParameter("redirect");
+                    if (redirectUrl != null && !redirectUrl.isEmpty()) {
+                        response.sendRedirect(redirectUrl);
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/home");
+                    }
+                    return;
                 } else {
-                    response.sendRedirect(request.getContextPath() + "/home");
+                    errorMessage = "Email/tên đăng nhập hoặc mật khẩu không đúng";
+                    System.out.println("Login failed: Invalid credentials");
                 }
-                return;
-            } else {
-                errorMessage = "Email/tên đăng nhập hoặc mật khẩu không đúng";
+            } catch (Exception e) {
+                System.err.println("Error during login: " + e.getMessage());
+                e.printStackTrace();
+                errorMessage = "Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại sau.";
             }
         }
         
-        // Đăng nhập thất bại - hiển thị lại form với thông báo lỗi
+        
         request.setAttribute("error", errorMessage);
         request.setAttribute("emailOrUsername", emailOrUsername);
         showLoginPage(request, response);
     }
 
-    /**
-     * Xử lý đăng xuất
-     */
     private void logout(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
@@ -131,7 +139,6 @@ public class AuthServlet extends HttpServlet {
             session.invalidate();
         }
         
-        // Chuyển về trang chủ
         response.sendRedirect(request.getContextPath() + "/home");
     }
 }

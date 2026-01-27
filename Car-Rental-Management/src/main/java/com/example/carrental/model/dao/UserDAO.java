@@ -19,13 +19,12 @@ public class UserDAO {
         this.dbConnection = DBConnection.getInstance();
     }
 
-    /**
-     * Lấy tất cả người dùng
-     */
+    
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
-        String sql = "SELECT id, username, password, full_name, email, phone, role, active, created_at, updated_at " +
-                     "FROM users ORDER BY id DESC";
+        // Cập nhật để match với schema thực tế: user_id, status thay vì id, active
+        String sql = "SELECT user_id, full_name, email, password, phone, status, created_at " +
+                     "FROM users ORDER BY user_id DESC";
         
         try (Connection conn = dbConnection.getConnection();
              Statement stmt = conn.createStatement();
@@ -42,12 +41,10 @@ public class UserDAO {
         return users;
     }
 
-    /**
-     * Lấy người dùng theo ID
-     */
     public User getUserById(int id) {
-        String sql = "SELECT id, username, password, full_name, email, phone, role, active, created_at, updated_at " +
-                     "FROM users WHERE id = ?";
+        // Cập nhật để match với schema thực tế: user_id
+        String sql = "SELECT user_id, full_name, email, password, phone, status, created_at " +
+                     "FROM users WHERE user_id = ?";
         User user = null;
         
         try (Connection conn = dbConnection.getConnection();
@@ -69,36 +66,14 @@ public class UserDAO {
         return user;
     }
 
-    /**
-     * Lấy người dùng theo username
-     */
+    
     public User getUserByUsername(String username) {
-        String sql = "SELECT id, username, password, full_name, email, phone, role, active, created_at, updated_at " +
-                     "FROM users WHERE username = ?";
-        User user = null;
-        
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, username);
-            ResultSet rs = pstmt.executeQuery();
-            
-            if (rs.next()) {
-                user = mapResultSetToUser(rs);
-            }
-            
-            rs.close();
-        } catch (SQLException e) {
-            System.err.println("Error getting user by username: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        return user;
+        // Schema thực tế không có username, nên tìm theo email hoặc trả về null
+        // Có thể dùng email làm username
+        return getUserByEmail(username);
     }
 
-    /**
-     * Lấy người dùng theo số điện thoại
-     */
+    
     public User getUserByPhone(String phone) {
         String sql = "SELECT id, username, password, full_name, email, phone, role, active, created_at, updated_at " +
                      "FROM users WHERE phone = ?";
@@ -127,7 +102,8 @@ public class UserDAO {
      * Lấy người dùng theo email
      */
     public User getUserByEmail(String email) {
-        String sql = "SELECT id, username, password, full_name, email, phone, role, active, created_at, updated_at " +
+        // Cập nhật để match với schema thực tế
+        String sql = "SELECT user_id, full_name, email, password, phone, status, created_at " +
                      "FROM users WHERE email = ?";
         User user = null;
         
@@ -150,29 +126,42 @@ public class UserDAO {
         return user;
     }
 
-    /**
-     * Xác thực đăng nhập - tìm user theo email hoặc username và kiểm tra password
-     * @param emailOrUsername Email hoặc username
-     * @param password Mật khẩu
-     * @return User nếu đăng nhập thành công, null nếu thất bại
-     */
     public User login(String emailOrUsername, String password) {
-        // Thử tìm theo email trước
-        User user = getUserByEmail(emailOrUsername);
+        System.out.println("UserDAO.login() called with: " + emailOrUsername);
         
-        // Nếu không tìm thấy, thử tìm theo username
+
+        User user = getUserByEmail(emailOrUsername);
+        System.out.println("User found by email: " + (user != null));
+        
+
+        
         if (user == null) {
-            user = getUserByUsername(emailOrUsername);
+            System.out.println("User not found in database");
+            return null;
+        }   
+        // Kiểm tra user có tồn tại, đang active và password đúng
+        if (!user.isActive()) {
+            System.out.println("Login failed: User is not active (status != ACTIVE)");
+            return null;
         }
         
-        // Kiểm tra user có tồn tại, đang active và password đúng
-        if (user != null && user.isActive() && user.getPassword() != null && user.getPassword().equals(password)) {
+        if (user.getPassword() == null) {
+            System.out.println("Login failed: Password is null in database");
+            return null;
+        }
+        
+        boolean passwordMatch = user.getPassword().equals(password);
+        System.out.println("Password match: " + passwordMatch);
+        
+        if (passwordMatch) {
             // Không trả về password trong object để bảo mật
             user.setPassword(null);
+            System.out.println("Login successful!");
             return user;
+        } else {
+            System.out.println("Login failed: Password does not match");
+            return null;
         }
-        
-        return null;
     }
 
     /**
@@ -246,28 +235,66 @@ public class UserDAO {
         }
     }
 
-    /**
-     * Map ResultSet thành User object
-     */
+//    /**
+//     * Map ResultSet thành User object
+//     * Cập nhật để match với schema thực tế: user_id, status
+//     */
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User user = new User();
-        user.setId(rs.getInt("id"));
-        user.setUsername(rs.getString("username"));
+        
+        // Map user_id -> id
+        try {
+            user.setId(rs.getInt("user_id"));
+        } catch (SQLException e) {
+            // Fallback nếu không có user_id, thử id
+            try {
+                user.setId(rs.getInt("id"));
+            } catch (SQLException e2) {
+                // Ignore
+            }
+        }
+        
+        // Username không có trong DB, dùng email làm username
+        String email = rs.getString("email");
+        user.setEmail(email);
+        user.setUsername(email != null ? email.split("@")[0] : null); // Lấy phần trước @ làm username
+        
         user.setPassword(rs.getString("password"));
         user.setFullName(rs.getString("full_name"));
-        user.setEmail(rs.getString("email"));
         user.setPhone(rs.getString("phone"));
-        user.setRole(rs.getString("role"));
-        user.setActive(rs.getBoolean("active"));
+        
+        // Map status -> active (status = "ACTIVE" -> active = true)
+        try {
+            String status = rs.getString("status");
+            user.setActive("ACTIVE".equalsIgnoreCase(status));
+            
+            // Set role dựa trên email hoặc status
+            if (email != null) {
+                if (email.contains("admin")) {
+                    user.setRole("ADMIN");
+                } else if (email.contains("owner")) {
+                    user.setRole("OWNER");
+                } else {
+                    user.setRole("CUSTOMER");
+                }
+            } else {
+                user.setRole("CUSTOMER");
+            }
+        } catch (SQLException e) {
+            // Fallback nếu không có status, thử active
+            try {
+                user.setActive(rs.getBoolean("active"));
+                user.setRole(rs.getString("role"));
+            } catch (SQLException e2) {
+                // Default values
+                user.setActive(true);
+                user.setRole("CUSTOMER");
+            }
+        }
         
         Timestamp createdAt = rs.getTimestamp("created_at");
         if (createdAt != null) {
             user.setCreatedAt(createdAt.toLocalDateTime());
-        }
-        
-        Timestamp updatedAt = rs.getTimestamp("updated_at");
-        if (updatedAt != null) {
-            user.setUpdatedAt(updatedAt.toLocalDateTime());
         }
         
         return user;

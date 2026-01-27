@@ -59,6 +59,12 @@ public class DBConnection {
             }
         }
         
+        // Nếu password rỗng trong properties, dùng giá trị mặc định
+        if (dbPassword == null || dbPassword.trim().isEmpty()) {
+            System.out.println("Warning: Password is empty in db.properties, using default");
+            dbPassword = "vanh"; // Default password
+        }
+        
         // Kiểm tra và override bằng environment variables nếu có
         String envUrl = System.getenv("DB_URL");
         String envUser = System.getenv("DB_USER");
@@ -70,7 +76,7 @@ public class DBConnection {
         if (envUser != null && !envUser.isEmpty()) {
             dbUser = envUser;
         }
-        if (envPassword != null) {
+        if (envPassword != null && !envPassword.isEmpty()) {
             dbPassword = envPassword;
         }
         
@@ -87,7 +93,7 @@ public class DBConnection {
     private void setDefaultValues() {
         dbUrl = "jdbc:mysql://localhost:3306/car_rental_db?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true";
         dbUser = "root";
-        dbPassword = "vanh"; // Để trống, người dùng cần cập nhật
+        dbPassword = "vanh"; 
         dbDriver = "com.mysql.cj.jdbc.Driver";
     }
     

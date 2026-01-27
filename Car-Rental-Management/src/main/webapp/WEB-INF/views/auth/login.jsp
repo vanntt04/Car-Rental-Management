@@ -268,7 +268,7 @@
                 <label for="emailOrUsername">Email</label>
                 <div class="input-wrapper">
                     <input 
-                        type="email" 
+                        type="text" 
                         id="emailOrUsername" 
                         name="emailOrUsername" 
                         class="form-control" 
@@ -291,9 +291,6 @@
                         placeholder="Nhập mật khẩu"
                         required
                     >
-                    <button type="button" class="password-toggle" onclick="togglePassword()">
-                        <span id="toggleIcon">👁️</span>
-                    </button>
                 </div>
             </div>
 
@@ -312,11 +309,9 @@
 
         <div class="social-login">
             <button type="button" class="btn-social" onclick="loginWithFacebook()">
-                <span>📘</span>
                 <span>Facebook</span>
             </button>
             <button type="button" class="btn-social" onclick="loginWithGoogle()">
-                <span>🔍</span>
                 <span>Google</span>
             </button>
         </div>
