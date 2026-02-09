@@ -106,16 +106,13 @@ public class CarServlet extends HttpServlet {
         try {
             Car car = new Car();
             car.setName(request.getParameter("name"));
-            car.setLicensePlate(request.getParameter("licensePlate"));
             car.setBrand(request.getParameter("brand"));
             car.setModel(request.getParameter("model"));
             
             String yearStr = request.getParameter("year");
-            if (yearStr != null && !yearStr.isEmpty()) {
-                car.setYear(Integer.parseInt(yearStr));
-            }
+
             
-            car.setColor(request.getParameter("color"));
+ 
             
             String priceStr = request.getParameter("pricePerDay");
             if (priceStr != null && !priceStr.isEmpty()) {
@@ -124,7 +121,7 @@ public class CarServlet extends HttpServlet {
             
             car.setStatus(request.getParameter("status") != null ? 
                          request.getParameter("status") : "AVAILABLE");
-            car.setImageUrl(request.getParameter("imageUrl"));
+
             
             if (carDAO.addCar(car)) {
                 response.sendRedirect(request.getContextPath() + "/cars?success=created");
@@ -150,16 +147,13 @@ public class CarServlet extends HttpServlet {
             
             if (car != null) {
                 car.setName(request.getParameter("name"));
-                car.setLicensePlate(request.getParameter("licensePlate"));
+
                 car.setBrand(request.getParameter("brand"));
                 car.setModel(request.getParameter("model"));
                 
                 String yearStr = request.getParameter("year");
-                if (yearStr != null && !yearStr.isEmpty()) {
-                    car.setYear(Integer.parseInt(yearStr));
-                }
                 
-                car.setColor(request.getParameter("color"));
+
                 
                 String priceStr = request.getParameter("pricePerDay");
                 if (priceStr != null && !priceStr.isEmpty()) {
@@ -167,7 +161,7 @@ public class CarServlet extends HttpServlet {
                 }
                 
                 car.setStatus(request.getParameter("status"));
-                car.setImageUrl(request.getParameter("imageUrl"));
+
                 
                 if (carDAO.updateCar(car)) {
                     response.sendRedirect(request.getContextPath() + "/cars?id=" + carId + "&success=updated");

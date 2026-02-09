@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public class Car {
     private int id;
     private int owner_id;
+    private String img;
     private String name;
     private String brand;
     private String model;
@@ -22,9 +23,10 @@ public class Car {
     public Car() {
     }
 
-    public Car(int id, int owner_id, String name, String brand, String model, String local, BigDecimal pricePerDay, String status, String des, LocalDateTime createdAt) {
+    public Car(int id, int owner_id, String img, String name, String brand, String model, String local, BigDecimal pricePerDay, String status, String des, LocalDateTime createdAt) {
         this.id = id;
         this.owner_id = owner_id;
+        this.img = img;
         this.name = name;
         this.brand = brand;
         this.model = model;
@@ -49,6 +51,14 @@ public class Car {
 
     public void setOwner_id(int owner_id) {
         this.owner_id = owner_id;
+    }
+
+    public String getImg() {
+        return img;
+    }
+
+    public void setImg(String img) {
+        this.img = img;
     }
 
     public String getName() {
@@ -115,9 +125,7 @@ public class Car {
         this.createdAt = createdAt;
     }
 
-    public void setUpdatedAt(LocalDateTime toLocalDateTime) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+   
 
    
 }

@@ -25,7 +25,7 @@ public class CarDAO {
      */
     public List<Car> getAllCars() {
         List<Car> cars = new ArrayList<>();
-        String sql = "SELECT * FROM cars ORDER BY car_id DESC";
+        String sql = "SELECT c.* , i.image_url FROM cars c join car_images  i  on c.car_id = i.car_id ";
 
         try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -40,11 +40,27 @@ public class CarDAO {
         return cars;
     }
 
+    public List<String> getAllBrandCars() {
+        List<String> brands = new ArrayList<>();
+        String sql = "SELECT DISTINCT brand FROM cars ORDER BY brand";
+
+        try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                brands.add(rs.getString("brand"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting all brands: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return brands;
+    }
     /**
      * Lấy xe theo ID
      */
     public Car getCarById(int id) {
-        String sql = "SELECT * FROM cars WHERE car_id = ?";
+        String sql = "SELECT c.*, i.image_url FROM cars c LEFT JOIN car_images i ON c.car_id = i.car_id WHERE c.car_id = ?";
         Car car = null;
 
         try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -149,6 +165,7 @@ public class CarDAO {
         car.setBrand(rs.getString("brand"));
         car.setModel(rs.getString("model"));
         car.setPricePerDay(rs.getBigDecimal("price_per_day"));
+        car.setImg(rs.getString("image_url"));
         car.setStatus(rs.getString("status"));
         car.setLocal(rs.getString("location"));
         car.setDes(rs.getString("description"));
