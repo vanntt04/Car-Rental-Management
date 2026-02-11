@@ -23,7 +23,7 @@ public class UserDAO {
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
         // Cập nhật để match với schema thực tế: user_id, status thay vì id, active
-        String sql = "SELECT user_id, full_name, email, password, phone, status, created_at " +
+        String sql = "SELECT user_id,username, full_name, email, password, phone, status, created_at " +
                      "FROM users ORDER BY user_id DESC";
         
         try (Connection conn = dbConnection.getConnection();
@@ -43,7 +43,7 @@ public class UserDAO {
 
     public User getUserById(int id) {
         // Cập nhật để match với schema thực tế: user_id
-        String sql = "SELECT user_id, full_name, email, password, phone, status, created_at " +
+        String sql = "SELECT user_id,username full_name, email, password, phone, status, created_at " +
                      "FROM users WHERE user_id = ?";
         User user = null;
         
@@ -70,7 +70,7 @@ public class UserDAO {
     public User getUserByUsername(String username) {
         // Schema thực tế không có username, nên tìm theo email hoặc trả về null
         // Có thể dùng email làm username
-        return getUserByEmail(username);
+        return getUsername(username);
     }
 
     

@@ -13,10 +13,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
-/**
- * Controller xử lý các request liên quan đến xe
- * Controller trong mô hình MVC
- */
+
 @WebServlet(name = "CarServlet", urlPatterns = "/cars")
 public class CarServlet extends HttpServlet {
     private CarDAO carDAO;
@@ -36,13 +33,10 @@ public class CarServlet extends HttpServlet {
 
         try {
             if (idParam != null && !idParam.isEmpty()) {
-                // Hiển thị chi tiết xe
                 showCarDetail(request, response, Integer.parseInt(idParam));
             } else if ("new".equals(action)) {
-                // Hiển thị form thêm xe mới (có thể mở rộng sau)
                 showCarList(request, response);
             } else {
-                // Hiển thị danh sách xe
                 showCarList(request, response);
             }
         } catch (NumberFormatException e) {
