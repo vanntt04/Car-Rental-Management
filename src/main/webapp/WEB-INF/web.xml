@@ -22,6 +22,10 @@
         <servlet-name>SearchCarServlet</servlet-name>
         <servlet-class>com.example.carrental.controller.SearchCarServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>FilterCarServlet</servlet-name>
+        <servlet-class>com.example.carrental.controller.FilterCarServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>ForgetPassServlet</servlet-name>
         <url-pattern>/forget_password</url-pattern>
@@ -41,6 +45,10 @@
     <servlet-mapping>
         <servlet-name>SearchCarServlet</servlet-name>
         <url-pattern>/searchcar</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FilterCarServlet</servlet-name>
+        <url-pattern>/filter</url-pattern>
     </servlet-mapping>
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>

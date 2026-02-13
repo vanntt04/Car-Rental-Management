@@ -5,6 +5,7 @@ import com.example.carrental.model.util.DBConnection;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +26,9 @@ public class CarDAO {
      */
     public List<Car> getAllCars() {
         List<Car> cars = new ArrayList<>();
-        String sql = "SELECT c.* , i.image_url FROM cars c join car_images  i  on c.car_id = i.car_id ";
+        String sql = "SELECT c.* , i.image_url , k.status FROM cars c join car_images  i on c.car_id = i.car_id join car_availability k  on c.car_id = k.car_id ";
 
         try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
-
             while (rs.next()) {
                 cars.add(mapResultSetToCar(rs));
             }
@@ -56,6 +56,7 @@ public class CarDAO {
 
         return brands;
     }
+
     /**
      * Lấy xe theo ID
      */
@@ -81,9 +82,76 @@ public class CarDAO {
         return car;
     }
 
-    /**
-     * Thêm xe mới
-     */
+    public List<Car> getCarByBrand(String brand) {
+
+        String sql = "SELECT c.*, i.image_url "
+                + "FROM cars c "
+                + "LEFT JOIN car_images i ON c.car_id = i.car_id "
+                + "WHERE c.brand = ?";
+
+        List<Car> cars = new ArrayList<>();
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, brand);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Car car = mapResultSetToCar(rs);
+                cars.add(car);
+            }
+
+            rs.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return cars;
+    }
+
+    public List<Car> filterCar(String brand, List<Car> list) {
+        List<Car> result = new ArrayList<>();
+
+        for (Car car : list) {
+            if (car.getBrand().equalsIgnoreCase(brand)) {
+                result.add(car);
+            }
+        }
+
+        return result;
+    }
+    public List<Car> getCarByDate(String location, LocalDate pickTime, LocalDate returnTime) {
+        String sql = "SELECT c.*, r.image_url, i.start_date, i.end_date "
+                + "FROM cars c "
+                + "LEFT JOIN car_availability i ON c.car_id = i.car_id "
+                + "LEFT JOIN car_images r ON c.car_id = r.car_id "
+                + "WHERE c.location = ? "
+                + "AND (i.start_date IS NULL OR i.end_date IS NULL OR "
+                + "     (? >= i.start_date AND ? <= i.end_date))";
+
+        List<Car> cars = new ArrayList<>();
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, location);
+            pstmt.setDate(2, java.sql.Date.valueOf(pickTime));
+            pstmt.setDate(3, java.sql.Date.valueOf(returnTime));
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    cars.add(mapResultSetToCar(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return cars;
+    }
+
     public boolean addCar(Car car) {
         String sql = "INSERT INTO cars (car_name, brand, model, location, description, price_per_day, status, owner_id, created_at) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -176,4 +244,27 @@ public class CarDAO {
         }
         return car;
     }
+    /* public static void main(String[] args) {
+        CarDAO carDAO = new CarDAO();
+        String pick = "2023-11-11";
+        String returnD = "2023-11-12";
+        String Local = "Hà Nội";
+        LocalDate start = LocalDate.parse(pick);
+        LocalDate end = LocalDate.parse(returnD);
+        List<Car> cars = carDAO.getCarByDate(Local, start, end);
+        if (cars.isEmpty()) { 
+            System.out.println("Không tìm thấy xe nào");
+        }
+        else {
+            for (Car car : cars){
+            System.out.println("Tên: " + car.getName());
+            System.out.println("Status: " + car.getStatus());
+            System.out.println("Hãng: " + car.getBrand());
+            System.out.println("Model: " + car.getModel());
+            System.out.println("Giá/ngày: " + car.getPricePerDay());
+            System.out.println("Địa điểm: " + car.getLocal());
+            System.out.println("-------------------------"); 
+            } 
+        } 
+    }*/
 }

@@ -1,9 +1,0 @@
-com\mycompany\carrental\controller\BaseServlet.class
-com\mycompany\carrental\dao\DBConnection.class
-com\mycompany\carrental\dao\CarDAO.class
-com\mycompany\carrental\JakartaRestConfiguration.class
-com\mycompany\carrental\dao\BaseDAO.class
-com\mycompany\carrental\model\BaseEntity.class
-com\mycompany\carrental\controller\CarController.class
-com\mycompany\carrental\model\Car.class
-com\mycompany\carrental\resources\JakartaEE10Resource.class

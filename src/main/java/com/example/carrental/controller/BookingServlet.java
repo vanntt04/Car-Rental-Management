@@ -5,6 +5,8 @@
 
 package com.example.carrental.controller;
 
+import com.example.carrental.model.dao.CarDAO;
+import com.example.carrental.model.entity.Car;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -53,6 +55,11 @@ public class BookingServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
+        String carID = request.getParameter("carId");
+        int c = Integer.parseInt(carID);
+        CarDAO car = new CarDAO();
+        Car BookCar = car.getCarById(c);
+        request.setAttribute("BookCar", BookCar);
          request.getRequestDispatcher(
                 "/WEB-INF/views/car/Booking.jsp"
         ).forward(request, response);

@@ -89,13 +89,13 @@
         <div class="card">
             <div class="left">
                 <c:choose>
-                    <c:when test="${not empty car}">
-                        <img class="car-img" src="${car.imageUrl}" alt="${car.name}" />
-                        <h3 style="margin:8px 0 4px 0">${car.name}</h3>
-                        <div class="muted">Model: <strong>${car.model}</strong></div>
+                    <c:when test="${not empty BookCar}">
+                        <img class="car-img" src="${BookCar.img}" alt="${BookCar.name}" />
+                        <h3 style="margin:8px 0 4px 0">${BookCar.name}</h3>
+                        <div class="muted">Model: <strong>${BookCar.model}</strong></div>
                         <div class="info-row">
                             <div class="badge">Giá / giờ</div>
-                            <div style="font-weight:800; margin-left:6px;">${car.pricePerHour} ₫</div>
+                            <div style="font-weight:800; margin-left:6px;">${BookCar.pricePerDay} ₫</div>
                         </div>
                     </c:when>
                     <c:otherwise>

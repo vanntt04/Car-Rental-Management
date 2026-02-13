@@ -14,6 +14,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -60,15 +62,16 @@ public class SearchCarServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         CarDAO carDAO = new CarDAO();
         List<Car> CarList = carDAO.getAllCars();
         List<String> BrandList = carDAO.getAllBrandCars();
         HttpSession session = request.getSession();
-        session.setAttribute("CarList",CarList);
-        session.setAttribute("BrandList",BrandList);
+        session.setAttribute("CarList", CarList);
+        session.setAttribute("BrandList", BrandList);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
         dispatcher.forward(request, response);
-       
+
     }
 
     /**
@@ -82,7 +85,39 @@ public class SearchCarServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+        String pickupStr = request.getParameter("pickupTime");
+        LocalDate pickupTime = null;
+        try {
+            if (pickupStr != null && !pickupStr.isEmpty()) {
+                pickupTime = LocalDate.parse(pickupStr);
+            }
+        } catch (Exception e) {
+            System.out.println("pickupTime null hoặc sai định dạng, bỏ qua");
+        }
+        String returnStr = request.getParameter("returnTime");
+        LocalDate returnTime = null;
+        try {
+            if (returnStr != null && !returnStr.isEmpty()) {
+                returnTime = LocalDate.parse(returnStr);
+            }
+        } catch (Exception e) {
+            System.out.println("returnTime null hoặc sai định dạng, bỏ qua");
+        }
+        String location = request.getParameter("local");
+        CarDAO carDAO = new CarDAO();
+        String brand = request.getParameter("brand");
+        List<Car> SearchByDate = carDAO.getCarByDate(location, pickupTime, returnTime);
+        if (brand != null) {
+            List<Car> SearchCar = carDAO.filterCar(brand, SearchByDate);
+            request.setAttribute("SearchByDate", SearchCar);
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
+            dispatcher.forward(request, response);
+        }
+        request.setAttribute("SearchByDate", SearchByDate);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
+        dispatcher.forward(request, response);
     }
 
     /**
