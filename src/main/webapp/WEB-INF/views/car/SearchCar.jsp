@@ -318,50 +318,95 @@
         <div class="container">
             <div class="car-grid">
                 <c:choose>
-                    <c:when test="${not empty SearchByDate}">
-                        <c:forEach var="car" items="${SearchByDate}">
-                            <form  action="${pageContext.request.contextPath}/booking" method="get">
-                                <input type="hidden" name="carId" value="${car.id}">
-                                <div class="car-card">
-                                    <img src="${car.img}" alt="">
-                                    <div class="car-body">
-                                        <div class="car-title">${car.name}</div>
-                                        <div class="car-status">${car.status}</div>
-                                        <div class="car-location">${car.local}</div>
-                                        <div>${car.brand} - ${car.model}</div>
-                                        <div class="price">${car.pricePerDay} / ngày</div>
-                                    </div>
-                                    <div style="justify-content:center; color: greenyellow">
-                                        <button type="submit" class="booking-btn">Booking</button>
-                                    </div>
-                                </div>
-                            </form>
-                        </c:forEach>
-                    </c:when>
-
-                    <c:otherwise>
-                        <c:forEach var="car" items="${CarList}">
-                            <form  action="${pageContext.request.contextPath}/booking" method="get">
-                                <input type="hidden" name="carId" value="${car.id}">
-                                <div class="car-card">
-                                    <img src="${car.img}" alt="">
-                                    <div class="car-body">
-                                        <div class="car-title">${car.name}</div>
-                                        <div class="car-status">${car.status}</div>
-                                        <div class="car-location">${car.local}</div>
-                                        <div>${car.brand} - ${car.model}</div>
-                                        <div class="price">${car.pricePerDay} / ngày</div>
-                                        <div style="justify-content:center; color: greenyellow">
-                                            <button type="submit" class="booking-btn">Booking</button>
+                    <c:when test="${not empty user}">
+                        <c:choose>
+                            <c:when test="${not empty SearchByDate}">
+                                <c:forEach var="car" items="${SearchByDate}">
+                                    <form  action="${pageContext.request.contextPath}/booking" method="get">
+                                        <input type="hidden" name="carId" value="${car.id}">
+                                        <div class="car-card">
+                                            <img src="${car.img}" alt="">
+                                            <div class="car-body">
+                                                <div class="car-title">${car.name}</div>
+                                                <div class="car-status">${car.status}</div>
+                                                <div class="car-location">${car.local}</div>
+                                                <div>${car.brand} - ${car.model}</div>
+                                                <div class="price">${car.pricePerDay} / ngày</div>
+                                            </div>
+                                            <div style="justify-content:center; color: greenyellow">
+                                                <button type="submit" class="booking-btn">Booking</button>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </c:forEach>
-                    </c:otherwise>
-
+                                    </form>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <c:forEach var="car" items="${CarList}">
+                                    <form  action="${pageContext.request.contextPath}/booking" method="get">
+                                        <input type="hidden" name="carId" value="${car.id}">
+                                        <div class="car-card">
+                                            <img src="${car.img}" alt="">
+                                            <div class="car-body">
+                                                <div class="car-title">${car.name}</div>
+                                                <div class="car-status">${car.status}</div>
+                                                <div class="car-location">${car.local}</div>
+                                                <div>${car.brand} - ${car.model}</div>
+                                                <div class="price">${car.pricePerDay} / ngày</div>
+                                                <div style="justify-content:center; color: greenyellow">
+                                                    <button type="submit" class="booking-btn">Booking</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </c:forEach>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:when>
+                    <c:when test="${empty user}">
+                        <c:choose>
+                            <c:when test="${not empty SearchByDate}">
+                                <c:forEach var="car" items="${SearchByDate}">
+                                    <form  action="${pageContext.request.contextPath}/login" method="post">
+                                        <input type="hidden" name="carId" value="${car.id}">
+                                        <div class="car-card">
+                                            <img src="${car.img}" alt="">
+                                            <div class="car-body">
+                                                <div class="car-title">${car.name}</div>
+                                                <div class="car-status">${car.status}</div>
+                                                <div class="car-location">${car.local}</div>
+                                                <div>${car.brand} - ${car.model}</div>
+                                                <div class="price">${car.pricePerDay} / ngày</div>
+                                            </div>
+                                            <div style="justify-content:center; color: greenyellow">
+                                                <button type="submit" class="booking-btn">Booking</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <c:forEach var="car" items="${CarList}">
+                                    <form  action="${pageContext.request.contextPath}/login" method="post">
+                                        <input type="hidden" name="carId" value="${car.id}">
+                                        <div class="car-card">
+                                            <img src="${car.img}" alt="">
+                                            <div class="car-body">
+                                                <div class="car-title">${car.name}</div>
+                                                <div class="car-status">${car.status}</div>
+                                                <div class="car-location">${car.local}</div>
+                                                <div>${car.brand} - ${car.model}</div>
+                                                <div class="price">${car.pricePerDay} / ngày</div>
+                                                <div style="justify-content:center; color: greenyellow">
+                                                    <button type="submit" class="booking-btn">Booking</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </c:forEach>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:when>
                 </c:choose>
-
             </div>
         </div>
 
