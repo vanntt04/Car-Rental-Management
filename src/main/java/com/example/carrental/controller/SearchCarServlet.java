@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -109,6 +108,9 @@ public class SearchCarServlet extends HttpServlet {
         CarDAO carDAO = new CarDAO();
         String brand = request.getParameter("brand");
         List<Car> SearchByDate = carDAO.getCarByDate(location, pickupTime, returnTime);
+        HttpSession session = request.getSession();
+        session.setAttribute("pickupTime", pickupTime);
+        session.setAttribute("returnTime", returnTime);
         if (brand != null) {
             List<Car> SearchCar = carDAO.filterCar(brand, SearchByDate);
             request.setAttribute("SearchByDate", SearchCar);

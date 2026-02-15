@@ -52,7 +52,7 @@
     <p>Hệ thống quản lý thuê xe theo mô hình MVC.</p>
     <nav>
         <a href="<c:url value='/home'/>">Trang chủ</a>
-        <a href="<c:url value='/cars'/>">Danh sách xe</a>
+        <a href="<c:url value='/searchcar'/>">Danh sách xe</a>
         <a href="<c:url value='/users'/>">Danh sách người dùng</a>
         <a href="<c:url value='/login'/>">Đặt xe</a>
     </nav>
