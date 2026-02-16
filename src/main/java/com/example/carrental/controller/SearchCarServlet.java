@@ -106,18 +106,12 @@ public class SearchCarServlet extends HttpServlet {
         }
         String location = request.getParameter("local");
         CarDAO carDAO = new CarDAO();
-        String brand = request.getParameter("brand");
         List<Car> SearchByDate = carDAO.getCarByDate(location, pickupTime, returnTime);
         HttpSession session = request.getSession();
         session.setAttribute("pickupTime", pickupTime);
         session.setAttribute("returnTime", returnTime);
-        if (brand != null) {
-            List<Car> SearchCar = carDAO.filterCar(brand, SearchByDate);
-            request.setAttribute("SearchByDate", SearchCar);
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
-            dispatcher.forward(request, response);
-        }
-        request.setAttribute("SearchByDate", SearchByDate);
+        session.setAttribute("SearchByDate", SearchByDate);
+        session.setAttribute("FilterCar", SearchByDate);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
         dispatcher.forward(request, response);
     }

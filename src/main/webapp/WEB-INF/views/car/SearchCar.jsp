@@ -189,10 +189,11 @@
                 color: #155724;
             }
 
-            .car-status.booked {
+            .car-status.unavailable {
                 background-color: #f8d7da;
                 color: #721c24;
             }
+
             .booking-btn{
                 width: 90%;
                 margin: 12px auto 16px auto;
@@ -300,7 +301,7 @@
 
         <!-- FILTER -->
         <div class="filter-bar-wrap">
-            <form class="filter-bar" action="${pageContext.request.contextPath}/searchcar" method="post">
+            <form class="filter-bar" action="${pageContext.request.contextPath}/filter" method="get">
                 <div class="filter">
                     <label>Brand</label>
                     <select name="brand">
@@ -308,6 +309,16 @@
                         <c:forEach var="brand" items="${BrandList}">
                             <option value="${brand}">${brand}</option>
                         </c:forEach>
+                    </select>
+                </div>
+                <div class="filter">
+                    <label>Price Range</label>
+                    <select name="price">
+                        <option value="">Tất cả</option>
+                        <option value="0-60000000">Below 60 milion</option>
+                        <option value="60000000-100000000">60m - 100m</option>
+                        <option value="100000000-150000000">100m - 150m</option>
+                        <option value="150000000-250000000">150m - 250m</option>
                     </select>
                 </div>
                 <button type="submit" class="filter-btn">Filter</button>
@@ -320,6 +331,29 @@
                 <c:choose>
                     <c:when test="${not empty user}">
                         <c:choose>
+                            <c:when test="${not empty FilterCar}">
+                                <c:forEach var="car" items="${FilterCar}">
+                                    <form  action="${pageContext.request.contextPath}/booking" method="get">
+                                        <input type="hidden" name="carId" value="${car.id}">
+                                        <div class="car-card">
+                                            <img src="${car.img}" alt="">
+                                            <div class="car-body">
+                                                <div class="car-title">${car.name}</div>
+                                                <span class="car-status
+                                                      ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">
+                                                    ${car.status}
+                                                </span>
+                                                <div class="car-location">${car.local}</div>
+                                                <div>${car.brand} - ${car.model}</div>
+                                                <div class="price">${car.pricePerDay} / ngày</div>
+                                            </div>
+                                            <div style="justify-content:center; color: greenyellow">
+                                                <button type="submit" class="booking-btn">Booking</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </c:forEach>
+                            </c:when>
                             <c:when test="${not empty SearchByDate}">
                                 <c:forEach var="car" items="${SearchByDate}">
                                     <form  action="${pageContext.request.contextPath}/booking" method="get">
@@ -328,7 +362,10 @@
                                             <img src="${car.img}" alt="">
                                             <div class="car-body">
                                                 <div class="car-title">${car.name}</div>
-                                                <div class="car-status">${car.status}</div>
+                                                <span class="car-status
+                                                      ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">
+                                                    ${car.status}
+                                                </span>
                                                 <div class="car-location">${car.local}</div>
                                                 <div>${car.brand} - ${car.model}</div>
                                                 <div class="price">${car.pricePerDay} / ngày</div>
@@ -348,7 +385,10 @@
                                             <img src="${car.img}" alt="">
                                             <div class="car-body">
                                                 <div class="car-title">${car.name}</div>
-                                                <div class="car-status">${car.status}</div>
+                                                <span class="car-status
+                                                      ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">
+                                                    ${car.status}
+                                                </span>
                                                 <div class="car-location">${car.local}</div>
                                                 <div>${car.brand} - ${car.model}</div>
                                                 <div class="price">${car.pricePerDay} / ngày</div>
@@ -372,7 +412,10 @@
                                             <img src="${car.img}" alt="">
                                             <div class="car-body">
                                                 <div class="car-title">${car.name}</div>
-                                                <div class="car-status">${car.status}</div>
+                                                <span class="car-status
+                                                      ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">
+                                                    ${car.status}
+                                                </span>
                                                 <div class="car-location">${car.local}</div>
                                                 <div>${car.brand} - ${car.model}</div>
                                                 <div class="price">${car.pricePerDay} / ngày</div>
@@ -392,7 +435,10 @@
                                             <img src="${car.img}" alt="">
                                             <div class="car-body">
                                                 <div class="car-title">${car.name}</div>
-                                                <div class="car-status">${car.status}</div>
+                                                <span class="car-status
+                                                      ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">
+                                                    ${car.status}
+                                                </span>
                                                 <div class="car-location">${car.local}</div>
                                                 <div>${car.brand} - ${car.model}</div>
                                                 <div class="price">${car.pricePerDay} / ngày</div>

@@ -122,6 +122,7 @@ public class CarDAO {
 
         return result;
     }
+
     public List<Car> getCarByDate(String location, LocalDate pickTime, LocalDate returnTime) {
         String sql = "SELECT c.*, r.image_url, i.start_date, i.end_date "
                 + "FROM cars c "
@@ -151,7 +152,7 @@ public class CarDAO {
 
         return cars;
     }
-
+    
     public boolean addCar(Car car) {
         String sql = "INSERT INTO cars (car_name, brand, model, location, description, price_per_day, status, owner_id, created_at) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -244,27 +245,4 @@ public class CarDAO {
         }
         return car;
     }
-    /* public static void main(String[] args) {
-        CarDAO carDAO = new CarDAO();
-        String pick = "2023-11-11";
-        String returnD = "2023-11-12";
-        String Local = "Hà Nội";
-        LocalDate start = LocalDate.parse(pick);
-        LocalDate end = LocalDate.parse(returnD);
-        List<Car> cars = carDAO.getCarByDate(Local, start, end);
-        if (cars.isEmpty()) { 
-            System.out.println("Không tìm thấy xe nào");
-        }
-        else {
-            for (Car car : cars){
-            System.out.println("Tên: " + car.getName());
-            System.out.println("Status: " + car.getStatus());
-            System.out.println("Hãng: " + car.getBrand());
-            System.out.println("Model: " + car.getModel());
-            System.out.println("Giá/ngày: " + car.getPricePerDay());
-            System.out.println("Địa điểm: " + car.getLocal());
-            System.out.println("-------------------------"); 
-            } 
-        } 
-    }*/
 }
