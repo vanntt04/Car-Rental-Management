@@ -116,7 +116,7 @@ public class CarServlet extends HttpServlet {
             
             String priceStr = request.getParameter("pricePerDay");
             if (priceStr != null && !priceStr.isEmpty()) {
-                car.setPricePerDay(new BigDecimal(priceStr));
+                car.setPricePerDay(new Integer(priceStr));
             }
             
             car.setStatus(request.getParameter("status") != null ? 

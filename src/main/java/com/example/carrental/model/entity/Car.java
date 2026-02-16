@@ -15,7 +15,7 @@ public class Car {
     private String brand;
     private String model;
     private String local;
-    private BigDecimal pricePerDay;
+    private int pricePerDay;
     private String status; 
     private String des;
     private LocalDateTime createdAt;
@@ -23,7 +23,7 @@ public class Car {
     public Car() {
     }
 
-    public Car(int id, int owner_id, String img, String name, String brand, String model, String local, BigDecimal pricePerDay, String status, String des, LocalDateTime createdAt) {
+    public Car(int id, int owner_id, String img, String name, String brand, String model, String local,  int pricePerDay, String status, String des, LocalDateTime createdAt) {
         this.id = id;
         this.owner_id = owner_id;
         this.img = img;
@@ -93,11 +93,11 @@ public class Car {
         this.local = local;
     }
 
-    public BigDecimal getPricePerDay() {
+    public int getPricePerDay() {
         return pricePerDay;
     }
 
-    public void setPricePerDay(BigDecimal pricePerDay) {
+    public void setPricePerDay(int pricePerDay) {
         this.pricePerDay = pricePerDay;
     }
 

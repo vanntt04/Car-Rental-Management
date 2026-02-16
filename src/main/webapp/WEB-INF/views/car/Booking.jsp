@@ -163,7 +163,7 @@
                     <input type="hidden" id="pricePerHour" value="${not empty car.pricePerDay ? car.pricePerDay : BookCar.pricePerDay}" />
 
                     <label>Họ và tên</label>
-                    <input type="text" name="fullName" placeholder="Nguyễn Văn A" required />
+                    <input type="text" name="fullName" placeholder="Nguyễn Văn A" value="${sessionScope.fullName}"required />
 
                     <div class="two-col">
                         <div>
