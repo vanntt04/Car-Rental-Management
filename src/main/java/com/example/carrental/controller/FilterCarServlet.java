@@ -63,28 +63,37 @@ public class FilterCarServlet extends HttpServlet {
         HttpSession session = request.getSession();
 
         String brand = request.getParameter("brand");
+        String price = request.getParameter("price");
+
         List<Car> sourceList = (List<Car>) session.getAttribute("SearchByDate");
+
         if (sourceList == null) {
             sourceList = (List<Car>) session.getAttribute("CarList");
         }
 
         CarDAO carDAO = new CarDAO();
-        List<Car> filter = carDAO.filterCar(brand, sourceList);
+        List<Car> result = sourceList;
 
-        session.setAttribute("FilterCar", filter);
-        String price = request.getParameter("price");
-        if(price != null && !price.isEmpty()){
+        // Filter theo brand
+        if (brand != null && !brand.isEmpty()) {
+            result = carDAO.filterCar(brand, result);
+        }
+
+        // Filter theo price
+        if (price != null && !price.isEmpty()) {
             String[] parts = price.split("-");
             int minPrice = Integer.parseInt(parts[0]);
             int maxPrice = Integer.parseInt(parts[1]);
-            
-            
+
+            result = carDAO.filterCarByPrice(minPrice, maxPrice, result);
         }
-        
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
+
+        session.setAttribute("FilterCar", result);
+
+        RequestDispatcher dispatcher
+                = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
         dispatcher.forward(request, response);
-        
-        
+
     }
 
     /**

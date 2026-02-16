@@ -3,10 +3,8 @@ package com.example.carrental.model.dao;
 import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.util.DBConnection;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -123,6 +121,18 @@ public class CarDAO {
         return result;
     }
 
+    public List<Car> filterCarByPrice(int minPrice, int maxPrice , List<Car> list) {
+        List<Car> result = new ArrayList<>();
+
+        for (Car car : list) {
+            if (car.getPricePerDay() > minPrice && car.getPricePerDay() < maxPrice) {
+                result.add(car);
+            }
+        }
+
+        return result;
+    }
+
     public List<Car> getCarByDate(String location, LocalDate pickTime, LocalDate returnTime) {
         String sql = "SELECT c.*, r.image_url, i.start_date, i.end_date "
                 + "FROM cars c "
@@ -152,7 +162,7 @@ public class CarDAO {
 
         return cars;
     }
-    
+
     public boolean addCar(Car car) {
         String sql = "INSERT INTO cars (car_name, brand, model, location, description, price_per_day, status, owner_id, created_at) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -164,7 +174,7 @@ public class CarDAO {
             pstmt.setString(3, car.getModel());
             pstmt.setString(4, car.getLocal());
             pstmt.setString(5, car.getDes());
-            pstmt.setBigDecimal(6, car.getPricePerDay());
+            pstmt.setInt(6, car.getPricePerDay());
             pstmt.setString(7, car.getStatus());
             pstmt.setInt(8, car.getOwner_id());
 
@@ -194,7 +204,7 @@ public class CarDAO {
             pstmt.setString(1, car.getName());
             pstmt.setString(2, car.getBrand());
             pstmt.setString(3, car.getModel());
-            pstmt.setBigDecimal(4, car.getPricePerDay());
+            pstmt.setInt(4, car.getPricePerDay());
             pstmt.setString(5, car.getStatus());
             pstmt.setInt(6, car.getId());
 
@@ -233,7 +243,7 @@ public class CarDAO {
         car.setName(rs.getString("car_name"));
         car.setBrand(rs.getString("brand"));
         car.setModel(rs.getString("model"));
-        car.setPricePerDay(rs.getBigDecimal("price_per_day"));
+        car.setPricePerDay(rs.getInt("price_per_day"));
         car.setImg(rs.getString("image_url"));
         car.setStatus(rs.getString("status"));
         car.setLocal(rs.getString("location"));

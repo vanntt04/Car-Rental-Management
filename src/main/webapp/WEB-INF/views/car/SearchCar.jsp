@@ -315,7 +315,6 @@
                     <label>Price Range</label>
                     <select name="price">
                         <option value="">Tất cả</option>
-                        <option value="0-60000000">Below 60 milion</option>
                         <option value="60000000-100000000">60m - 100m</option>
                         <option value="100000000-150000000">100m - 150m</option>
                         <option value="150000000-250000000">150m - 250m</option>
