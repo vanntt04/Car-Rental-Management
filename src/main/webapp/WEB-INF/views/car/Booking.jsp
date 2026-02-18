@@ -156,6 +156,7 @@
                 <form id="bookingForm" action="booking" method="post" onsubmit="prepareSubmit(event)">
                     <!-- hidden fields -->
                     <input type="hidden" name="carId" value="${car.id}" />
+                    <input type="hidden" name="ownerId" value="${car.owner_id}" />
                     <input type="hidden" id="totalPriceHidden" name="totalPrice" value="" />
                     <input type="hidden" id="rentalHoursHidden" name="rentalHours" value="" />
 
@@ -163,7 +164,7 @@
                     <input type="hidden" id="pricePerHour" value="${not empty car.pricePerDay ? car.pricePerDay : BookCar.pricePerDay}" />
 
                     <label>Họ và tên</label>
-                    <input type="text" name="fullName" placeholder="Nguyễn Văn A" value="${sessionScope.fullName}"required />
+                    <input type="text" name="fullName" placeholder="Nguyễn Văn A" required />
 
                     <div class="two-col">
                         <div>

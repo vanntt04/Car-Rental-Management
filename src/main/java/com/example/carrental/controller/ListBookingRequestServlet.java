@@ -4,8 +4,6 @@
  */
 package com.example.carrental.controller;
 
-import com.example.carrental.model.dao.CarDAO;
-import com.example.carrental.model.entity.Car;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -13,13 +11,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 /**
  *
  * @author PC
  */
-public class BookingServlet extends HttpServlet {
+public class ListBookingRequestServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -38,10 +35,10 @@ public class BookingServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet BookingServlet</title>");
+            out.println("<title>Servlet ListBookingRequestServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet BookingServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet ListBookingRequestServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -59,15 +56,8 @@ public class BookingServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        String carID = request.getParameter("carId");
-        int c = Integer.parseInt(carID);
-        CarDAO car = new CarDAO();
-        Car BookCar = car.getCarById(c);
-        session.setAttribute("BookCar", BookCar);
-        request.getRequestDispatcher(
-                "/WEB-INF/views/car/Booking.jsp"
-        ).forward(request, response);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/user/ManageBookingRequest.jsp");
+        dispatcher.forward(request, response);
     }
 
     /**
@@ -81,25 +71,7 @@ public class BookingServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        String fullname = request.getParameter("fullName");
-        String email = request.getParameter("email");
-        String phone = request.getParameter("phone");
-        String pickupDate = request.getParameter("pickupTime");
-        String returnDate = request.getParameter("returnTime");
-
-        if (session.getAttribute("ownerId").equals(session.getAttribute("userId"))) {
-            session.setAttribute("fullname", fullname);
-            session.setAttribute("email", email);
-            session.setAttribute("phone", phone);
-            session.setAttribute("pickupDate", pickupDate);
-            session.setAttribute("returnDate", returnDate);
-        } else {
-            String error = "Chưa có xe được đặt ";
-            session.setAttribute("error", error);
-        }
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/user/ManageBookingRequest.jsp");
-        dispatcher.forward(request, response);
+        processRequest(request, response);
     }
 
     /**

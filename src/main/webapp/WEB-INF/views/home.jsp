@@ -53,6 +53,7 @@
     <nav>
         <a href="<c:url value='/home'/>">Trang chủ</a>
         <a href="<c:url value='/searchcar'/>">Danh sách xe</a>
+        <a href="<c:url value='/listbooking'/>">Quản lý request booking</a>
         <a href="<c:url value='/users'/>">Danh sách người dùng</a>
         <a href="<c:url value='/login'/>">Đặt xe</a>
     </nav>

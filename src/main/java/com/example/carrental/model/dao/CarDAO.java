@@ -1,6 +1,7 @@
 package com.example.carrental.model.dao;
 
 import com.example.carrental.model.entity.Car;
+import com.example.carrental.model.entity.User;
 import com.example.carrental.model.util.DBConnection;
 
 import java.sql.*;
@@ -121,7 +122,7 @@ public class CarDAO {
         return result;
     }
 
-    public List<Car> filterCarByPrice(int minPrice, int maxPrice , List<Car> list) {
+    public List<Car> filterCarByPrice(int minPrice, int maxPrice, List<Car> list) {
         List<Car> result = new ArrayList<>();
 
         for (Car car : list) {
@@ -147,8 +148,8 @@ public class CarDAO {
         try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, location);
-            pstmt.setDate(2, java.sql.Date.valueOf(pickTime));
-            pstmt.setDate(3, java.sql.Date.valueOf(returnTime));
+            pstmt.setDate(2, Date.valueOf(pickTime));
+            pstmt.setDate(3, Date.valueOf(returnTime));
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
