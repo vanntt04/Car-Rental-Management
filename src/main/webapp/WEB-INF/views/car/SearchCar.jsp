@@ -297,6 +297,11 @@
                 </div>
 
             </form>
+            <c:if test="${not empty error}">
+                <div style="color:red; font-weight:600; padding:10px 32px;">
+                    ${error}
+                </div>
+            </c:if>
         </div>
 
         <!-- FILTER -->

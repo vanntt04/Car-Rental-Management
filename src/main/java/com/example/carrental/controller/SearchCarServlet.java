@@ -104,10 +104,25 @@ public class SearchCarServlet extends HttpServlet {
         } catch (Exception e) {
             System.out.println("returnTime null hoặc sai định dạng, bỏ qua");
         }
+        String error = null;
+        if (pickupTime == null || returnTime == null) {
+            error = "Vui lòng nhập đủ ngày nhận và trả xe";
+        } else if (returnTime.isBefore(pickupTime)) {
+            error = "Ngày trả xe phải sau ngày nhận";
+        }
         String location = request.getParameter("local");
         CarDAO carDAO = new CarDAO();
-        List<Car> SearchByDate = carDAO.getCarByDate(location, pickupTime, returnTime);
+        List<Car> SearchByDate = null;
+        if (error == null) {
+            SearchByDate = carDAO.getCarByDate(location, pickupTime, returnTime);
+            if (SearchByDate.isEmpty()) {
+                error = "Không tìm thấy kết quả phù hợp";
+            }
+        } else{
+            SearchByDate = carDAO.getAllCars();
+        }
         HttpSession session = request.getSession();
+        session.setAttribute("error", error);
         session.setAttribute("pickupTime", pickupTime);
         session.setAttribute("returnTime", returnTime);
         session.setAttribute("SearchByDate", SearchByDate);
