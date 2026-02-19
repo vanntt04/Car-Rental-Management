@@ -8,10 +8,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Data Access Object cho User entity
- * Model layer - DAO pattern
- */
+
 public class UserDAO {
     private DBConnection dbConnection;
 
@@ -67,11 +64,7 @@ public class UserDAO {
     }
 
     
-    public User getUserByUsername(String username) {
-        // Schema thực tế không có username, nên tìm theo email hoặc trả về null
-        // Có thể dùng email làm username
-        return getUsername(username);
-    }
+
 
     
     public User getUserByPhone(String phone) {
