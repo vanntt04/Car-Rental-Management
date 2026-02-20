@@ -164,16 +164,16 @@
                     <input type="hidden" id="pricePerHour" value="${not empty car.pricePerDay ? car.pricePerDay : BookCar.pricePerDay}" />
 
                     <label>Họ và tên</label>
-                    <input type="text" name="fullName" placeholder="Nguyễn Văn A" required />
+                    <input type="text" name="fullName" placeholder="Nguyễn Văn A"  value="${sessionScope.user.fullName}" required />
 
                     <div class="two-col">
                         <div>
                             <label>Email</label>
-                            <input type="email" name="email" placeholder="example@email.com" required />
+                            <input type="email" name="email" placeholder="example@email.com" value="${sessionScope.user.email}" required />
                         </div>
                         <div>
                             <label>Số điện thoại</label>
-                            <input type="tel" name="phone" placeholder="0123456789" required />
+                            <input type="tel" name="phone" placeholder="0123456789" value="${sessionScope.user.phone}" required />
                         </div>
                     </div>
 

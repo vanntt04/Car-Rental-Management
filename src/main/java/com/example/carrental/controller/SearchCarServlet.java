@@ -6,6 +6,7 @@ package com.example.carrental.controller;
 
 import com.example.carrental.model.dao.CarDAO;
 import com.example.carrental.model.entity.Car;
+import com.example.carrental.model.entity.User;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -113,15 +114,15 @@ public class SearchCarServlet extends HttpServlet {
         String location = request.getParameter("local");
         CarDAO carDAO = new CarDAO();
         List<Car> SearchByDate = null;
+        HttpSession session = request.getSession();
         if (error == null) {
             SearchByDate = carDAO.getCarByDate(location, pickupTime, returnTime);
             if (SearchByDate.isEmpty()) {
                 error = "Không tìm thấy kết quả phù hợp";
             }
-        } else{
+        } else {
             SearchByDate = carDAO.getAllCars();
         }
-        HttpSession session = request.getSession();
         session.setAttribute("error", error);
         session.setAttribute("pickupTime", pickupTime);
         session.setAttribute("returnTime", returnTime);
