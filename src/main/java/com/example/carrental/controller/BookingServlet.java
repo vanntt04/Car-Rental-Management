@@ -4,8 +4,11 @@
  */
 package com.example.carrental.controller;
 
+import com.example.carrental.model.dao.BookingDAO;
 import com.example.carrental.model.dao.CarDAO;
+import com.example.carrental.model.entity.Booking;
 import com.example.carrental.model.entity.Car;
+import com.example.carrental.model.entity.User;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -14,6 +17,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -60,14 +65,23 @@ public class BookingServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession();
-        String carID = request.getParameter("carId");
-        int c = Integer.parseInt(carID);
-        CarDAO car = new CarDAO();
-        Car BookCar = car.getCarById(c);
-        session.setAttribute("BookCar", BookCar);
-        request.getRequestDispatcher(
-                "/WEB-INF/views/car/Booking.jsp"
-        ).forward(request, response);
+        User cus = (User) session.getAttribute("user");
+        if (cus.getRole().equalsIgnoreCase("customer")) {
+            String carID = request.getParameter("carId");
+            int c = Integer.parseInt(carID);
+            CarDAO car = new CarDAO();
+            Car BookCar = car.getCarById(c);
+            session.setAttribute("BookCar", BookCar);
+            request.getRequestDispatcher(
+                    "/WEB-INF/views/car/Booking.jsp"
+            ).forward(request, response);
+        } else {
+            String error = "Đăng nhập với customer để booking";
+            session.setAttribute("error", error);
+            request.getRequestDispatcher(
+                    "/WEB-INF/views/auth/login.jsp"
+            ).forward(request, response);
+        }
     }
 
     /**
@@ -82,24 +96,29 @@ public class BookingServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession();
-        String fullname = request.getParameter("fullName");
-        String email = request.getParameter("email");
-        String phone = request.getParameter("phone");
-        String pickupDate = request.getParameter("pickupTime");
-        String returnDate = request.getParameter("returnTime");
-
-        if (session.getAttribute("ownerId").equals(session.getAttribute("userId"))) {
-            session.setAttribute("fullname", fullname);
-            session.setAttribute("email", email);
-            session.setAttribute("phone", phone);
-            session.setAttribute("pickupDate", pickupDate);
-            session.setAttribute("returnDate", returnDate);
-        } else {
-            String error = "Chưa có xe được đặt ";
-            session.setAttribute("error", error);
+        String note = request.getParameter("returnLocation");
+        LocalDate start_date = LocalDate.parse(request.getParameter("pickupTime"));
+        LocalDate end_date = LocalDate.parse(request.getParameter("returnTime"));
+        BookingDAO book = new BookingDAO();
+        Car car = (Car) session.getAttribute("BookCar");
+        User user = (User) session.getAttribute("user");
+        Booking bookcar = new Booking(123, car.getId(), user.getId(), start_date, end_date, car.getPricePerDay(), "PENDING", LocalDateTime.now());
+        book.insertBooking(bookcar);
+        session.setAttribute("note", note);
+        String total = request.getParameter("totalPrice");
+        Double total_price = 0.0;
+        if (total != null && !total.isEmpty()) {
+            try {
+                total_price = Double.valueOf(total);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
         }
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/user/ManageBookingRequest.jsp");
+        request.setAttribute("total_price", total_price);
+        session.setAttribute("invoice", bookcar);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/Invoice.jsp");
         dispatcher.forward(request, response);
+
     }
 
     /**

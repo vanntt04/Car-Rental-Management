@@ -333,7 +333,7 @@
         <div class="container">
             <div class="car-grid">
                 <c:choose>
-                    <c:when test="${not empty user}">
+                   <c:when test="${not empty user}">
                         <c:choose>
                             <c:when test="${not empty FilterCar}">
                                 <c:forEach var="car" items="${FilterCar}">

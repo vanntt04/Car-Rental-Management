@@ -11,18 +11,19 @@ package com.example.carrental.model.entity;
  */
 import java.util.*;
 import java.lang.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 public class Booking {
     int booking_id , car_id , customer_id;
-    LocalDateTime start_date , end_date;
-    Double Total_price ; 
+    LocalDate start_date , end_date;
+    int Total_price ; 
     String booking_status;
     LocalDateTime created_at;
 
     public Booking() {
     }
 
-    public Booking(int booking_id, int car_id, int customer_id, LocalDateTime start_date, LocalDateTime end_date, Double Total_price, String booking_status, LocalDateTime created_at) {
+    public Booking(int booking_id, int car_id, int customer_id, LocalDate start_date, LocalDate end_date, int Total_price, String booking_status, LocalDateTime created_at) {
         this.booking_id = booking_id;
         this.car_id = car_id;
         this.customer_id = customer_id;
@@ -57,27 +58,27 @@ public class Booking {
         this.customer_id = customer_id;
     }
 
-    public LocalDateTime getStart_date() {
+    public LocalDate getStart_date() {
         return start_date;
     }
 
-    public void setStart_date(LocalDateTime start_date) {
+    public void setStart_date(LocalDate start_date) {
         this.start_date = start_date;
     }
 
-    public LocalDateTime getEnd_date() {
+    public LocalDate getEnd_date() {
         return end_date;
     }
 
-    public void setEnd_date(LocalDateTime end_date) {
+    public void setEnd_date(LocalDate end_date) {
         this.end_date = end_date;
     }
 
-    public Double getTotal_price() {
+    public int getTotal_price() {
         return Total_price;
     }
 
-    public void setTotal_price(Double Total_price) {
+    public void setTotal_price(int Total_price) {
         this.Total_price = Total_price;
     }
 
