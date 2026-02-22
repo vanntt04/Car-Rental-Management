@@ -21,6 +21,26 @@ public class CarDAO {
     }
 
     /**
+     * Lấy xe theo chủ sở hữu (owner)
+     */
+    public List<Car> getCarsByOwnerId(int ownerId) {
+        List<Car> cars = new ArrayList<>();
+        String sql = "SELECT * FROM cars WHERE owner_id = ? ORDER BY id DESC";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ownerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    cars.add(mapResultSetToCar(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting cars by owner: " + e.getMessage());
+        }
+        return cars;
+    }
+
+    /**
      * Lấy tất cả các xe
      */
     public List<Car> getAllCars() {
@@ -72,21 +92,22 @@ public class CarDAO {
      * Thêm xe mới
      */
     public boolean addCar(Car car) {
-        String sql = "INSERT INTO cars (name, license_plate, brand, model, year, color, price_per_day, status, image_url) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO cars (owner_id, name, license_plate, brand, model, year, color, price_per_day, status, image_url) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setString(1, car.getName());
-            pstmt.setString(2, car.getLicensePlate());
-            pstmt.setString(3, car.getBrand());
-            pstmt.setString(4, car.getModel());
-            pstmt.setObject(5, car.getYear(), Types.INTEGER);
-            pstmt.setString(6, car.getColor());
-            pstmt.setBigDecimal(7, car.getPricePerDay());
-            pstmt.setString(8, car.getStatus());
-            pstmt.setString(9, car.getImageUrl());
+            pstmt.setObject(1, car.getOwnerId(), Types.INTEGER);
+            pstmt.setString(2, car.getName());
+            pstmt.setString(3, car.getLicensePlate());
+            pstmt.setString(4, car.getBrand());
+            pstmt.setString(5, car.getModel());
+            pstmt.setObject(6, car.getYear(), Types.INTEGER);
+            pstmt.setString(7, car.getColor());
+            pstmt.setBigDecimal(8, car.getPricePerDay());
+            pstmt.setString(9, car.getStatus());
+            pstmt.setString(10, car.getImageUrl());
             
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -100,23 +121,24 @@ public class CarDAO {
      * Cập nhật thông tin xe
      */
     public boolean updateCar(Car car) {
-        String sql = "UPDATE cars SET name = ?, license_plate = ?, brand = ?, model = ?, " +
+        String sql = "UPDATE cars SET owner_id = ?, name = ?, license_plate = ?, brand = ?, model = ?, " +
                      "year = ?, color = ?, price_per_day = ?, status = ?, image_url = ? " +
                      "WHERE id = ?";
         
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setString(1, car.getName());
-            pstmt.setString(2, car.getLicensePlate());
-            pstmt.setString(3, car.getBrand());
-            pstmt.setString(4, car.getModel());
-            pstmt.setObject(5, car.getYear(), Types.INTEGER);
-            pstmt.setString(6, car.getColor());
-            pstmt.setBigDecimal(7, car.getPricePerDay());
-            pstmt.setString(8, car.getStatus());
-            pstmt.setString(9, car.getImageUrl());
-            pstmt.setInt(10, car.getId());
+            pstmt.setObject(1, car.getOwnerId(), Types.INTEGER);
+            pstmt.setString(2, car.getName());
+            pstmt.setString(3, car.getLicensePlate());
+            pstmt.setString(4, car.getBrand());
+            pstmt.setString(5, car.getModel());
+            pstmt.setObject(6, car.getYear(), Types.INTEGER);
+            pstmt.setString(7, car.getColor());
+            pstmt.setBigDecimal(8, car.getPricePerDay());
+            pstmt.setString(9, car.getStatus());
+            pstmt.setString(10, car.getImageUrl());
+            pstmt.setInt(11, car.getId());
             
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -150,6 +172,12 @@ public class CarDAO {
     private Car mapResultSetToCar(ResultSet rs) throws SQLException {
         Car car = new Car();
         car.setId(rs.getInt("id"));
+        try {
+            int ownerId = rs.getInt("owner_id");
+            car.setOwnerId(rs.wasNull() ? null : ownerId);
+        } catch (SQLException e) {
+            car.setOwnerId(null);
+        }
         car.setName(rs.getString("name"));
         car.setLicensePlate(rs.getString("license_plate"));
         car.setBrand(rs.getString("brand"));

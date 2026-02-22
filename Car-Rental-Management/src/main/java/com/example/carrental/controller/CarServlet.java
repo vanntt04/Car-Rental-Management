@@ -1,7 +1,13 @@
 package com.example.carrental.controller;
 
+import com.example.carrental.model.dao.CarAvailabilityDAO;
 import com.example.carrental.model.dao.CarDAO;
+import com.example.carrental.model.dao.CarImageDAO;
 import com.example.carrental.model.entity.Car;
+import com.example.carrental.model.entity.CarAvailability;
+import com.example.carrental.model.entity.CarImage;
+
+import java.util.List;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,17 +17,20 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.List;
 
 
 @WebServlet(name = "CarServlet", urlPatterns = "/cars")
 public class CarServlet extends HttpServlet {
     private CarDAO carDAO;
+    private CarImageDAO carImageDAO;
+    private CarAvailabilityDAO carAvailabilityDAO;
 
     @Override
     public void init() throws ServletException {
         super.init();
         carDAO = new CarDAO();
+        carImageDAO = new CarImageDAO();
+        carAvailabilityDAO = new CarAvailabilityDAO();
     }
 
     @Override
@@ -75,7 +84,7 @@ public class CarServlet extends HttpServlet {
     }
 
     /**
-     * Hiển thị chi tiết xe
+     * Hiển thị chi tiết xe (cho tất cả user)
      */
     private void showCarDetail(HttpServletRequest request, HttpServletResponse response, int carId)
             throws ServletException, IOException {
@@ -83,7 +92,11 @@ public class CarServlet extends HttpServlet {
         Car car = carDAO.getCarById(carId);
         
         if (car != null) {
+            List<CarImage> images = carImageDAO.getByCarId(carId);
+            List<CarAvailability> availabilities = carAvailabilityDAO.getByCarId(carId);
             request.setAttribute("car", car);
+            request.setAttribute("carImages", images);
+            request.setAttribute("carAvailabilities", availabilities);
             RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/detail.jsp");
             dispatcher.forward(request, response);
         } else {

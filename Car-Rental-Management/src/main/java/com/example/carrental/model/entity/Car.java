@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
  */
 public class Car {
     private int id;
+    private Integer ownerId;
     private String name;
     private String licensePlate;
     private String brand;
@@ -44,6 +45,14 @@ public class Car {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public Integer getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Integer ownerId) {
+        this.ownerId = ownerId;
     }
 
     public String getName() {
