@@ -19,6 +19,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -71,7 +73,9 @@ public class BookingServlet extends HttpServlet {
             int c = Integer.parseInt(carID);
             CarDAO car = new CarDAO();
             Car BookCar = car.getCarById(c);
-            session.setAttribute("BookCar", BookCar);
+            List<Car> BookList = new ArrayList();
+            BookList.add(BookCar);
+            session.setAttribute("BookCar", BookList);
             request.getRequestDispatcher(
                     "/WEB-INF/views/car/Booking.jsp"
             ).forward(request, response);
@@ -105,16 +109,10 @@ public class BookingServlet extends HttpServlet {
         Booking bookcar = new Booking(123, car.getId(), user.getId(), start_date, end_date, car.getPricePerDay(), "PENDING", LocalDateTime.now());
         book.insertBooking(bookcar);
         session.setAttribute("note", note);
-        String total = request.getParameter("totalPrice");
-        Double total_price = 0.0;
-        if (total != null && !total.isEmpty()) {
-            try {
-                total_price = Double.valueOf(total);
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
-        }
-        request.setAttribute("total_price", total_price);
+        long days = java.time.temporal.ChronoUnit.DAYS.between(start_date, end_date);
+        int pricePerDay = car.getPricePerDay();
+        int totalPrice = (int) (days * pricePerDay);
+        request.setAttribute("total_price", totalPrice);
         session.setAttribute("invoice", bookcar);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/Invoice.jsp");
         dispatcher.forward(request, response);

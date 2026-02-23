@@ -190,6 +190,20 @@
                     </tr>
                 </table>
             </div>
+            <div style="text-align: center; margin-top: 25px;">
+                <a href="${pageContext.request.contextPath}/home"
+                   style="
+                   display: inline-block;
+                   padding: 12px 25px;
+                   background: #4caf50;
+                   color: white;
+                   text-decoration: none;
+                   border-radius: 8px;
+                   font-weight: 600;
+                   ">
+                    ← Quay về trang chủ
+                </a>
+            </div>
         </div>
 
     </body>
