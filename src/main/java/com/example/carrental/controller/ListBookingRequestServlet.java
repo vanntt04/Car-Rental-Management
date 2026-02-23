@@ -4,7 +4,12 @@
  */
 package com.example.carrental.controller;
 
+import com.example.carrental.model.dao.BookingDAO;
+import com.example.carrental.model.dao.CarDAO;
+import com.example.carrental.model.dao.UserDAO;
+import com.example.carrental.model.entity.Booking;
 import com.example.carrental.model.entity.Car;
+import com.example.carrental.model.entity.User;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -13,6 +18,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
 
 /**
  *
@@ -58,7 +64,26 @@ public class ListBookingRequestServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-   
+
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        BookingDAO bookDAO = new BookingDAO();
+        List<Booking> bookingList = bookDAO.getBookCarByOwen(currentUser.getId());
+
+        if (bookingList == null || bookingList.isEmpty()) {
+            request.setAttribute("error", "Chưa có yêu cầu booking nào");
+        }
+
+        request.setAttribute("bookingList", bookingList);
+
+        request.getRequestDispatcher("/WEB-INF/views/user/ManageBookingRequest.jsp")
+                .forward(request, response);
     }
 
     /**

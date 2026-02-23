@@ -23,7 +23,7 @@ public class BookingDAO {
     }
 
     public int insertBooking(Booking booking) {
-        String sql = "INSERT INTO bookings (booking_id ,car_id, customer_id, start_time, end_time, total_price,booking_status,created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO bookings (booking_id ,car_id, customer_id, start_date, end_date, total_price,booking_status,created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -47,4 +47,67 @@ public class BookingDAO {
         }
         return -1;
     }
+
+    public List<Booking> getAllBookCars() {
+        List<Booking> book = new ArrayList<>();
+        String sql = "SELECT c.*  FROM booking c ";
+
+        try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                book.add(mapResultSetToCar(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting all cars: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return book;
+    }
+     public List<Booking> getBookCarByOwen(int owen_id) {
+
+        String sql = "SELECT c.* "
+                + "FROM cars c "
+                + "LEFT JOIN booking i ON c.car_id = i.car_id "
+                + "WHERE c.owner_id = ?";
+
+        List<Booking> cars = new ArrayList<>();
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, owen_id);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Booking book = mapResultSetToCar(rs);
+                cars.add(book);
+            }
+
+            rs.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return cars;
+    }
+
+    private Booking mapResultSetToCar(ResultSet rs) throws SQLException {
+        Booking book = new Booking();
+        book.setBooking_id(rs.getInt("booking_id"));
+        book.setBooking_status(rs.getString("booking_status"));
+        book.setCar_id(rs.getInt("car_id"));
+        book.setCustomer_id(rs.getInt("customer_id"));
+        book.setStart_date(rs.getObject("start_date", LocalDate.class));
+        book.setTotal_price(rs.getInt("total_price"));
+        book.setEnd_date(rs.getObject("end_date", LocalDate.class));
+        book.setCreated_at(LocalDateTime.now());
+
+        Timestamp createdAt = rs.getTimestamp("created_at");
+        if (createdAt != null) {
+            book.setCreated_at(createdAt.toLocalDateTime());
+        }
+        return book;
+    }
+
 }

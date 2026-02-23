@@ -8,42 +8,101 @@
         <title>Quản lý yêu cầu đặt xe</title>
 
         <style>
-            body{
-                font-family: system-ui, sans-serif;
-                background:#f3f4f6;
-                padding:30px;
+            *{
+                margin:0;
+                padding:0;
+                box-sizing:border-box;
             }
 
-            h2{
+            body{
+                font-family: 'Segoe UI', sans-serif;
+                background:#f8fafc;
+            }
+
+            /* Header */
+            .header{
+                background:#111827;
+                color:white;
+                padding:18px 40px;
+                font-size:20px;
+                font-weight:600;
+            }
+
+            /* Container */
+            .container{
+                padding:40px;
+            }
+
+            .card{
+                background:white;
+                border-radius:12px;
+                padding:25px;
+                box-shadow:0 6px 20px rgba(0,0,0,0.08);
+            }
+
+            .card h2{
                 margin-bottom:20px;
+                font-size:22px;
             }
 
             table{
                 width:100%;
                 border-collapse:collapse;
-                background:white;
-                border-radius:10px;
-                overflow:hidden;
-                box-shadow:0 4px 12px rgba(0,0,0,0.1);
-            }
-
-            th, td{
-                padding:12px;
-                text-align:center;
-                border-bottom:1px solid #eee;
             }
 
             th{
-                background:#111827;
-                color:white;
+                background:#f1f5f9;
+                padding:14px;
+                text-align:left;
+                font-size:14px;
+                color:#475569;
+                border-bottom:2px solid #e2e8f0;
             }
 
-            .btn{
+            td{
+                padding:14px;
+                border-bottom:1px solid #e2e8f0;
+                font-size:14px;
+                color:#334155;
+            }
+
+            tr:hover{
+                background:#f9fafb;
+            }
+
+            /* Badge trạng thái */
+            .badge{
                 padding:6px 12px;
+                border-radius:20px;
+                font-size:12px;
+                font-weight:600;
+                display:inline-block;
+            }
+
+            .pending{
+                background:#fef3c7;
+                color:#b45309;
+            }
+
+            .accepted{
+                background:#dcfce7;
+                color:#166534;
+            }
+
+            .rejected{
+                background:#fee2e2;
+                color:#991b1b;
+            }
+
+            /* Buttons */
+            .btn{
+                padding:6px 14px;
                 border:none;
                 border-radius:6px;
+                font-size:13px;
                 cursor:pointer;
                 font-weight:600;
+                transition:0.2s;
             }
 
             .accept{
@@ -51,68 +110,79 @@
                 color:white;
             }
 
+            .accept:hover{
+                background:#059669;
+            }
+
             .reject{
                 background:#ef4444;
                 color:white;
             }
 
-            .status-pending{
-                color:#f59e0b;
-                font-weight:bold;
+            .reject:hover{
+                background:#dc2626;
             }
 
-            .status-accepted{
-                color:#10b981;
-                font-weight:bold;
+            .error-box{
+                background:#fee2e2;
+                color:#991b1b;
+                padding:12px;
+                border-radius:6px;
+                margin-bottom:20px;
+                font-weight:600;
             }
-
-            .status-rejected{
-                color:#ef4444;
-                font-weight:bold;
-            }
-
         </style>
     </head>
 
     <body>
 
-        <h2>Danh sách yêu cầu đặt xe</h2>
+        <div class="header">
+            🚗 Admin Dashboard - Quản lý yêu cầu đặt xe
+        </div>
+        <div class="container">
+            <div class="card">
+                <h2>Danh sách yêu cầu đặt xe</h2>
 
-        <table>
-            <tr>
-                <th>Khách hàng</th>
-                <th>Xe</th>
-                <th>Ngày nhận</th>
-                <th>Ngày trả</th>
-                <th>Trạng thái</th>
-                <th>Hành động</th>
-            </tr>
-            <c:choose>
-                <c:when test="${not empty user}">
-                    <c:forEach var="booking" items="${bookingList}">
+                <c:if test="${not empty error}">
+                    <div class="error-box">
+                        ${error}
+                    </div>
+                </c:if>
+
+                <table>
+                    <tr>
+                        <th>Khách hàng</th>
+                        <th>Xe</th>
+                        <th>Ngày nhận</th>
+                        <th>Ngày trả</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+
+                    <c:forEach var="book" items="${bookingList}">
                         <tr>
-                            <td>${booking.customerName}</td>
-                            <td>${booking.carName}</td>
-                            <td>${booking.startDate}</td>
-                            <td>${booking.endDate}</td>
+                            <td>${book.customer_id}</td>
+                            <td>${book.car_id}</td>
+                            <td>${book.start_date}</td>
+                            <td>${book.end_date}</td>
 
                             <td>
-                                <span class="status-${booking.status.toLowerCase()}">
-                                    ${booking.status}
+                                <span class="badge ${book.booking_status.toLowerCase()}">
+                                    ${book.booking_status}
                                 </span>
                             </td>
 
                             <td>
-                                <c:if test="${booking.status == 'PENDING'}">
+                                <c:if test="${book.booking_status == 'PENDING'}">
 
                                     <form action="${pageContext.request.contextPath}/bookingAction" method="post" style="display:inline;">
-                                        <input type="hidden" name="bookingId" value="${booking.id}">
+                                        <input type="hidden" name="bookingId" value="${book.booking_id}">
                                         <input type="hidden" name="action" value="accept">
                                         <button class="btn accept">Accept</button>
                                     </form>
 
                                     <form action="${pageContext.request.contextPath}/bookingAction" method="post" style="display:inline;">
-                                        <input type="hidden" name="bookingId" value="${booking.id}">
+                                        <input type="hidden" name="bookingId" value="${book.booking_id}">
                                         <input type="hidden" name="action" value="reject">
                                         <button class="btn reject">Reject</button>
                                     </form>
@@ -121,17 +191,10 @@
                             </td>
                         </tr>
                     </c:forEach>
-                </c:when>
-                <c:otherwise>
-                    <c:if test="${not empty error}">
-                        <div style="color:red; font-weight:600; padding:10px 32px;">
-                            ${error}
-                        </div>
-                    </c:if>
-                </c:otherwise>
-            </c:choose>
 
-        </table>
+                </table>
+            </div>
+        </div>
 
     </body>
 </html>
