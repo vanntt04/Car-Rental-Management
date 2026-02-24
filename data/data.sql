@@ -2,253 +2,186 @@ DROP DATABASE IF EXISTS car_rental_db;
 CREATE DATABASE car_rental_db;
 USE car_rental_db;
 
--- =============================================
--- 1. Roles (Giữ nguyên 4 quyền cơ bản)
--- =============================================
+-- =============================
+-- ROLES
+-- =============================
 CREATE TABLE roles (
     role_id INT AUTO_INCREMENT PRIMARY KEY,
-    role_name VARCHAR(20) NOT NULL UNIQUE
+    role_name VARCHAR(20) UNIQUE NOT NULL
 );
 
-INSERT INTO roles (role_name) VALUES
-('GUEST'), ('CUSTOMER'), ('OWNER'), ('ADMIN');
+INSERT INTO roles (role_name)
+VALUES ('ADMIN'),('OWNER'),('CUSTOMER');
 
--- =============================================
--- 2. Users (Đã thêm cột USERNAME, tạo 15 users)
--- =============================================
+-- =============================
+-- USERS
+-- =============================
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE, -- Cột mới thêm
+    username VARCHAR(50) UNIQUE NOT NULL,
     full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     phone VARCHAR(15),
     status ENUM('ACTIVE','BLOCKED') DEFAULT 'ACTIVE',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-INSERT INTO users (username, full_name, email, password, phone, status) VALUES
--- 1 Admin
-('admin_main', 'Nguyễn Quản Trị', 'admin@rental.com', 'pass123', '0900000001', 'ACTIVE'),
--- 4 Owners (Chủ xe)
-('owner_hung', 'Trần Văn Hùng', 'hung@owner.com', 'pass123', '0900000002', 'ACTIVE'),
-('owner_lan', 'Lê Thị Lan', 'lan@owner.com', 'pass123', '0900000003', 'ACTIVE'),
-('owner_minh', 'Phạm Nhật Minh', 'minh@owner.com', 'pass123', '0900000004', 'ACTIVE'),
-('owner_tuan', 'Hoàng Anh Tuấn', 'tuan@owner.com', 'pass123', '0900000005', 'ACTIVE'),
--- 10 Customers (Khách thuê)
-('cust_an', 'Nguyễn Văn An', 'an@cust.com', 'pass123', '0900000006', 'ACTIVE'),
-('cust_binh', 'Trần Thanh Bình', 'binh@cust.com', 'pass123', '0900000007', 'ACTIVE'),
-('cust_cuong', 'Lý Quốc Cường', 'cuong@cust.com', 'pass123', '0900000008', 'ACTIVE'),
-('cust_dung', 'Phạm Tiến Dũng', 'dung@cust.com', 'pass123', '0900000009', 'ACTIVE'),
-('cust_hanh', 'Lê Mỹ Hạnh', 'hanh@cust.com', 'pass123', '0900000010', 'ACTIVE'),
-('cust_hoa', 'Vũ Thị Hoa', 'hoa@cust.com', 'pass123', '0900000011', 'ACTIVE'),
-('cust_khoi', 'Đặng Đăng Khôi', 'khoi@cust.com', 'pass123', '0900000012', 'ACTIVE'),
-('cust_linh', 'Ngô Thùy Linh', 'linh@cust.com', 'pass123', '0900000013', 'ACTIVE'),
-('cust_nam', 'Bùi Phương Nam', 'nam@cust.com', 'pass123', '0900000014', 'ACTIVE'),
-('cust_phuc', 'Đỗ Hoàng Phúc', 'phuc@cust.com', 'pass123', '0900000015', 'ACTIVE');
+-- 1 ADMIN
+-- 2 OWNER
+-- 12 CUSTOMER  (Total = 15 users)
 
--- =============================================
--- 3. User Roles (Phân quyền cho 15 users)
--- =============================================
+INSERT INTO users (username, full_name, email, password, phone) VALUES
+('admin','System Admin','admin@mail.com','123456','0900000000'),
+('owner1','Owner One','owner1@mail.com','123456','0900000001'),
+('owner2','Owner Two','owner2@mail.com','123456','0900000002'),
+
+('cust1','Customer 1','cust1@mail.com','123456','0900000011'),
+('cust2','Customer 2','cust2@mail.com','123456','0900000012'),
+('cust3','Customer 3','cust3@mail.com','123456','0900000013'),
+('cust4','Customer 4','cust4@mail.com','123456','0900000014'),
+('cust5','Customer 5','cust5@mail.com','123456','0900000015'),
+('cust6','Customer 6','cust6@mail.com','123456','0900000016'),
+('cust7','Customer 7','cust7@mail.com','123456','0900000017'),
+('cust8','Customer 8','cust8@mail.com','123456','0900000018'),
+('cust9','Customer 9','cust9@mail.com','123456','0900000019'),
+('cust10','Customer 10','cust10@mail.com','123456','0900000020'),
+('cust11','Customer 11','cust11@mail.com','123456','0900000021'),
+('cust12','Customer 12','cust12@mail.com','123456','0900000022');
+
+-- =============================
+-- USER ROLES
+-- =============================
 CREATE TABLE user_roles (
-    user_id INT NOT NULL,
-    role_id INT NOT NULL,
-    PRIMARY KEY (user_id, role_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE CASCADE
+    user_id INT,
+    role_id INT,
+    PRIMARY KEY(user_id,role_id),
+    FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY(role_id) REFERENCES roles(role_id) ON DELETE CASCADE
 );
 
-INSERT INTO user_roles (user_id, role_id) VALUES
-(1, 4), -- Admin
-(2, 3), (3, 3), (4, 3), (5, 3), -- Owners
-(6, 2), (7, 2), (8, 2), (9, 2), (10, 2), -- Customers
-(11, 2), (12, 2), (13, 2), (14, 2), (15, 2);
+-- ADMIN
+INSERT INTO user_roles VALUES (1,1);
 
--- =============================================
--- 4. Cars (15 xe, thuộc về các owner id 2,3,4,5)
--- =============================================
+-- OWNERS
+INSERT INTO user_roles VALUES (2,2),(3,2);
+
+-- CUSTOMERS
+INSERT INTO user_roles VALUES
+(4,3),(5,3),(6,3),(7,3),(8,3),(9,3),
+(10,3),(11,3),(12,3),(13,3),(14,3),(15,3);
+
+-- =============================
+-- CARS (15 cars)
+-- =============================
 CREATE TABLE cars (
     car_id INT AUTO_INCREMENT PRIMARY KEY,
     owner_id INT NOT NULL,
-    car_name VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    license_plate VARCHAR(20) UNIQUE NOT NULL,
     brand VARCHAR(50),
     model VARCHAR(50),
-    price_per_day DECIMAL(10,2) NOT NULL,
-    location VARCHAR(100),
-    status ENUM('AVAILABLE','UNAVAILABLE') DEFAULT 'AVAILABLE',
-    description TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_id) REFERENCES users(user_id)
+    year INT,
+    color VARCHAR(30),
+    seats INT DEFAULT 4,
+    transmission ENUM('AUTO','MANUAL'),
+    fuel_type ENUM('PETROL','DIESEL','ELECTRIC'),
+    price_per_day DECIMAL(12,2) NOT NULL,
+    status ENUM('ACTIVE','INACTIVE','MAINTENANCE') DEFAULT 'ACTIVE',
+    FOREIGN KEY(owner_id) REFERENCES users(user_id)
 );
 
-INSERT INTO cars (owner_id, car_name, brand, model, price_per_day, location, status) VALUES
-(2, 'Toyota Vios E', 'Toyota', 'Vios', 600000, 'Hà Nội', 'AVAILABLE'),
-(2, 'Hyundai Accent', 'Hyundai', 'Accent', 650000, 'Hà Nội', 'AVAILABLE'),
-(2, 'Kia Cerato', 'Kia', 'Cerato', 700000, 'Hà Nội', 'UNAVAILABLE'),
-(2, 'Mazda 3 Luxury', 'Mazda', '3', 800000, 'Hà Nội', 'AVAILABLE'),
-(3, 'Honda City RS', 'Honda', 'City', 700000, 'TP.HCM', 'AVAILABLE'),
-(3, 'VinFast Lux A', 'VinFast', 'Lux A', 1100000, 'TP.HCM', 'AVAILABLE'),
-(3, 'Mercedes C200', 'Mercedes', 'C-Class', 2500000, 'TP.HCM', 'AVAILABLE'),
-(3, 'Toyota Camry', 'Toyota', 'Camry', 1500000, 'TP.HCM', 'AVAILABLE'),
-(4, 'Ford Ranger XLS', 'Ford', 'Ranger', 900000, 'Đà Nẵng', 'AVAILABLE'),
-(4, 'Mitsubishi Xpander', 'Mitsubishi', 'Xpander', 800000, 'Đà Nẵng', 'AVAILABLE'),
-(4, 'Toyota Fortuner', 'Toyota', 'Fortuner', 1200000, 'Đà Nẵng', 'UNAVAILABLE'),
-(4, 'Kia Sedona', 'Kia', 'Sedona', 1400000, 'Đà Nẵng', 'AVAILABLE'),
-(5, 'VinFast VF8', 'VinFast', 'VF8', 1200000, 'Cần Thơ', 'AVAILABLE'),
-(5, 'Hyundai SantaFe', 'Hyundai', 'SantaFe', 1300000, 'Cần Thơ', 'AVAILABLE'),
-(5, 'Mazda CX-5', 'Mazda', 'CX-5', 1000000, 'Cần Thơ', 'AVAILABLE');
+INSERT INTO cars
+(owner_id,name,license_plate,brand,model,year,color,seats,transmission,fuel_type,price_per_day)
+VALUES
+(2,'Toyota Altis','30A-11111','Toyota','Altis',2023,'White',5,'AUTO','PETROL',900000),
+(2,'Kia K3','30A-22222','Kia','K3',2023,'Red',5,'AUTO','PETROL',950000),
+(2,'Mazda 6','30A-33333','Mazda','6',2022,'Black',5,'AUTO','PETROL',1200000),
+(2,'Hyundai Tucson','30A-44444','Hyundai','Tucson',2022,'White',5,'AUTO','PETROL',1300000),
+(2,'Honda CRV','30A-55555','Honda','CRV',2023,'Blue',5,'AUTO','PETROL',1500000),
 
--- =============================================
--- 5. Car Images (15 ảnh tương ứng 15 xe)
--- =============================================
-CREATE TABLE car_images (
-    image_id INT AUTO_INCREMENT PRIMARY KEY,
-    car_id INT NOT NULL,
-    image_url VARCHAR(255) NOT NULL,
-    FOREIGN KEY (car_id) REFERENCES cars(car_id) ON DELETE CASCADE
-);
+(3,'Ford Everest','30B-11111','Ford','Everest',2023,'Grey',7,'AUTO','DIESEL',1800000),
+(3,'Vinfast VF9','30B-22222','Vinfast','VF9',2024,'Black',7,'AUTO','ELECTRIC',2000000),
+(3,'Toyota Hilux','30B-33333','Toyota','Hilux',2022,'Silver',5,'MANUAL','DIESEL',1400000),
+(3,'Mitsubishi Attrage','30B-44444','Mitsubishi','Attrage',2021,'White',5,'AUTO','PETROL',600000),
+(3,'BMW 320i','30B-55555','BMW','320i',2023,'Black',5,'AUTO','PETROL',3000000),
 
-INSERT INTO car_images (car_id, image_url) VALUES
-(1, 'img/vios.jpg'), (2, 'img/accent.jpg'), (3, 'img/cerato.jpg'), (4, 'img/mazda3.jpg'),
-(5, 'img/city.jpg'), (6, 'img/luxa.jpg'), (7, 'img/c200.jpg'), (8, 'img/camry.jpg'),
-(9, 'img/ranger.jpg'), (10, 'img/xpander.jpg'), (11, 'img/fortuner.jpg'), (12, 'img/sedona.jpg'),
-(13, 'img/vf8.jpg'), (14, 'img/santafe.jpg'), (15, 'img/cx5.jpg');
+(2,'Mercedes GLC','30C-11111','Mercedes','GLC',2023,'White',5,'AUTO','PETROL',3500000),
+(2,'Audi A6','30C-22222','Audi','A6',2023,'Black',5,'AUTO','PETROL',3200000),
+(2,'Suzuki XL7','30C-33333','Suzuki','XL7',2022,'Orange',7,'AUTO','PETROL',900000),
+(3,'Toyota Innova','30C-44444','Toyota','Innova',2022,'Silver',7,'MANUAL','PETROL',1000000),
+(3,'Hyundai i10','30C-55555','Hyundai','i10',2021,'White',5,'AUTO','PETROL',500000);
 
--- =============================================
--- 6. Car Availability (Lịch trống cho 15 xe)
--- =============================================
-CREATE TABLE car_availability (
-    availability_id INT AUTO_INCREMENT PRIMARY KEY,
-    car_id INT NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    status ENUM('AVAILABLE','BOOKED') DEFAULT 'AVAILABLE',
-    FOREIGN KEY (car_id) REFERENCES cars(car_id) ON DELETE CASCADE
-);
-
-INSERT INTO car_availability (car_id, start_date, end_date, status) VALUES
-(1, '2023-11-01', '2023-11-30', 'AVAILABLE'),
-(2, '2023-11-01', '2023-11-30', 'AVAILABLE'),
-(3, '2023-11-01', '2023-11-05', 'BOOKED'),
-(4, '2023-12-01', '2023-12-31', 'AVAILABLE'),
-(5, '2023-11-10', '2023-11-20', 'AVAILABLE'),
-(6, '2023-11-01', '2023-11-30', 'AVAILABLE'),
-(7, '2023-12-24', '2023-12-26', 'BOOKED'),
-(8, '2023-11-01', '2023-11-30', 'AVAILABLE'),
-(9, '2023-11-01', '2023-11-30', 'AVAILABLE'),
-(10, '2023-11-15', '2023-11-18', 'BOOKED'),
-(11, '2023-11-01', '2023-11-30', 'BOOKED'),
-(12, '2023-11-01', '2023-11-30', 'AVAILABLE'),
-(13, '2023-11-01', '2023-11-30', 'AVAILABLE'),
-(14, '2023-11-01', '2023-11-30', 'AVAILABLE'),
-(15, '2023-11-01', '2023-11-30', 'AVAILABLE');
-
--- =============================================
--- 7. Bookings (15 đơn đặt xe)
--- =============================================
+-- =============================
+-- BOOKINGS (15 bookings)
+-- =============================
 CREATE TABLE bookings (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
     car_id INT NOT NULL,
     customer_id INT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    total_price DECIMAL(10,2) NOT NULL,
-    booking_status ENUM('PENDING','APPROVED','CANCELLED','COMPLETED') DEFAULT 'PENDING',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (car_id) REFERENCES cars(car_id),
-    FOREIGN KEY (customer_id) REFERENCES users(user_id)
+    total_days INT NOT NULL,
+    total_price DECIMAL(12,2) NOT NULL,
+    booking_status ENUM('PENDING','APPROVED','REJECTED','CANCELLED','COMPLETED')
+        DEFAULT 'PENDING',
+    FOREIGN KEY(car_id) REFERENCES cars(car_id),
+    FOREIGN KEY(customer_id) REFERENCES users(user_id),
+    CHECK (end_date >= start_date)
 );
 
-INSERT INTO bookings (car_id, customer_id, start_date, end_date, total_price, booking_status) VALUES
-(1, 6, '2023-10-01', '2023-10-03', 1200000, 'COMPLETED'),
-(2, 7, '2023-10-05', '2023-10-06', 650000, 'COMPLETED'),
-(3, 8, '2023-11-01', '2023-11-05', 3500000, 'APPROVED'),
-(4, 9, '2023-11-10', '2023-11-12', 1600000, 'PENDING'),
-(5, 10, '2023-11-20', '2023-11-21', 700000, 'CANCELLED'),
-(6, 11, '2023-12-01', '2023-12-05', 5500000, 'APPROVED'),
-(7, 12, '2023-12-24', '2023-12-26', 5000000, 'APPROVED'),
-(8, 13, '2023-10-15', '2023-10-17', 3000000, 'COMPLETED'),
-(9, 14, '2023-11-15', '2023-11-16', 900000, 'PENDING'),
-(10, 15, '2023-11-15', '2023-11-18', 2400000, 'APPROVED'),
-(11, 6, '2023-11-01', '2023-11-05', 6000000, 'APPROVED'), -- Xe 11 giá cao
-(12, 7, '2023-11-22', '2023-11-23', 1400000, 'PENDING'),
-(13, 8, '2023-12-30', '2024-01-01', 3600000, 'PENDING'),
-(14, 9, '2023-10-20', '2023-10-22', 2600000, 'COMPLETED'),
-(15, 10, '2023-11-28', '2023-11-30', 2000000, 'PENDING');
+INSERT INTO bookings
+(car_id,customer_id,start_date,end_date,total_days,total_price,booking_status)
+VALUES
+(1,4,'2025-01-01','2025-01-03',3,2700000,'APPROVED'),
+(2,5,'2025-01-05','2025-01-07',3,2850000,'COMPLETED'),
+(3,6,'2025-01-10','2025-01-12',3,3600000,'APPROVED'),
+(4,7,'2025-01-15','2025-01-17',3,3900000,'PENDING'),
+(5,8,'2025-01-20','2025-01-22',3,4500000,'APPROVED'),
 
--- =============================================
--- 8. Booking History (15 dòng lịch sử)
--- =============================================
-CREATE TABLE booking_history (
-    history_id INT AUTO_INCREMENT PRIMARY KEY,
-    booking_id INT NOT NULL,
-    status VARCHAR(30),
-    note TEXT,
-    changed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (booking_id) REFERENCES bookings(booking_id) ON DELETE CASCADE
-);
+(6,9,'2025-02-01','2025-02-03',3,5400000,'APPROVED'),
+(7,10,'2025-02-05','2025-02-07',3,6000000,'APPROVED'),
+(8,11,'2025-02-10','2025-02-12',3,4200000,'PENDING'),
+(9,12,'2025-02-15','2025-02-17',3,1800000,'APPROVED'),
+(10,13,'2025-02-20','2025-02-22',3,9000000,'COMPLETED'),
 
-INSERT INTO booking_history (booking_id, status, note) VALUES
-(1, 'COMPLETED', 'Khách trả xe đúng hạn'),
-(2, 'COMPLETED', 'Xe hơi bẩn khi trả'),
-(3, 'APPROVED', 'Đã nhận cọc 50%'),
-(4, 'PENDING', 'Khách hẹn xem xe trước'),
-(5, 'CANCELLED', 'Khách bận việc đột xuất'),
-(6, 'APPROVED', 'Chủ xe đã xác nhận'),
-(7, 'APPROVED', 'Đặt lịch Noel'),
-(8, 'COMPLETED', 'Hài lòng'),
-(9, 'PENDING', 'Chờ chuyển khoản'),
-(10, 'APPROVED', 'Đã xác nhận lịch'),
-(11, 'APPROVED', 'Thuê dài ngày'),
-(12, 'PENDING', 'Đang thương lượng giá'),
-(13, 'PENDING', 'Đặt lịch Tết Dương'),
-(14, 'COMPLETED', 'Không có vấn đề gì'),
-(15, 'PENDING', 'Mới tạo yêu cầu');
+(11,14,'2025-03-01','2025-03-03',3,10500000,'APPROVED'),
+(12,15,'2025-03-05','2025-03-07',3,9600000,'APPROVED'),
+(13,4,'2025-03-10','2025-03-12',3,2700000,'PENDING'),
+(14,5,'2025-03-15','2025-03-17',3,3000000,'APPROVED'),
+(15,6,'2025-03-20','2025-03-22',3,1500000,'COMPLETED');
 
--- =============================================
--- 9. Payments (15 giao dịch)
--- =============================================
+-- =============================
+-- PAYMENTS (15 payments)
+-- =============================
 CREATE TABLE payments (
     payment_id INT AUTO_INCREMENT PRIMARY KEY,
     booking_id INT NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
+    amount DECIMAL(12,2) NOT NULL,
     payment_method ENUM('CASH','MOMO','VNPAY','PAYPAL'),
-    payment_status ENUM('PAID','UNPAID','REFUNDED') DEFAULT 'UNPAID',
+    payment_status ENUM('UNPAID','PAID','REFUNDED') DEFAULT 'UNPAID',
     paid_at DATETIME,
-    FOREIGN KEY (booking_id) REFERENCES bookings(booking_id)
+    FOREIGN KEY(booking_id) REFERENCES bookings(booking_id)
 );
 
-INSERT INTO payments (booking_id, amount, payment_method, payment_status, paid_at) VALUES
-(1, 1200000, 'CASH', 'PAID', '2023-10-03 12:00:00'),
-(2, 650000, 'MOMO', 'PAID', '2023-10-06 14:00:00'),
-(3, 1750000, 'VNPAY', 'PAID', '2023-10-31 09:00:00'), -- Cọc 50%
-(4, 0, 'CASH', 'UNPAID', NULL),
-(5, 0, 'MOMO', 'REFUNDED', '2023-11-20 08:00:00'),
-(6, 5500000, 'PAYPAL', 'PAID', '2023-11-30 20:00:00'),
-(7, 5000000, 'VNPAY', 'PAID', '2023-12-20 10:00:00'),
-(8, 3000000, 'CASH', 'PAID', '2023-10-17 16:00:00'),
-(9, 0, 'MOMO', 'UNPAID', NULL),
-(10, 2400000, 'VNPAY', 'PAID', '2023-11-14 11:00:00'),
-(11, 3000000, 'CASH', 'PAID', '2023-11-01 07:00:00'), -- Cọc trước
-(12, 0, 'CASH', 'UNPAID', NULL),
-(13, 1000000, 'MOMO', 'PAID', '2023-12-29 18:00:00'), -- Cọc
-(14, 2600000, 'PAYPAL', 'PAID', '2023-10-22 13:00:00'),
-(15, 0, 'VNPAY', 'UNPAID', NULL);
+INSERT INTO payments
+(booking_id,amount,payment_method,payment_status,paid_at)
+VALUES
+(1,2700000,'VNPAY','PAID','2024-12-30 10:00:00'),
+(2,2850000,'MOMO','PAID','2025-01-07 15:00:00'),
+(3,3600000,'PAYPAL','PAID','2025-01-09 09:00:00'),
+(4,0,'CASH','UNPAID',NULL),
+(5,4500000,'VNPAY','PAID','2025-01-19 11:00:00'),
 
--- =============================================
--- 10. Indexes & Views (Giữ nguyên View doanh thu)
--- =============================================
-CREATE INDEX idx_booking_car ON bookings(car_id);
-CREATE INDEX idx_booking_customer ON bookings(customer_id);
-CREATE INDEX idx_car_owner ON cars(owner_id);
+(6,5400000,'PAYPAL','PAID','2025-01-30 18:00:00'),
+(7,6000000,'MOMO','PAID','2025-02-07 20:00:00'),
+(8,0,'CASH','UNPAID',NULL),
+(9,1800000,'CASH','PAID','2025-02-14 10:00:00'),
+(10,9000000,'MOMO','PAID','2025-02-22 19:00:00'),
 
-CREATE VIEW revenue_report AS
-SELECT 
-    c.car_id,
-    c.car_name,
-    SUM(p.amount) AS total_revenue
-FROM payments p
-JOIN bookings b ON p.booking_id = b.booking_id
-JOIN cars c ON b.car_id = c.car_id
-WHERE p.payment_status = 'PAID'
-GROUP BY c.car_id, c.car_name;
+(11,10500000,'PAYPAL','PAID','2025-02-28 21:00:00'),
+(12,9600000,'VNPAY','PAID','2025-03-04 14:00:00'),
+(13,0,'CASH','UNPAID',NULL),
+(14,3000000,'MOMO','PAID','2025-03-14 16:00:00'),
+(15,1500000,'CASH','PAID','2025-03-22 19:00:00');

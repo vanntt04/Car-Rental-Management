@@ -6,8 +6,6 @@ import com.example.carrental.model.dao.CarImageDAO;
 import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.entity.CarAvailability;
 import com.example.carrental.model.entity.CarImage;
-
-import java.util.List;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,204 +14,62 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.math.BigDecimal;
+import java.util.List;
 
-
-@WebServlet(name = "CarServlet", urlPatterns = "/cars")
+/**
+ * Servlet hiển thị danh sách xe (cho khách) và trang chi tiết xe.
+ * GET /cars -> danh sách tất cả xe
+ * GET /cars?id=1 -> chi tiết xe
+ */
+@WebServlet(name = "CarServlet", urlPatterns = { "/cars" })
 public class CarServlet extends HttpServlet {
     private CarDAO carDAO;
     private CarImageDAO carImageDAO;
-    private CarAvailabilityDAO carAvailabilityDAO;
+    private CarAvailabilityDAO availabilityDAO;
 
     @Override
     public void init() throws ServletException {
         super.init();
         carDAO = new CarDAO();
         carImageDAO = new CarImageDAO();
-        carAvailabilityDAO = new CarAvailabilityDAO();
+        availabilityDAO = new CarAvailabilityDAO();
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        String action = request.getParameter("action");
         String idParam = request.getParameter("id");
-
-        try {
-            if (idParam != null && !idParam.isEmpty()) {
-                showCarDetail(request, response, Integer.parseInt(idParam));
-            } else if ("new".equals(action)) {
-                showCarList(request, response);
-            } else {
-                showCarList(request, response);
-            }
-        } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid car ID");
+        if (idParam != null && !idParam.trim().isEmpty()) {
+            try {
+                int carId = Integer.parseInt(idParam.trim());
+                showCarDetail(request, response, carId);
+                return;
+            } catch (NumberFormatException ignored) { }
         }
+        showCarList(request, response);
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        String action = request.getParameter("action");
-
-        if ("create".equals(action)) {
-            createCar(request, response);
-        } else if ("update".equals(action)) {
-            updateCar(request, response);
-        } else if ("delete".equals(action)) {
-            deleteCar(request, response);
-        } else {
-            doGet(request, response);
-        }
-    }
-
-    /**
-     * Hiển thị danh sách xe
-     */
     private void showCarList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
         List<Car> cars = carDAO.getAllCars();
         request.setAttribute("cars", cars);
-        
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/list.jsp");
-        dispatcher.forward(request, response);
+        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/car/list.jsp");
+        rd.forward(request, response);
     }
 
-    /**
-     * Hiển thị chi tiết xe (cho tất cả user)
-     */
     private void showCarDetail(HttpServletRequest request, HttpServletResponse response, int carId)
             throws ServletException, IOException {
-        
         Car car = carDAO.getCarById(carId);
-        
-        if (car != null) {
-            List<CarImage> images = carImageDAO.getByCarId(carId);
-            List<CarAvailability> availabilities = carAvailabilityDAO.getByCarId(carId);
-            request.setAttribute("car", car);
-            request.setAttribute("carImages", images);
-            request.setAttribute("carAvailabilities", availabilities);
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/detail.jsp");
-            dispatcher.forward(request, response);
-        } else {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Car not found");
+        if (car == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy xe");
+            return;
         }
-    }
-
-    /**
-     * Tạo xe mới
-     */
-    private void createCar(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        try {
-            Car car = new Car();
-            car.setName(request.getParameter("name"));
-            car.setLicensePlate(request.getParameter("licensePlate"));
-            car.setBrand(request.getParameter("brand"));
-            car.setModel(request.getParameter("model"));
-            
-            String yearStr = request.getParameter("year");
-            if (yearStr != null && !yearStr.isEmpty()) {
-                car.setYear(Integer.parseInt(yearStr));
-            }
-            
-            car.setColor(request.getParameter("color"));
-            
-            String priceStr = request.getParameter("pricePerDay");
-            if (priceStr != null && !priceStr.isEmpty()) {
-                car.setPricePerDay(new BigDecimal(priceStr));
-            }
-            
-            car.setStatus(request.getParameter("status") != null ? 
-                         request.getParameter("status") : "AVAILABLE");
-            car.setImageUrl(request.getParameter("imageUrl"));
-            
-            if (carDAO.addCar(car)) {
-                response.sendRedirect(request.getContextPath() + "/cars?success=created");
-            } else {
-                request.setAttribute("error", "Không thể thêm xe mới");
-                showCarList(request, response);
-            }
-        } catch (Exception e) {
-            request.setAttribute("error", "Lỗi: " + e.getMessage());
-            showCarList(request, response);
-        }
-    }
-
-    /**
-     * Cập nhật thông tin xe
-     */
-    private void updateCar(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        try {
-            int carId = Integer.parseInt(request.getParameter("id"));
-            Car car = carDAO.getCarById(carId);
-            
-            if (car != null) {
-                car.setName(request.getParameter("name"));
-                car.setLicensePlate(request.getParameter("licensePlate"));
-                car.setBrand(request.getParameter("brand"));
-                car.setModel(request.getParameter("model"));
-                
-                String yearStr = request.getParameter("year");
-                if (yearStr != null && !yearStr.isEmpty()) {
-                    car.setYear(Integer.parseInt(yearStr));
-                }
-                
-                car.setColor(request.getParameter("color"));
-                
-                String priceStr = request.getParameter("pricePerDay");
-                if (priceStr != null && !priceStr.isEmpty()) {
-                    car.setPricePerDay(new BigDecimal(priceStr));
-                }
-                
-                car.setStatus(request.getParameter("status"));
-                car.setImageUrl(request.getParameter("imageUrl"));
-                
-                if (carDAO.updateCar(car)) {
-                    response.sendRedirect(request.getContextPath() + "/cars?id=" + carId + "&success=updated");
-                } else {
-                    request.setAttribute("error", "Không thể cập nhật thông tin xe");
-                    showCarDetail(request, response, carId);
-                }
-            } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Car not found");
-            }
-        } catch (Exception e) {
-            request.setAttribute("error", "Lỗi: " + e.getMessage());
-            String idParam = request.getParameter("id");
-            if (idParam != null) {
-                showCarDetail(request, response, Integer.parseInt(idParam));
-            } else {
-                showCarList(request, response);
-            }
-        }
-    }
-
-    /**
-     * Xóa xe
-     */
-    private void deleteCar(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        try {
-            int carId = Integer.parseInt(request.getParameter("id"));
-            
-            if (carDAO.deleteCar(carId)) {
-                response.sendRedirect(request.getContextPath() + "/cars?success=deleted");
-            } else {
-                request.setAttribute("error", "Không thể xóa xe");
-                showCarList(request, response);
-            }
-        } catch (Exception e) {
-            request.setAttribute("error", "Lỗi: " + e.getMessage());
-            showCarList(request, response);
-        }
+        List<CarImage> carImages = carImageDAO.getByCarId(carId);
+        List<CarAvailability> carAvailabilities = availabilityDAO.getByCarId(carId);
+        request.setAttribute("car", car);
+        request.setAttribute("carImages", carImages);
+        request.setAttribute("carAvailabilities", carAvailabilities);
+        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/car/detail.jsp");
+        rd.forward(request, response);
     }
 }
