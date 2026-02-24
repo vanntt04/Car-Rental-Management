@@ -73,9 +73,7 @@ public class BookingServlet extends HttpServlet {
             int c = Integer.parseInt(carID);
             CarDAO car = new CarDAO();
             Car BookCar = car.getCarById(c);
-            List<Car> BookList = new ArrayList();
-            BookList.add(BookCar);
-            session.setAttribute("BookCar", BookList);
+            session.setAttribute("BookCar", BookCar);
             request.getRequestDispatcher(
                     "/WEB-INF/views/car/Booking.jsp"
             ).forward(request, response);
