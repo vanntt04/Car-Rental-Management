@@ -1,60 +1,93 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Trang chủ - Car Rental</title>
-    <style>
-        * { box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        h1 { color: #333; margin: 0; }
-        .user-section { display: flex; align-items: center; gap: 1rem; }
-        .user-info { padding: 0.5rem 1rem; background: white; border-radius: 8px; }
-        .user-info strong { color: #4CAF50; }
-        nav { margin-top: 1rem; }
-        nav a { display: inline-block; margin: 0.5rem; padding: 0.75rem 1.5rem; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; }
-        nav a:hover { background: #1d4ed8; }
-        .auth-buttons { margin-top: 1rem; }
-        .btn-login { background: #4CAF50; padding: 0.75rem 1.5rem; color: white; text-decoration: none; border-radius: 8px; display: inline-block; }
-        .btn-login:hover { background: #45a049; }
-        .btn-logout { background: #f44336; padding: 0.75rem 1.5rem; color: white; text-decoration: none; border-radius: 8px; display: inline-block; }
-        .btn-logout:hover { background: #da190b; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ - CarRental | Thuê xe tự lái giá tốt</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="${ctx}/assets/css/woox-customer.css" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>Trang chủ</h1>
-        <div class="user-section">
-            <c:if test="${not empty sessionScope.user}">
-                <div class="user-info">
-                    Xin chào, <strong>${sessionScope.fullName != null ? sessionScope.fullName : sessionScope.username}</strong>
-                    <span style="font-size: 0.85em; color: #666;">(${sessionScope.role})</span>
-                </div>
-            </c:if>
-            <div class="auth-buttons">
-                <c:choose>
-                    <c:when test="${not empty sessionScope.user}">
-                        <a href="<c:url value='/logout'/>" class="btn-logout">Đăng xuất</a>
-                    </c:when>
-                    <c:otherwise>
-                        <a href="<c:url value='/login'/>" class="btn-login">Đăng nhập</a>
-                    </c:otherwise>
-                </c:choose>
+<jsp:include page="layout/header.jsp">
+    <jsp:param name="page" value="home"/>
+</jsp:include>
+
+<!-- Hero - Woox style -->
+<section class="woox-hero">
+    <div class="container">
+        <h1>Thuê xe tự lái</h1>
+        <h2>An toàn · Tiện lợi · Giá tốt</h2>
+        <p class="lead">Đặt xe dễ dàng trong vài phút. Hàng trăm mẫu xe đa dạng đang chờ bạn. Ưu đãi hấp dẫn cho khách hàng mới.</p>
+        <div class="main-button"><a href="${ctx}/cars">Xem danh sách xe</a></div>
+        <div class="border-button"><a href="${ctx}/cars">Đặt xe ngay</a></div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="woox-section">
+    <div class="container">
+        <div class="section-heading text-center">
+            <h2>Vì sao chọn CarRental?</h2>
+            <p>Cam kết mang đến trải nghiệm thuê xe tốt nhất cho bạn</p>
+        </div>
+        <div class="woox-features">
+            <div class="woox-feature">
+                <i class="bi bi-lightning-charge"></i>
+                <h4>Đặt xe nhanh</h4>
+                <p>Chỉ 3 bước đơn giản để hoàn tất đặt xe, xác nhận ngay qua email/SMS.</p>
+            </div>
+            <div class="woox-feature">
+                <i class="bi bi-shield-check"></i>
+                <h4>Xe chất lượng</h4>
+                <p>100% xe được bảo trì định kỳ, đảm bảo an toàn cho mọi chuyến đi.</p>
+            </div>
+            <div class="woox-feature">
+                <i class="bi bi-cash-stack"></i>
+                <h4>Giá tốt nhất</h4>
+                <p>Cam kết giá cạnh tranh, không phát sinh phí ẩn. Thanh toán linh hoạt.</p>
+            </div>
+            <div class="woox-feature">
+                <i class="bi bi-headset"></i>
+                <h4>Hỗ trợ 24/7</h4>
+                <p>Đội ngũ tư vấn luôn sẵn sàng hỗ trợ bạn mọi lúc, mọi nơi.</p>
             </div>
         </div>
     </div>
-    
-    <p>Hệ thống quản lý thuê xe theo mô hình MVC.</p>
-    <nav>
-        <a href="<c:url value='/home'/>">Trang chủ</a>
-        <a href="<c:url value='/cars'/>">Danh sách xe</a>
-        <a href="<c:url value='/users'/>">Danh sách người dùng</a>
-    </nav>
-</div>
+</section>
+
+<!-- About -->
+<section class="woox-section" id="about" style="background: #f9f9f9;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="section-heading">
+                    <h2>Về CarRental</h2>
+                    <p>CarRental là hệ thống thuê xe tự lái hàng đầu tại Việt Nam. Với nhiều năm kinh nghiệm, chúng tôi cam kết mang đến trải nghiệm thuê xe thuận tiện, an toàn với mức giá cạnh tranh nhất thị trường.</p>
+                    <p>Đội ngũ nhân viên chuyên nghiệp, xe đời mới được bảo trì thường xuyên, và quy trình đặt xe đơn giản giúp bạn tiết kiệm thời gian.</p>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <span style="font-size: 120px; opacity: 0.15;">🚗</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="call-to-action">
+    <div class="container">
+        <h2>Sẵn sàng khởi hành?</h2>
+        <h4>Đặt xe ngay hôm nay và nhận ưu đãi đặc biệt cho khách hàng mới</h4>
+        <div class="border-button"><a href="${ctx}/cars">Đặt xe ngay</a></div>
+    </div>
+</section>
+
+<jsp:include page="layout/footer.jsp"/>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

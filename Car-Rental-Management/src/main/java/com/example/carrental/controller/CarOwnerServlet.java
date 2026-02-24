@@ -4,19 +4,23 @@ import com.example.carrental.model.dao.CarAvailabilityDAO;
 import com.example.carrental.model.dao.CarDAO;
 import com.example.carrental.model.dao.CarImageDAO;
 import com.example.carrental.model.entity.Car;
+import com.example.carrental.model.util.ImageUploadUtil;
 import com.example.carrental.model.entity.CarAvailability;
 import com.example.carrental.model.entity.CarImage;
 import com.example.carrental.model.entity.User;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.Part;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -24,7 +28,8 @@ import java.util.List;
  * Servlet quản lý xe cho Car Owner: Listings, Availability, Images
  * Chỉ OWNER và ADMIN mới truy cập được
  */
-@WebServlet(name = "CarOwnerServlet", urlPatterns = "/owner/*")
+@MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 5 * 1024 * 1024, maxRequestSize = 10 * 1024 * 1024)
+@WebServlet(name = "CarOwnerServlet", urlPatterns = { "/owner", "/owner/*" })
 public class CarOwnerServlet extends HttpServlet {
     private CarDAO carDAO;
     private CarAvailabilityDAO availabilityDAO;
@@ -88,6 +93,8 @@ public class CarOwnerServlet extends HttpServlet {
                 deleteAvailability(request, response);
             } else if ("add-image".equals(action)) {
                 addImage(request, response);
+            } else if ("add-image-upload".equals(action)) {
+                addImageUpload(request, response);
             } else if ("delete-image".equals(action)) {
                 deleteImage(request, response);
             } else if ("set-primary-image".equals(action)) {
@@ -115,11 +122,30 @@ public class CarOwnerServlet extends HttpServlet {
         return true;
     }
 
+    private static final int PAGE_SIZE = 5;
+
     private void listOwnerCars(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         User user = (User) request.getSession().getAttribute("user");
-        List<Car> cars = carDAO.getCarsByOwnerId(user.getId());
+        String pageParam = request.getParameter("page");
+        String statusFilter = request.getParameter("status");
+        String sortBy = request.getParameter("sort");
+        if (sortBy == null || sortBy.isEmpty()) sortBy = "date_desc";
+        int page = 1;
+        try {
+            if (pageParam != null && !pageParam.isEmpty()) page = Math.max(1, Integer.parseInt(pageParam));
+        } catch (NumberFormatException ignored) { }
+        int totalCount = carDAO.countCarsByOwnerId(user.getId(), statusFilter);
+        int totalPages = totalCount == 0 ? 1 : (int) Math.ceil((double) totalCount / PAGE_SIZE);
+        page = Math.min(page, totalPages);
+        int offset = (page - 1) * PAGE_SIZE;
+        List<Car> cars = carDAO.getCarsByOwnerId(user.getId(), offset, PAGE_SIZE, statusFilter, sortBy);
         request.setAttribute("cars", cars);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalCount", totalCount);
+        request.setAttribute("statusFilter", statusFilter);
+        request.setAttribute("sortBy", sortBy);
         forward(request, response, "/WEB-INF/views/owner/list.jsp");
     }
 
@@ -137,8 +163,10 @@ public class CarOwnerServlet extends HttpServlet {
                 return;
             }
             request.setAttribute("car", car);
+            forward(request, response, "/WEB-INF/views/owner/car-form-edit.jsp");
+        } else {
+            forward(request, response, "/WEB-INF/views/owner/car-form-new.jsp");
         }
-        forward(request, response, "/WEB-INF/views/owner/car-form.jsp");
     }
 
     private void saveCar(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -169,15 +197,38 @@ public class CarOwnerServlet extends HttpServlet {
         String priceStr = request.getParameter("pricePerDay");
         if (priceStr != null && !priceStr.isEmpty()) car.setPricePerDay(new BigDecimal(priceStr));
         car.setStatus(request.getParameter("status") != null ? request.getParameter("status") : "AVAILABLE");
-        car.setImageUrl(request.getParameter("imageUrl"));
 
-        boolean ok = "update".equals(action) ? carDAO.updateCar(car) : carDAO.addCar(car);
-        if (ok) {
-            response.sendRedirect(request.getContextPath() + "/owner?success=" + ("update".equals(action) ? "updated" : "created"));
-        } else {
-            request.setAttribute("error", "Không thể lưu xe");
+        Part imagePart = null;
+        try {
+            imagePart = request.getPart("imageFile");
+        } catch (Exception ignored) { }
+        if (imagePart != null && imagePart.getSize() > 0) {
+            String savedPath = ImageUploadUtil.saveCarImage(imagePart, getServletContext());
+            if (savedPath != null) car.setImageUrl(savedPath);
+        }
+
+        try {
+            boolean ok = "update".equals(action) ? carDAO.updateCar(car) : carDAO.addCar(car);
+            if (ok) {
+                response.sendRedirect(request.getContextPath() + "/owner?success=" + ("update".equals(action) ? "updated" : "created"));
+            } else {
+                request.setAttribute("error", "Không thể lưu xe (không cập nhật được bản ghi).");
+                request.setAttribute("car", car);
+                if ("update".equals(action) && car.getId() > 0) {
+                    forward(request, response, "/WEB-INF/views/owner/car-form-edit.jsp");
+                } else {
+                    forward(request, response, "/WEB-INF/views/owner/car-form-new.jsp");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Không thể lưu xe: " + e.getMessage());
             request.setAttribute("car", car);
-            forward(request, response, "/WEB-INF/views/owner/car-form.jsp");
+            if ("update".equals(action) && car.getId() > 0) {
+                forward(request, response, "/WEB-INF/views/owner/car-form-edit.jsp");
+            } else {
+                forward(request, response, "/WEB-INF/views/owner/car-form-new.jsp");
+            }
         }
     }
 
@@ -279,6 +330,30 @@ public class CarOwnerServlet extends HttpServlet {
         }
         List<CarImage> existing = carImageDAO.getByCarId(carId);
         CarImage img = new CarImage(carId, url.trim(), existing.isEmpty(), existing.size());
+        carImageDAO.add(img);
+        response.sendRedirect(request.getContextPath() + "/owner/images/" + carId + "?success=added");
+    }
+
+    private void addImageUpload(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        int carId = Integer.parseInt(request.getParameter("carId"));
+        Car car = carDAO.getCarById(carId);
+        User user = (User) request.getSession().getAttribute("user");
+        if (car == null || (!"ADMIN".equals(user.getRole()) && (car.getOwnerId() == null || car.getOwnerId() != user.getId()))) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        Part imagePart = request.getPart("imageFile");
+        if (imagePart == null || imagePart.getSize() == 0) {
+            response.sendRedirect(request.getContextPath() + "/owner/images/" + carId + "?error=empty");
+            return;
+        }
+        String savedPath = ImageUploadUtil.saveCarImage(imagePart, getServletContext());
+        if (savedPath == null) {
+            response.sendRedirect(request.getContextPath() + "/owner/images/" + carId + "?error=invalid");
+            return;
+        }
+        List<CarImage> existing = carImageDAO.getByCarId(carId);
+        CarImage img = new CarImage(carId, savedPath, existing.isEmpty(), existing.size());
         carImageDAO.add(img);
         response.sendRedirect(request.getContextPath() + "/owner/images/" + carId + "?success=added");
     }

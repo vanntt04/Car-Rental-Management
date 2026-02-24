@@ -13,7 +13,7 @@ import java.io.IOException;
  * Controller xử lý trang chủ
  * Controller trong mô hình MVC
  */
-@WebServlet(name = "HomeServlet", urlPatterns = {"/home", "/"})
+@WebServlet(name = "HomeServlet", urlPatterns = "/home")
 public class HomeServlet extends HttpServlet {
 
     @Override

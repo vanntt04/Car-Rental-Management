@@ -1,85 +1,86 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Danh sách xe - Car Rental</title>
-    <style>
-        * { box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        h1 { color: #333; }
-        nav { margin-bottom: 1.5rem; }
-        nav a { display: inline-block; margin-right: 0.5rem; padding: 0.5rem 1rem; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; }
-        nav a:hover { background: #1d4ed8; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #2563eb; color: white; }
-        tr:hover { background: #f8fafc; }
-        .empty { padding: 2rem; text-align: center; color: #64748b; }
-        .success { padding: 1rem; background: #d1fae5; color: #065f46; border-radius: 6px; margin-bottom: 1rem; }
-        .error { padding: 1rem; background: #fee2e2; color: #991b1b; border-radius: 6px; margin-bottom: 1rem; }
-    </style>
+    <title>Danh sách xe - CarRental</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="${ctx}/assets/css/woox-customer.css" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <h1>Danh sách xe</h1>
-    <nav>
-        <a href="<c:url value='/home'/>">Trang chủ</a>
-        <a href="<c:url value='/cars'/>">Danh sách xe</a>
-        <a href="<c:url value='/users'/>">Danh sách người dùng</a>
-    </nav>
+<jsp:include page="../layout/header.jsp"><jsp:param name="page" value="cars"/></jsp:include>
 
-    <c:if test="${not empty param.success}">
-        <div class="success">
-            <c:choose>
-                <c:when test="${param.success == 'created'}">Đã thêm xe mới thành công!</c:when>
-                <c:when test="${param.success == 'updated'}">Đã cập nhật thông tin xe thành công!</c:when>
-                <c:when test="${param.success == 'deleted'}">Đã xóa xe thành công!</c:when>
-            </c:choose>
-        </div>
-    </c:if>
+<section class="woox-hero" style="padding: 60px 0 50px;">
+    <div class="container">
+        <h1>Danh sách xe</h1>
+        <p class="lead">Chọn xe phù hợp với chuyến đi của bạn</p>
+    </div>
+</section>
 
-    <c:if test="${not empty error}">
-        <div class="error"><c:out value="${error}"/></div>
-    </c:if>
+<section class="woox-section">
+    <div class="container">
+        <c:if test="${not empty param.success}">
+            <div class="woox-alert success">
+                <c:choose>
+                    <c:when test="${param.success == 'created'}">Đã thêm xe mới thành công!</c:when>
+                    <c:when test="${param.success == 'updated'}">Đã cập nhật thông tin xe thành công!</c:when>
+                    <c:when test="${param.success == 'deleted'}">Đã xóa xe thành công!</c:when>
+                </c:choose>
+            </div>
+        </c:if>
+        <c:if test="${not empty error}">
+            <div class="woox-alert danger"><c:out value="${error}"/></div>
+        </c:if>
 
-    <c:choose>
-        <c:when test="${empty cars}">
-            <p class="empty">Chưa có xe nào.</p>
-        </c:when>
-        <c:otherwise>
-            <table>
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Tên</th>
-                    <th>Biển số</th>
-                    <th>Hãng</th>
-                    <th>Giá/ngày</th>
-                    <th>Trạng thái</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <c:forEach var="car" items="${cars}">
-                    <tr>
-                        <td><c:out value="${car.id}"/></td>
-                        <td><c:out value="${car.name}"/></td>
-                        <td><c:out value="${car.licensePlate}"/></td>
-                        <td><c:out value="${car.brand}"/></td>
-                        <td><fmt:formatNumber value="${car.pricePerDay}" type="currency" currencyCode="VND"/></td>
-                        <td><c:out value="${car.status}"/></td>
-                        <td><a href="<c:url value='/cars?id=${car.id}'/>">Chi tiết</a></td>
-                    </tr>
-                </c:forEach>
-                </tbody>
-            </table>
-        </c:otherwise>
-    </c:choose>
-</div>
+        <c:choose>
+            <c:when test="${empty cars}">
+                <div class="text-center py-5">
+                    <i class="bi bi-car-front" style="font-size: 64px; color: #ccc;"></i>
+                    <p class="mt-3" style="color: #888;">Chưa có xe nào.</p>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <div class="woox-table-wrap">
+                    <table class="woox-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên</th>
+                            <th>Biển số</th>
+                            <th>Hãng</th>
+                            <th>Giá/ngày</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <c:forEach var="car" items="${cars}">
+                            <tr>
+                                <td>${car.id}</td>
+                                <td>${car.name}</td>
+                                <td>${car.licensePlate}</td>
+                                <td>${car.brand}</td>
+                                <td><fmt:formatNumber value="${car.pricePerDay}" type="currency" currencyCode="VND"/></td>
+                                <td>
+                                    <span class="badge ${car.status == 'AVAILABLE' ? 'badge-avail' : car.status == 'RENTED' ? 'badge-rented' : 'badge-maint'}">${car.status}</span>
+                                </td>
+                                <td><a href="${ctx}/cars?id=${car.id}">Chi tiết</a></td>
+                            </tr>
+                        </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </div>
+</section>
+
+<jsp:include page="../layout/footer.jsp"/>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

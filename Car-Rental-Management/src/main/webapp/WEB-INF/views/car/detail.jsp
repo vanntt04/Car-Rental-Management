@@ -10,42 +10,48 @@
     <title>Chi tiết xe - ${car.name} | CarRental</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="${ctx}/assets/css/style.css" rel="stylesheet">
+    <link href="${ctx}/assets/css/woox-customer.css" rel="stylesheet">
+    <style>
+        .detail-placeholder { height: 400px; display: flex; align-items: center; justify-content: center; background: #f0f0f0; color: #999; font-size: 80px; }
+        .breadcrumb-woox { padding: 15px 0; margin: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; font-size: 14px; color: #888; }
+        .breadcrumb-woox a { color: #22b3c1; }
+        .detail-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+        .detail-actions a { padding: 10px 18px; border-radius: 25px; font-weight: 500; font-size: 14px; }
+        .detail-actions .btn-woox-outline { border: 1px solid #22b3c1; color: #22b3c1; }
+        .detail-actions .btn-woox-outline:hover { background: #22b3c1; color: #fff; }
+    </style>
 </head>
 <body>
 <jsp:include page="../layout/header.jsp"><jsp:param name="page" value="cars"/></jsp:include>
 
-<div class="container py-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="${ctx}/home">Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="${ctx}/cars">Danh sách xe</a></li>
-            <li class="breadcrumb-item active">${car.name}</li>
-        </ol>
-    </nav>
+<section class="woox-section">
+    <div class="container">
+        <ul class="breadcrumb-woox">
+            <li><a href="${ctx}/home">Trang chủ</a></li>
+            <li>/</li>
+            <li><a href="${ctx}/cars">Danh sách xe</a></li>
+            <li>/</li>
+            <li>${car.name}</li>
+        </ul>
 
-    <c:if test="${not empty param.success}">
-        <div class="alert alert-success">
-            <c:if test="${param.success == 'updated'}">Đã cập nhật thông tin xe thành công!</c:if>
-        </div>
-    </c:if>
-    <c:if test="${not empty error}">
-        <div class="alert alert-danger">${error}</div>
-    </c:if>
+        <c:if test="${not empty param.success}">
+            <div class="woox-alert success">Đã cập nhật thông tin xe thành công!</div>
+        </c:if>
+        <c:if test="${not empty error}">
+            <div class="woox-alert danger">${error}</div>
+        </c:if>
 
-    <c:if test="${not empty car}">
-        <div class="row">
-            <!-- Ảnh xe -->
-            <div class="col-lg-6 mb-4">
-                <div class="card border-0 shadow-sm">
+        <c:if test="${not empty car}">
+            <div class="woox-detail-grid">
+                <div class="woox-detail-img">
                     <c:choose>
                         <c:when test="${not empty carImages}">
                             <div id="carImageCarousel" class="carousel slide" data-bs-ride="carousel">
                                 <div class="carousel-inner">
                                     <c:forEach var="img" items="${carImages}" varStatus="st">
                                         <div class="carousel-item ${st.first ? 'active' : ''}">
-                                            <img src="${img.imageUrl}" class="d-block w-100" alt="Ảnh xe" style="height:400px;object-fit:cover"
-                                                 onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22><rect fill=%22%23eee%22 width=%22100%25%22 height=%22100%25%22/><text x=%2250%25%22 y=%2250%25%22 fill=%22%23999%22 text-anchor=%22middle%22 dy=%22.3em%22>Ảnh không khả dụng</text></svg>'">
+                                            <img src="${ctx}${img.imageUrl}" alt="Ảnh xe" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="detail-placeholder" style="display: none;"><i class="bi bi-car-front"></i></div>
                                         </div>
                                     </c:forEach>
                                 </div>
@@ -60,69 +66,45 @@
                             </div>
                         </c:when>
                         <c:when test="${not empty car.imageUrl}">
-                            <img src="${car.imageUrl}" class="card-img-top" alt="${car.name}" style="height:400px;object-fit:cover">
+                            <img src="${ctx}${car.imageUrl}" alt="${car.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="detail-placeholder" style="display: none;"><i class="bi bi-car-front"></i></div>
                         </c:when>
                         <c:otherwise>
-                            <div class="bg-light d-flex align-items-center justify-content-center" style="height:400px">
-                                <i class="bi bi-car-front display-1 text-muted"></i>
-                            </div>
+                            <div class="detail-placeholder"><i class="bi bi-car-front"></i></div>
                         </c:otherwise>
                     </c:choose>
                 </div>
-            </div>
 
-            <!-- Thông tin xe -->
-            <div class="col-lg-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <h1 class="card-title">${car.name}</h1>
-                        <span class="badge ${car.status == 'AVAILABLE' ? 'bg-success' : car.status == 'RENTED' ? 'bg-warning' : 'bg-secondary'} fs-6 mb-3">${car.status}</span>
-                        <p class="text-primary fs-4 mb-4">
-                            <strong><fmt:formatNumber value="${car.pricePerDay}" type="currency" currencyCode="VND"/></strong> / ngày
-                        </p>
-
-                        <dl class="row mb-0">
-                            <dt class="col-sm-4">Biển số</dt>
-                            <dd class="col-sm-8">${car.licensePlate}</dd>
-                            <dt class="col-sm-4">Hãng</dt>
-                            <dd class="col-sm-8">${car.brand}</dd>
-                            <dt class="col-sm-4">Model</dt>
-                            <dd class="col-sm-8">${car.model}</dd>
-                            <dt class="col-sm-4">Năm sản xuất</dt>
-                            <dd class="col-sm-8">${car.year}</dd>
-                            <dt class="col-sm-4">Màu</dt>
-                            <dd class="col-sm-8">${car.color}</dd>
-                        </dl>
-
-                        <hr>
-
-                        <c:if test="${sessionScope.role == 'OWNER' || sessionScope.role == 'ADMIN'}">
-                            <c:set var="isOwner" value="false"/>
-                            <c:if test="${car.ownerId != null && car.ownerId == sessionScope.userId}">
-                                <c:set var="isOwner" value="true"/>
-                            </c:if>
-                            <c:if test="${isOwner || sessionScope.role == 'ADMIN'}">
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <a href="${ctx}/owner/edit/${car.id}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> Sửa xe</a>
-                                    <a href="${ctx}/owner/availability/${car.id}" class="btn btn-outline-info"><i class="bi bi-calendar3"></i> Lịch sẵn có</a>
-                                    <a href="${ctx}/owner/images/${car.id}" class="btn btn-outline-success"><i class="bi bi-images"></i> Quản lý ảnh</a>
-                                </div>
-                            </c:if>
+                <div class="woox-detail-info">
+                    <h1>${car.name}</h1>
+                    <span class="badge ${car.status == 'AVAILABLE' ? 'badge-avail' : car.status == 'RENTED' ? 'badge-rented' : 'badge-maint'}">${car.status}</span>
+                    <p class="price"><strong><fmt:formatNumber value="${car.pricePerDay}" type="currency" currencyCode="VND"/></strong> / ngày</p>
+                    <dl>
+                        <dt>Biển số</dt><dd>${car.licensePlate}</dd>
+                        <dt>Hãng</dt><dd>${car.brand}</dd>
+                        <dt>Model</dt><dd>${car.model}</dd>
+                        <dt>Năm</dt><dd>${car.year}</dd>
+                        <dt>Màu</dt><dd>${car.color}</dd>
+                    </dl>
+                    <c:if test="${sessionScope.role == 'OWNER' || sessionScope.role == 'ADMIN'}">
+                        <c:set var="isOwner" value="false"/>
+                        <c:if test="${car.ownerId != null && car.ownerId == sessionScope.userId}"><c:set var="isOwner" value="true"/></c:if>
+                        <c:if test="${isOwner || sessionScope.role == 'ADMIN'}">
+                            <div class="detail-actions">
+                                <a href="${ctx}/owner/edit/${car.id}" class="btn-woox-outline"><i class="bi bi-pencil"></i> Sửa xe</a>
+                                <a href="${ctx}/owner/availability/${car.id}" class="btn-woox-outline"><i class="bi bi-calendar3"></i> Lịch sẵn có</a>
+                                <a href="${ctx}/owner/images/${car.id}" class="btn-woox-outline"><i class="bi bi-images"></i> Quản lý ảnh</a>
+                            </div>
                         </c:if>
-                    </div>
+                    </c:if>
                 </div>
             </div>
-        </div>
 
-        <!-- Lịch sẵn có -->
-        <c:if test="${not empty carAvailabilities}">
-            <div class="card border-0 shadow-sm mt-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-calendar3"></i> Lịch sẵn có</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm">
+            <c:if test="${not empty carAvailabilities}">
+                <div style="margin-top: 40px;">
+                    <h5 style="margin-bottom: 16px;"><i class="bi bi-calendar3"></i> Lịch sẵn có</h5>
+                    <div class="woox-table-wrap">
+                        <table class="woox-table">
                             <thead>
                             <tr>
                                 <th>Từ ngày</th>
@@ -136,11 +118,7 @@
                                 <tr>
                                     <td><fmt:formatDate value="${av.startDate}" pattern="dd/MM/yyyy"/></td>
                                     <td><fmt:formatDate value="${av.endDate}" pattern="dd/MM/yyyy"/></td>
-                                    <td>
-                                        <span class="badge ${av.available ? 'bg-success' : 'bg-secondary'}">
-                                            ${av.available ? 'Sẵn có' : 'Không sẵn có'}
-                                        </span>
-                                    </td>
+                                    <td><span class="badge ${av.available ? 'badge-avail' : 'badge-maint'}">${av.available ? 'Sẵn có' : 'Không sẵn có'}</span></td>
                                     <td>${av.note}</td>
                                 </tr>
                             </c:forEach>
@@ -148,14 +126,14 @@
                         </table>
                     </div>
                 </div>
-            </div>
-        </c:if>
+            </c:if>
 
-        <div class="mt-4">
-            <a href="${ctx}/cars" class="btn btn-outline-primary"><i class="bi bi-arrow-left"></i> Quay lại danh sách xe</a>
-        </div>
-    </c:if>
-</div>
+            <p style="margin-top: 30px;">
+                <span class="border-button"><a href="${ctx}/cars"><i class="bi bi-arrow-left"></i> Quay lại danh sách xe</a></span>
+            </p>
+        </c:if>
+    </div>
+</section>
 
 <jsp:include page="../layout/footer.jsp"/>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

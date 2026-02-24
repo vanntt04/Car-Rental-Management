@@ -1,10 +1,11 @@
 -- Migration: Add Car Owner, Car Availability, Car Images
--- Chạy script này sau schema.sql để thêm tính năng cho Car Owner
+-- Chạy script này nếu DB đã tạo trước khi có owner_id, car_availability, car_images
+-- Nếu lỗi "duplicate column/table" thì bỏ qua lệnh đó
 
 USE car_rental_db;
 
--- Thêm cột owner_id vào bảng cars (bỏ qua nếu đã có)
--- ALTER TABLE cars ADD COLUMN owner_id INT NULL;
+-- 1. Thêm owner_id vào cars (bỏ qua nếu đã có)
+ALTER TABLE cars ADD COLUMN owner_id INT NULL;
 
 -- Cập nhật role: thêm OWNER nếu chưa có
 -- INSERT INTO users (username, password, full_name, email, phone, role, active)

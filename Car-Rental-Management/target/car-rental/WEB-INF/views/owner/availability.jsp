@@ -8,74 +8,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Lịch sẵn có - ${car.name} | CarRental</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="${ctx}/assets/css/style.css" rel="stylesheet">
+    <link href="${ctx}/assets/css/woox-customer.css" rel="stylesheet">
+    <style>
+        .avail-form { display: grid; grid-template-columns: 1fr 1fr 140px 1fr 120px; gap: 12px; align-items: end; margin-bottom: 0; }
+        @media (max-width: 768px) { .avail-form { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
 <jsp:include page="../layout/header.jsp"><jsp:param name="page" value="owner"/></jsp:include>
 
-<div class="container py-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="${ctx}/owner">Quản lý xe</a></li>
-            <li class="breadcrumb-item"><a href="${ctx}/cars?id=${car.id}">${car.name}</a></li>
-            <li class="breadcrumb-item active">Lịch sẵn có</li>
-        </ol>
-    </nav>
+<section class="woox-section">
+    <div class="container">
+        <p class="woox-breadcrumb">
+            <a href="${ctx}/owner">Quản lý xe</a> / <a href="${ctx}/cars?id=${car.id}">${car.name}</a> / Lịch sẵn có
+        </p>
 
-    <h1 class="mb-4"><i class="bi bi-calendar3"></i> Lịch sẵn có - ${car.name}</h1>
+        <h1 class="woox-page-title" style="margin-bottom: 28px;"><i class="bi bi-calendar3"></i> Lịch sẵn có - ${car.name}</h1>
 
-    <c:if test="${not empty param.success}">
-        <div class="alert alert-success">
-            <c:choose>
-                <c:when test="${param.success == 'added'}">Đã thêm lịch thành công!</c:when>
-                <c:when test="${param.success == 'deleted'}">Đã xóa lịch thành công!</c:when>
-            </c:choose>
-        </div>
-    </c:if>
+        <c:if test="${not empty param.success}">
+            <div class="woox-alert success">
+                <c:choose>
+                    <c:when test="${param.success == 'added'}">Đã thêm lịch thành công!</c:when>
+                    <c:when test="${param.success == 'deleted'}">Đã xóa lịch thành công!</c:when>
+                </c:choose>
+            </div>
+        </c:if>
 
-    <div class="card mb-4">
-        <div class="card-header">Thêm khoảng thời gian</div>
-        <div class="card-body">
-            <form method="post" action="${ctx}/owner" class="row g-3">
+        <div class="woox-card" style="margin-bottom: 28px;">
+            <h5 style="margin-bottom: 16px;">Thêm khoảng thời gian</h5>
+            <form method="post" action="${ctx}/owner" class="avail-form">
                 <input type="hidden" name="action" value="add-availability">
                 <input type="hidden" name="carId" value="${car.id}">
-                <div class="col-md-3">
-                    <label class="form-label">Từ ngày</label>
-                    <input type="date" name="startDate" class="form-control" required>
+                <div>
+                    <label class="woox-label">Từ ngày</label>
+                    <input type="date" name="startDate" required>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Đến ngày</label>
-                    <input type="date" name="endDate" class="form-control" required>
+                <div>
+                    <label class="woox-label">Đến ngày</label>
+                    <input type="date" name="endDate" required>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Trạng thái</label>
-                    <select name="isAvailable" class="form-select">
+                <div>
+                    <label class="woox-label">Trạng thái</label>
+                    <select name="isAvailable">
                         <option value="1">Sẵn có</option>
                         <option value="0">Không sẵn có</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Ghi chú</label>
-                    <input type="text" name="note" class="form-control">
+                <div>
+                    <label class="woox-label">Ghi chú</label>
+                    <input type="text" name="note">
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Thêm</button>
-                </div>
+                <button type="submit" class="btn-woox-primary">Thêm</button>
             </form>
         </div>
-    </div>
 
-    <div class="card">
-        <div class="card-header">Danh sách lịch</div>
-        <div class="card-body">
+        <div class="woox-card">
+            <h5 style="margin-bottom: 16px;">Danh sách lịch</h5>
             <c:if test="${empty availabilities}">
-                <p class="text-muted mb-0">Chưa có lịch nào. Thêm khoảng thời gian sẵn có hoặc không sẵn có của xe.</p>
+                <p style="color: var(--woox-text);">Chưa có lịch nào.</p>
             </c:if>
             <c:if test="${not empty availabilities}">
-                <div class="table-responsive">
-                    <table class="table table-hover">
+                <div class="woox-table-wrap">
+                    <table class="woox-table">
                         <thead>
                         <tr>
                             <th>Từ ngày</th>
@@ -90,17 +85,13 @@
                             <tr>
                                 <td><fmt:formatDate value="${av.startDate}" pattern="dd/MM/yyyy"/></td>
                                 <td><fmt:formatDate value="${av.endDate}" pattern="dd/MM/yyyy"/></td>
-                                <td>
-                                    <span class="badge ${av.available ? 'bg-success' : 'bg-secondary'}">
-                                        ${av.available ? 'Sẵn có' : 'Không sẵn có'}
-                                    </span>
-                                </td>
+                                <td><span class="badge ${av.available ? 'badge-avail' : 'badge-maint'}">${av.available ? 'Sẵn có' : 'Không sẵn có'}</span></td>
                                 <td>${av.note}</td>
                                 <td>
-                                    <form action="${ctx}/owner" method="post" class="d-inline" onsubmit="return confirm('Xóa lịch này?');">
+                                    <form action="${ctx}/owner" method="post" style="display: inline;" onsubmit="return confirm('Xóa lịch này?');">
                                         <input type="hidden" name="action" value="delete-availability">
                                         <input type="hidden" name="id" value="${av.id}">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                        <button type="submit" class="woox-danger" style="background: none; border: none; cursor: pointer; padding: 0;"><i class="bi bi-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -110,14 +101,13 @@
                 </div>
             </c:if>
         </div>
-    </div>
 
-    <div class="mt-3">
-        <a href="${ctx}/owner" class="btn btn-link"><i class="bi bi-arrow-left"></i> Quay lại danh sách xe</a>
+        <p style="margin-top: 24px;">
+            <span class="border-button"><a href="${ctx}/owner"><i class="bi bi-arrow-left"></i> Quay lại danh sách xe</a></span>
+        </p>
     </div>
-</div>
+</section>
 
 <jsp:include page="../layout/footer.jsp"/>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
