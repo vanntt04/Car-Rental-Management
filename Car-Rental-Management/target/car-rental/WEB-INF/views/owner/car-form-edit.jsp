@@ -77,6 +77,10 @@
                 </div>
             </div>
             <div class="woox-form-row">
+                <label class="woox-label">Mô tả xe</label>
+                <textarea name="description" rows="4" placeholder="Mô tả chi tiết về xe (tình trạng, tiện nghi, ghi chú...)">${car.description}</textarea>
+            </div>
+            <div class="woox-form-row">
                 <button type="submit" class="btn-woox-primary">Cập nhật</button>
                 <span class="border-button" style="margin-left: 12px;"><a href="${ctx}/owner">Hủy</a></span>
             </div>

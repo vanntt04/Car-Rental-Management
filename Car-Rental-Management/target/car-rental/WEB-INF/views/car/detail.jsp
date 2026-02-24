@@ -100,6 +100,13 @@
                 </div>
             </div>
 
+            <c:if test="${not empty car.description}">
+                <div style="margin-top: 32px;">
+                    <h5 style="margin-bottom: 12px;">Mô tả xe</h5>
+                    <div class="woox-card" style="white-space: pre-line; line-height: 1.7;"><c:out value="${car.description}" escapeXml="true"/></div>
+                </div>
+            </c:if>
+
             <c:if test="${not empty carAvailabilities}">
                 <div style="margin-top: 40px;">
                     <h5 style="margin-bottom: 16px;"><i class="bi bi-calendar3"></i> Lịch sẵn có</h5>

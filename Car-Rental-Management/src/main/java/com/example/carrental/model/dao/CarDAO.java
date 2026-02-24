@@ -129,8 +129,8 @@ public class CarDAO {
      * Thêm xe mới
      */
     public boolean addCar(Car car) throws SQLException {
-        String sql = "INSERT INTO cars (owner_id, name, license_plate, brand, model, year, color, price_per_day, status, image_url) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO cars (owner_id, name, license_plate, brand, model, year, color, price_per_day, status, image_url, description) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setObject(1, car.getOwnerId(), Types.INTEGER);
@@ -143,6 +143,7 @@ public class CarDAO {
             pstmt.setBigDecimal(8, car.getPricePerDay());
             pstmt.setString(9, car.getStatus());
             pstmt.setString(10, car.getImageUrl());
+            pstmt.setString(11, car.getDescription());
             return pstmt.executeUpdate() > 0;
         }
     }
@@ -152,7 +153,7 @@ public class CarDAO {
      */
     public boolean updateCar(Car car) throws SQLException {
         String sql = "UPDATE cars SET owner_id = ?, name = ?, license_plate = ?, brand = ?, model = ?, " +
-                     "year = ?, color = ?, price_per_day = ?, status = ?, image_url = ? " +
+                     "year = ?, color = ?, price_per_day = ?, status = ?, image_url = ?, description = ? " +
                      "WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -166,7 +167,8 @@ public class CarDAO {
             pstmt.setBigDecimal(8, car.getPricePerDay());
             pstmt.setString(9, car.getStatus());
             pstmt.setString(10, car.getImageUrl());
-            pstmt.setInt(11, car.getId());
+            pstmt.setString(11, car.getDescription());
+            pstmt.setInt(12, car.getId());
             return pstmt.executeUpdate() > 0;
         }
     }
@@ -213,6 +215,7 @@ public class CarDAO {
         car.setPricePerDay(rs.getBigDecimal("price_per_day"));
         car.setStatus(rs.getString("status"));
         try { car.setImageUrl(rs.getString("image_url")); } catch (SQLException e) { car.setImageUrl(null); }
+        try { car.setDescription(rs.getString("description")); } catch (SQLException e) { car.setDescription(null); }
         try {
             Timestamp createdAt = rs.getTimestamp("created_at");
             if (createdAt != null) car.setCreatedAt(createdAt.toLocalDateTime());

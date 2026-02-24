@@ -22,6 +22,7 @@ public class Car {
     private BigDecimal pricePerDay;
     private String status; // AVAILABLE, RENTED, MAINTENANCE
     private String imageUrl;
+    private String description;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -136,6 +137,9 @@ public class Car {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;

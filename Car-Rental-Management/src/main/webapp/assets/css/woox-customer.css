@@ -250,6 +250,7 @@ footer.woox-footer a:hover { opacity: 0.85; }
 .woox-form input[type="number"],
 .woox-form input[type="date"],
 .woox-form input[type="file"],
+.woox-form textarea,
 .woox-form select {
     width: 100%;
     padding: 12px 16px;

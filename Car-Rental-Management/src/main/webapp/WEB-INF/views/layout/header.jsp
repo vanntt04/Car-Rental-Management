@@ -5,7 +5,6 @@
     <div class="container">
         <nav class="main-nav">
             <a href="${ctx}/home" class="logo">
-                <span style="font-size: 28px;">🚗</span>
                 <span>CarRental</span>
             </a>
             <ul class="nav" id="mainNav">

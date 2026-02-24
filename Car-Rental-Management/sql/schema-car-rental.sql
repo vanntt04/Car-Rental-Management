@@ -66,7 +66,7 @@ INSERT INTO user_roles VALUES
 (10,3),(11,3),(12,3),(13,3),(14,3),(15,3);
 
 -- =============================
--- CARS (code dùng: id, owner_id, name, license_plate, brand, model, year, color, price_per_day, status, image_url, created_at, updated_at)
+-- CARS (code: id, owner_id, name, license_plate, brand, model, year, color, seats, transmission, fuel_type, price_per_day, status, image_url, description, created_at, updated_at)
 -- =============================
 CREATE TABLE cars (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -83,6 +83,7 @@ CREATE TABLE cars (
     price_per_day DECIMAL(12,2) NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE' COMMENT 'AVAILABLE, RENTED, MAINTENANCE',
     image_url VARCHAR(500) NULL,
+    description TEXT NULL COMMENT 'Mô tả chi tiết xe',
     created_at DATETIME NULL,
     updated_at DATETIME NULL,
     FOREIGN KEY(owner_id) REFERENCES users(user_id)

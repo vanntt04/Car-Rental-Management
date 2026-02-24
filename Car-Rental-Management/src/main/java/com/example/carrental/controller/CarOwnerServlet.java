@@ -201,6 +201,7 @@ public class CarOwnerServlet extends HttpServlet {
         String priceStr = request.getParameter("pricePerDay");
         if (priceStr != null && !priceStr.isEmpty()) car.setPricePerDay(new BigDecimal(priceStr));
         car.setStatus(request.getParameter("status") != null ? request.getParameter("status") : "AVAILABLE");
+        car.setDescription(request.getParameter("description"));
 
         Part imagePart = null;
         try {
