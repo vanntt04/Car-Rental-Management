@@ -16,6 +16,9 @@ public class Car {
     private String model;
     private Integer year;
     private String color;
+    private Integer seats;
+    private String transmission; // AUTO, MANUAL
+    private String fuelType;     // PETROL, DIESEL, ELECTRIC
     private BigDecimal pricePerDay;
     private String status; // AVAILABLE, RENTED, MAINTENANCE
     private String imageUrl;
@@ -102,6 +105,13 @@ public class Car {
     public void setColor(String color) {
         this.color = color;
     }
+
+    public Integer getSeats() { return seats; }
+    public void setSeats(Integer seats) { this.seats = seats; }
+    public String getTransmission() { return transmission; }
+    public void setTransmission(String transmission) { this.transmission = transmission; }
+    public String getFuelType() { return fuelType; }
+    public void setFuelType(String fuelType) { this.fuelType = fuelType; }
 
     public BigDecimal getPricePerDay() {
         return pricePerDay;

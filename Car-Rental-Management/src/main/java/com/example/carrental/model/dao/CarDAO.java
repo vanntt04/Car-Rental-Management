@@ -23,7 +23,7 @@ public class CarDAO {
     /** Sort: date_desc (mới nhất), date_asc (cũ nhất). Status: null/empty = tất cả, AVAILABLE, RENTED, MAINTENANCE */
     public List<Car> getCarsByOwnerId(int ownerId, int offset, int limit, String statusFilter, String sortBy) {
         List<Car> cars = new ArrayList<>();
-        String order = "date_asc".equalsIgnoreCase(sortBy) ? "COALESCE(created_at, updated_at) ASC, id ASC" : "COALESCE(created_at, updated_at) DESC, id DESC";
+        String order = "date_asc".equalsIgnoreCase(sortBy) ? "id ASC" : "id DESC";
         String sql = "SELECT * FROM cars WHERE owner_id = ? ";
         if (statusFilter != null && !statusFilter.isEmpty()) {
             sql += "AND status = ? ";
@@ -207,20 +207,20 @@ public class CarDAO {
         car.setModel(rs.getString("model"));
         car.setYear(rs.getObject("year", Integer.class));
         car.setColor(rs.getString("color"));
+        try { car.setSeats(rs.getObject("seats", Integer.class)); } catch (SQLException e) { car.setSeats(null); }
+        try { car.setTransmission(rs.getString("transmission")); } catch (SQLException e) { car.setTransmission(null); }
+        try { car.setFuelType(rs.getString("fuel_type")); } catch (SQLException e) { car.setFuelType(null); }
         car.setPricePerDay(rs.getBigDecimal("price_per_day"));
         car.setStatus(rs.getString("status"));
-        car.setImageUrl(rs.getString("image_url"));
-        
-        Timestamp createdAt = rs.getTimestamp("created_at");
-        if (createdAt != null) {
-            car.setCreatedAt(createdAt.toLocalDateTime());
-        }
-        
-        Timestamp updatedAt = rs.getTimestamp("updated_at");
-        if (updatedAt != null) {
-            car.setUpdatedAt(updatedAt.toLocalDateTime());
-        }
-        
+        try { car.setImageUrl(rs.getString("image_url")); } catch (SQLException e) { car.setImageUrl(null); }
+        try {
+            Timestamp createdAt = rs.getTimestamp("created_at");
+            if (createdAt != null) car.setCreatedAt(createdAt.toLocalDateTime());
+        } catch (SQLException e) { }
+        try {
+            Timestamp updatedAt = rs.getTimestamp("updated_at");
+            if (updatedAt != null) car.setUpdatedAt(updatedAt.toLocalDateTime());
+        } catch (SQLException e) { }
         return car;
     }
 }

@@ -1,8 +1,10 @@
 package com.example.carrental.controller;
 
+import com.example.carrental.model.dao.BookingDAO;
 import com.example.carrental.model.dao.CarAvailabilityDAO;
 import com.example.carrental.model.dao.CarDAO;
 import com.example.carrental.model.dao.CarImageDAO;
+import com.example.carrental.model.entity.Booking;
 import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.util.ImageUploadUtil;
 import com.example.carrental.model.entity.CarAvailability;
@@ -34,6 +36,7 @@ public class CarOwnerServlet extends HttpServlet {
     private CarDAO carDAO;
     private CarAvailabilityDAO availabilityDAO;
     private CarImageDAO carImageDAO;
+    private BookingDAO bookingDAO;
 
     @Override
     public void init() throws ServletException {
@@ -41,6 +44,7 @@ public class CarOwnerServlet extends HttpServlet {
         carDAO = new CarDAO();
         availabilityDAO = new CarAvailabilityDAO();
         carImageDAO = new CarImageDAO();
+        bookingDAO = new BookingDAO();
     }
 
     @Override
@@ -257,8 +261,13 @@ public class CarOwnerServlet extends HttpServlet {
             return;
         }
         List<CarAvailability> list = availabilityDAO.getByCarId(carId);
+        String bookingFilter = request.getParameter("bookingFilter");
+        if (bookingFilter == null || bookingFilter.isEmpty()) bookingFilter = "all";
+        List<Booking> bookings = bookingDAO.getByCarId(carId, bookingFilter);
         request.setAttribute("car", car);
         request.setAttribute("availabilities", list);
+        request.setAttribute("bookings", bookings);
+        request.setAttribute("bookingFilter", bookingFilter);
         forward(request, response, "/WEB-INF/views/owner/availability.jsp");
     }
 
@@ -342,20 +351,33 @@ public class CarOwnerServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
-        Part imagePart = request.getPart("imageFile");
-        if (imagePart == null || imagePart.getSize() == 0) {
+        List<CarImage> existing = carImageDAO.getByCarId(carId);
+        int sortOrder = existing.size();
+        int added = 0;
+        int invalid = 0;
+        for (Part part : request.getParts()) {
+            if (!"imageFile".equals(part.getName()) || part.getSize() == 0) continue;
+            String savedPath = ImageUploadUtil.saveCarImage(part, getServletContext());
+            if (savedPath == null) {
+                invalid++;
+                continue;
+            }
+            boolean isFirst = (existing.isEmpty() && added == 0);
+            CarImage img = new CarImage(carId, savedPath, isFirst, sortOrder);
+            carImageDAO.add(img);
+            sortOrder++;
+            added++;
+        }
+        if (added == 0 && invalid == 0) {
             response.sendRedirect(request.getContextPath() + "/owner/images/" + carId + "?error=empty");
             return;
         }
-        String savedPath = ImageUploadUtil.saveCarImage(imagePart, getServletContext());
-        if (savedPath == null) {
+        if (invalid > 0 && added == 0) {
             response.sendRedirect(request.getContextPath() + "/owner/images/" + carId + "?error=invalid");
             return;
         }
-        List<CarImage> existing = carImageDAO.getByCarId(carId);
-        CarImage img = new CarImage(carId, savedPath, existing.isEmpty(), existing.size());
-        carImageDAO.add(img);
-        response.sendRedirect(request.getContextPath() + "/owner/images/" + carId + "?success=added");
+        String qs = added > 0 ? "?success=added" + (added > 1 ? "&count=" + added : "") : "";
+        response.sendRedirect(request.getContextPath() + "/owner/images/" + carId + qs);
     }
 
     private void deleteImage(HttpServletRequest request, HttpServletResponse response) throws IOException {

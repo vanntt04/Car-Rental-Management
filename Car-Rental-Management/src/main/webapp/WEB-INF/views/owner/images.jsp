@@ -29,7 +29,12 @@
         <c:if test="${not empty param.success}">
             <div class="woox-alert success">
                 <c:choose>
-                    <c:when test="${param.success == 'added'}">Đã thêm ảnh thành công!</c:when>
+                    <c:when test="${param.success == 'added'}">
+                        <c:choose>
+                            <c:when test="${not empty param.count && param.count > 1}">Đã thêm ${param.count} ảnh thành công!</c:when>
+                            <c:otherwise>Đã thêm ảnh thành công!</c:otherwise>
+                        </c:choose>
+                    </c:when>
                     <c:when test="${param.success == 'deleted'}">Đã xóa ảnh thành công!</c:when>
                     <c:when test="${param.success == 'primary'}">Đã đặt làm ảnh chính!</c:when>
                 </c:choose>
@@ -48,12 +53,12 @@
                 <input type="hidden" name="action" value="add-image-upload">
                 <input type="hidden" name="carId" value="${car.id}">
                 <div style="flex: 1;">
-                    <label class="woox-label">Chọn file ảnh</label>
-                    <input type="file" name="imageFile" accept="image/jpeg,image/png,image/gif,image/webp" required>
+                    <label class="woox-label">Chọn một hoặc nhiều ảnh</label>
+                    <input type="file" name="imageFile" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
                 </div>
                 <button type="submit" class="btn-woox-primary">Tải ảnh lên</button>
             </form>
-            <p style="font-size: 13px; color: var(--woox-text); margin-top: 8px;">Định dạng: JPG, PNG, GIF, WEBP. Tối đa 5MB.</p>
+            <p style="font-size: 13px; color: var(--woox-text); margin-top: 8px;">Định dạng: JPG, PNG, GIF, WEBP. Tối đa 5MB/ảnh. Có thể chọn nhiều file cùng lúc.</p>
         </div>
 
         <div class="woox-card">

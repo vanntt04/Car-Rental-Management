@@ -73,7 +73,6 @@
                 <table class="woox-table">
                     <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Tên xe</th>
                         <th>Biển số</th>
                         <th>Hãng</th>
@@ -85,7 +84,6 @@
                     <tbody>
                     <c:forEach var="car" items="${cars}">
                         <tr>
-                            <td>${car.id}</td>
                             <td>${car.name}</td>
                             <td>${car.licensePlate}</td>
                             <td>${car.brand}</td>

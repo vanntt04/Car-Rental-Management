@@ -28,7 +28,9 @@ public class UserDAO {
              ResultSet rs = stmt.executeQuery(sql)) {
             
             while (rs.next()) {
-                users.add(mapResultSetToUser(rs));
+                User u = mapResultSetToUser(rs);
+                try { loadUserRole(conn, u); } catch (Exception ignored) { }
+                users.add(u);
             }
         } catch (SQLException e) {
             System.err.println("Error getting all users: " + e.getMessage());
@@ -40,7 +42,7 @@ public class UserDAO {
 
     public User getUserById(int id) {
         // Cập nhật để match với schema thực tế: user_id
-        String sql = "SELECT user_id,username full_name, email, password, phone, status, created_at " +
+        String sql = "SELECT user_id, username, full_name, email, password, phone, status, created_at " +
                      "FROM users WHERE user_id = ?";
         User user = null;
         
@@ -52,6 +54,7 @@ public class UserDAO {
             
             if (rs.next()) {
                 user = mapResultSetToUser(rs);
+                try { loadUserRole(conn, user); } catch (Exception ignored) { }
             }
             
             rs.close();
@@ -108,6 +111,7 @@ public class UserDAO {
             
             if (rs.next()) {
                 user = mapResultSetToUser(rs);
+                loadUserRole(conn, user);
             }
             
             rs.close();
@@ -117,6 +121,21 @@ public class UserDAO {
         }
         
         return user;
+    }
+
+    /** Lấy role từ bảng user_roles + roles theo user_id */
+    private void loadUserRole(Connection conn, User user) {
+        String sql = "SELECT r.role_name FROM user_roles ur JOIN roles r ON ur.role_id = r.role_id WHERE ur.user_id = ? LIMIT 1";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, user.getId());
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                user.setRole(rs.getString("role_name"));
+            }
+            rs.close();
+        } catch (SQLException e) {
+            // Fallback: giữ role đã set trong mapResultSetToUser (từ email)
+        }
     }
 
     public User login(String emailOrUsername, String password) {
@@ -161,8 +180,8 @@ public class UserDAO {
      * Thêm người dùng mới
      */
     public boolean addUser(User user) {
-        String sql = "INSERT INTO users (username, password, full_name, email, phone, role, active) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO users (username, password, full_name, email, phone, status) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -172,8 +191,7 @@ public class UserDAO {
             pstmt.setString(3, user.getFullName());
             pstmt.setString(4, user.getEmail());
             pstmt.setString(5, user.getPhone());
-            pstmt.setString(6, user.getRole());
-            pstmt.setBoolean(7, user.isActive());
+            pstmt.setString(6, user.isActive() ? "ACTIVE" : "BLOCKED");
             
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -188,7 +206,7 @@ public class UserDAO {
      */
     public boolean updateUser(User user) {
         String sql = "UPDATE users SET username = ?, password = ?, full_name = ?, email = ?, " +
-                     "phone = ?, role = ?, active = ? WHERE id = ?";
+                     "phone = ?, status = ? WHERE user_id = ?";
         
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -198,9 +216,8 @@ public class UserDAO {
             pstmt.setString(3, user.getFullName());
             pstmt.setString(4, user.getEmail());
             pstmt.setString(5, user.getPhone());
-            pstmt.setString(6, user.getRole());
-            pstmt.setBoolean(7, user.isActive());
-            pstmt.setInt(8, user.getId());
+            pstmt.setString(6, user.isActive() ? "ACTIVE" : "BLOCKED");
+            pstmt.setInt(7, user.getId());
             
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -214,7 +231,7 @@ public class UserDAO {
      * Xóa người dùng
      */
     public boolean deleteUser(int id) {
-        String sql = "DELETE FROM users WHERE id = ?";
+        String sql = "DELETE FROM users WHERE user_id = ?";
         
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

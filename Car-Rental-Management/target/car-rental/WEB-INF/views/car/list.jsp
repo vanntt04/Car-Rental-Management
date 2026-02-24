@@ -8,7 +8,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Danh sách xe - CarRental</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="${ctx}/assets/css/woox-customer.css" rel="stylesheet">
 </head>
@@ -45,35 +44,39 @@
                 </div>
             </c:when>
             <c:otherwise>
-                <div class="woox-table-wrap">
-                    <table class="woox-table">
-                        <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tên</th>
-                            <th>Biển số</th>
-                            <th>Hãng</th>
-                            <th>Giá/ngày</th>
-                            <th>Trạng thái</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <c:forEach var="car" items="${cars}">
-                            <tr>
-                                <td>${car.id}</td>
-                                <td>${car.name}</td>
-                                <td>${car.licensePlate}</td>
-                                <td>${car.brand}</td>
-                                <td><fmt:formatNumber value="${car.pricePerDay}" type="currency" currencyCode="VND"/></td>
-                                <td>
-                                    <span class="badge ${car.status == 'AVAILABLE' ? 'badge-avail' : car.status == 'RENTED' ? 'badge-rented' : 'badge-maint'}">${car.status}</span>
-                                </td>
-                                <td><a href="${ctx}/cars?id=${car.id}">Chi tiết</a></td>
-                            </tr>
-                        </c:forEach>
-                        </tbody>
-                    </table>
+                <div class="car-list-grid">
+                    <c:forEach var="car" items="${cars}">
+                        <div class="car-card">
+                            <div class="car-card-img">
+                                <c:choose>
+                                    <c:when test="${not empty car.imageUrl}">
+                                        <img src="${ctx}${car.imageUrl}" alt="${car.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div style="display: none; height: 100%; align-items: center; justify-content: center; background: #e8e8e8; color: #999;"><i class="bi bi-car-front" style="font-size: 48px;"></i></div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: #e8e8e8; color: #999;"><i class="bi bi-car-front" style="font-size: 48px;"></i></div>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                            <div class="car-card-body">
+                                <h3 class="car-card-title">
+                                    <c:choose>
+                                        <c:when test="${not empty car.brand || not empty car.model}">${car.brand} ${car.model} <c:if test="${not empty car.year}">${car.year}</c:if></c:when>
+                                        <c:otherwise>${car.name}</c:otherwise>
+                                    </c:choose>
+                                </h3>
+                                <p class="car-card-price">
+                                    <fmt:formatNumber value="${car.pricePerDay}" type="currency" currencyCode="VND"/><span>/ngày</span>
+                                </p>
+                                <div class="car-card-specs">
+                                    <c:if test="${not empty car.seats}"><span><i class="bi bi-people"></i>${car.seats} chỗ</span></c:if>
+                                    <c:if test="${not empty car.transmission}"><span><i class="bi bi-gear"></i>${car.transmission == 'AUTO' ? 'Số tự động' : 'Số sàn'}</span></c:if>
+                                    <c:if test="${not empty car.fuelType}"><span><i class="bi bi-fuel-pump"></i><c:choose><c:when test="${car.fuelType == 'PETROL'}">Xăng</c:when><c:when test="${car.fuelType == 'DIESEL'}">Dầu</c:when><c:when test="${car.fuelType == 'ELECTRIC'}">Điện</c:when><c:otherwise>${car.fuelType}</c:otherwise></c:choose></span></c:if>
+                                </div>
+                                <span class="main-button"><a href="${ctx}/cars?id=${car.id}">Xem chi tiết</a></span>
+                            </div>
+                        </div>
+                    </c:forEach>
                 </div>
             </c:otherwise>
         </c:choose>
@@ -81,6 +84,5 @@
 </section>
 
 <jsp:include page="../layout/footer.jsp"/>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

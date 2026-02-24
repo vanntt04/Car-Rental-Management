@@ -13,6 +13,9 @@
     <style>
         .avail-form { display: grid; grid-template-columns: 1fr 1fr 140px 1fr 120px; gap: 12px; align-items: end; margin-bottom: 0; }
         @media (max-width: 768px) { .avail-form { grid-template-columns: 1fr; } }
+        .list-toolbar a.btn-link { text-decoration: none; color: #555; }
+        .list-toolbar a.btn-link:hover { background: #e0e0e0 !important; }
+        .list-toolbar a.btn-link.active { background: var(--woox-primary) !important; color: #fff !important; }
     </style>
 </head>
 <body>
@@ -93,6 +96,58 @@
                                         <input type="hidden" name="id" value="${av.id}">
                                         <button type="submit" class="woox-danger" style="background: none; border: none; cursor: pointer; padding: 0;"><i class="bi bi-trash"></i></button>
                                     </form>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </c:if>
+        </div>
+
+        <div class="woox-card" style="margin-top: 28px;">
+            <h5 style="margin-bottom: 16px;"><i class="bi bi-calendar-check"></i> Lịch đặt xe (đã book)</h5>
+            <div class="list-toolbar" style="margin-bottom: 16px;">
+                <label style="margin: 0 8px 0 0;">Lọc:</label>
+                <a href="${ctx}/owner/availability/${car.id}?bookingFilter=all" class="btn-link ${bookingFilter == 'all' ? 'active' : ''}" style="padding: 6px 14px; border-radius: 20px; font-size: 14px; background: #f0f0f0; color: #555;">Tất cả</a>
+                <a href="${ctx}/owner/availability/${car.id}?bookingFilter=completed" class="btn-link ${bookingFilter == 'completed' ? 'active' : ''}" style="padding: 6px 14px; border-radius: 20px; font-size: 14px; background: #f0f0f0; color: #555;">Đã hoàn thành</a>
+                <a href="${ctx}/owner/availability/${car.id}?bookingFilter=upcoming" class="btn-link ${bookingFilter == 'upcoming' ? 'active' : ''}" style="padding: 6px 14px; border-radius: 20px; font-size: 14px; background: #f0f0f0; color: #555;">Sắp tới</a>
+            </div>
+            <c:if test="${empty bookings}">
+                <p style="color: var(--woox-text);">Chưa có đơn đặt xe nào.</p>
+            </c:if>
+            <c:if test="${not empty bookings}">
+                <div class="woox-table-wrap">
+                    <table class="woox-table">
+                        <thead>
+                        <tr>
+                            <th>Từ ngày</th>
+                            <th>Đến ngày</th>
+                            <th>Khách hàng</th>
+                            <th>Số ngày</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <c:forEach var="b" items="${bookings}">
+                            <tr>
+                                <td><fmt:formatDate value="${b.startDate}" pattern="dd/MM/yyyy"/></td>
+                                <td><fmt:formatDate value="${b.endDate}" pattern="dd/MM/yyyy"/></td>
+                                <td><c:choose><c:when test="${not empty b.customerName}">${b.customerName}</c:when><c:otherwise>Khách #${b.customerId}</c:otherwise></c:choose></td>
+                                <td>${b.totalDays}</td>
+                                <td><fmt:formatNumber value="${b.totalPrice}" type="currency" currencyCode="VND"/></td>
+                                <td>
+                                    <span class="badge ${b.bookingStatus == 'COMPLETED' ? 'badge-avail' : b.bookingStatus == 'APPROVED' || b.bookingStatus == 'PENDING' ? 'badge-rented' : 'badge-maint'}">
+                                        <c:choose>
+                                            <c:when test="${b.bookingStatus == 'PENDING'}">Chờ duyệt</c:when>
+                                            <c:when test="${b.bookingStatus == 'APPROVED'}">Đã duyệt</c:when>
+                                            <c:when test="${b.bookingStatus == 'COMPLETED'}">Hoàn thành</c:when>
+                                            <c:when test="${b.bookingStatus == 'REJECTED'}">Từ chối</c:when>
+                                            <c:when test="${b.bookingStatus == 'CANCELLED'}">Đã hủy</c:when>
+                                            <c:otherwise>${b.bookingStatus}</c:otherwise>
+                                        </c:choose>
+                                    </span>
                                 </td>
                             </tr>
                         </c:forEach>
