@@ -36,7 +36,7 @@
     
     <nav>
         <a href="${pageContext.request.contextPath}/home">Trang chủ</a>
-        <a href="${pageContext.request.contextPath}/cars">Danh sách xe</a>
+        <a href="${pageContext.request.contextPath}/searchcar">Danh sách xe</a>
         <a href="${pageContext.request.contextPath}/users">Danh sách người dùng</a>
     </nav>
     
