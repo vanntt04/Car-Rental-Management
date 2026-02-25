@@ -56,6 +56,23 @@ public class CarDAO {
         return brands;
     }
 
+    public List<String> getAllLocalCars() {
+        List<String> Locations = new ArrayList<>();
+        String sql = "SELECT DISTINCT location FROM cars ORDER BY location";
+
+        try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Locations.add(rs.getString("location"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting all brands: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return Locations;
+    }
+
     /**
      * Lấy xe theo ID
      */
@@ -110,7 +127,19 @@ public class CarDAO {
         return cars;
     }
 
-    public List<Car> filterCar(String brand, List<Car> list) {
+    public List<Car> filterCar(String brand, int minPrice, int maxPrice, List<Car> list) {
+        List<Car> result = new ArrayList<>();
+
+        for (Car car : list) {
+            if (car.getBrand().equalsIgnoreCase(brand) && car.getPricePerDay() >= minPrice && car.getPricePerDay() <= maxPrice) {
+                result.add(car);
+            }
+        }
+
+        return result;
+    }
+
+    public List<Car> filterCarByBrand(String brand, List<Car> list) {
         List<Car> result = new ArrayList<>();
 
         for (Car car : list) {
@@ -126,7 +155,7 @@ public class CarDAO {
         List<Car> result = new ArrayList<>();
 
         for (Car car : list) {
-            if (car.getPricePerDay() > minPrice && car.getPricePerDay() < maxPrice) {
+            if (car.getPricePerDay() >= minPrice && car.getPricePerDay() <= maxPrice) {
                 result.add(car);
             }
         }
@@ -255,5 +284,24 @@ public class CarDAO {
             car.setCreatedAt(createdAt.toLocalDateTime());
         }
         return car;
+    }
+
+
+    public static void main(String[] args) {
+        CarDAO dao = new CarDAO();
+
+        // Lấy tất cả xe
+        List<Car> allCars = dao.getAllCars();
+        System.out.println("Tổng số xe: " + allCars.size());
+        String testBrand = "Toyota"; // thay bằng brand có trong DB
+
+        int minPrice = 600000;
+        int maxPrice = 1500000;
+
+        List<Car> brandPriceFiltered = dao.filterCar(testBrand, minPrice, maxPrice, allCars);
+        System.out.println("\nXe lọc theo hãng '" + testBrand + "' và giá từ " + minPrice + " đến " + maxPrice + ": " + brandPriceFiltered.size());
+        for (Car car : brandPriceFiltered) {
+            System.out.println(car.getName() + " - " + car.getBrand() + " - " + car.getPricePerDay());
+        }
     }
 }

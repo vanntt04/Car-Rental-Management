@@ -112,18 +112,18 @@
             <p>Hệ thống quản lý thuê xe theo mô hình MVC.</p>
             <nav>
                 <a href="<c:url value='/home'/>">Trang chủ</a>
-                <c:if test="${sessionScope.role == 'customer'}">
+                <c:if test="${sessionScope.role == 'CUSTOMER'}">
                     <a href="<c:url value='/searchcar'/>">Danh sách xe</a>
                     <a href="<c:url value='/login'/>">Đặt xe</a>
                 </c:if>
 
                 <!-- OWNER -->
-                <c:if test="${sessionScope.role == 'owner'}">
+                <c:if test="${sessionScope.role == 'OWNER'}">
                     <a href="<c:url value='/listbooking'/>">Quản lý request booking</a>
                 </c:if>
 
                 <!-- ADMIN hoặc role khác nếu cần -->
-                <c:if test="${sessionScope.role == 'admin'}">
+                <c:if test="${sessionScope.role == 'ADMIN'}">
                     <a href="<c:url value='/users'/>">Danh sách người dùng</a>
                 </c:if>
             </nav>

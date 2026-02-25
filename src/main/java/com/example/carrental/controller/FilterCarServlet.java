@@ -60,40 +60,59 @@ public class FilterCarServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
 
+        HttpSession session = request.getSession(true);
         String brand = request.getParameter("brand");
         String price = request.getParameter("price");
 
+        // Lấy danh sách nguồn
         List<Car> sourceList = (List<Car>) session.getAttribute("SearchByDate");
-
-        if (sourceList == null) {
+        if (sourceList == null || sourceList.isEmpty()) {
             sourceList = (List<Car>) session.getAttribute("CarList");
         }
 
-        CarDAO carDAO = new CarDAO();
+        if (sourceList == null) {
+            CarDAO carDAO = new CarDAO();
+            sourceList = carDAO.getAllCars(); // load từ DB nếu chưa có
+            session.setAttribute("CarList", sourceList);
+        }
+
         List<Car> result = sourceList;
+        CarDAO carDAO = new CarDAO();
 
-        // Filter theo brand
-        if (brand != null && !brand.isEmpty()) {
-            result = carDAO.filterCar(brand, result);
+
+        if (brand != null && !brand.isEmpty() && (price == null || price.isEmpty())) {
+            result = carDAO.filterCarByBrand(brand, result);
         }
 
-        // Filter theo price
-        if (price != null && !price.isEmpty()) {
-            String[] parts = price.split("-");
-            int minPrice = Integer.parseInt(parts[0]);
-            int maxPrice = Integer.parseInt(parts[1]);
-
-            result = carDAO.filterCarByPrice(minPrice, maxPrice, result);
+        if (price != null && !price.isEmpty() && (brand == null || brand.isEmpty())) {
+            try {
+                String[] parts = price.split("-");
+                int minPrice = Integer.parseInt(parts[0].trim());
+                int maxPrice = Integer.parseInt(parts[1].trim());
+                result = carDAO.filterCarByPrice(minPrice, maxPrice, result);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
-        session.setAttribute("FilterCar", result);
+        if (brand != null && !brand.isEmpty() && price != null && !price.isEmpty()) {
+            try {
+                String[] parts = price.split("-");
+                int minPrice = Integer.parseInt(parts[0].trim());
+                int maxPrice = Integer.parseInt(parts[1].trim());
+                result = carDAO.filterCar(brand, minPrice, maxPrice, result); // phương thức filter cả 2
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
-        RequestDispatcher dispatcher
-                = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
+        // Lưu vào session để JSP có thể dùng
+        request.setAttribute("FilterCar", result);
+
+        // Chuyển tiếp sang JSP
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
         dispatcher.forward(request, response);
-
     }
 
     /**

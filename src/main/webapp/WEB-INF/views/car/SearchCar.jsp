@@ -6,474 +6,355 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Tìm xe tự lái</title>
+        <title>Tìm xe tự lái | CarRental</title>
 
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
         <style>
-            *{
-                box-sizing:border-box;
-                margin:0;
-                padding:0;
+            :root {
+                --primary: #10b981;
+                --primary-dark: #059669;
+                --bg-body: #f8fafc;
+                --text-main: #1e293b;
+                --text-muted: #64748b;
+                --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             }
 
-            body{
-                font-family:'Inter',sans-serif;
-                background:#f3f4f6;
-                color:#111827;
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
             }
 
-            /* SEARCH BAR */
-            .search-bar-wrap{
-                width:100%;
-                padding:18px 24px;
-                background:#111827;
+            body {
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                background: var(--bg-body);
+                color: var(--text-main);
+                line-height: 1.6;
             }
 
-            .search-bar{
-                display:flex;
-                gap:12px;
-                flex-wrap:wrap;
-            }
-
-            .field{
-                flex:1;
-                min-width:180px;
-                background:#059669;
-                border-radius:12px;
-                padding:10px 12px;
-                color:white;
-                display:flex;
-                flex-direction:column;
-            }
-
-            .field span{
-                font-size:13px;
-                margin-bottom:6px;
-            }
-
-            .search-bar input{
-                width:100%;
-                background:white;
-                border-radius:8px;
-                border:none;
-                outline:none;
-                padding:8px 10px;
-                font-size:14px;
-                color:#111;
-            }
-
-            .search-btn{
-                background:#10b981;
-                color:white;
-                border:none;
-                border-radius:10px;
-                padding:12px;
-                font-weight:700;
-                cursor:pointer;
-                transition:0.2s;
-            }
-
-            .search-btn:hover{
-                background:#059669;
-            }
-
-            /* FILTER BAR */
-            .filter-bar-wrap{
-                padding:14px 32px;
-                background:white;
-                border-bottom:1px solid #e5e7eb;
-            }
-
-            .filter-bar{
-                display:flex;
-                gap:20px;
-            }
-
-            .filter{
-                position:relative;
-                background:#f9fafb;
-                padding:10px 14px;
-                border-radius:8px;
-                font-weight:600;
-                cursor:pointer;
-            }
-
-            .dropdown{
-                position:absolute;
-                top:110%;
-                left:0;
-                background:white;
-                border:1px solid #e5e7eb;
-                border-radius:8px;
-                box-shadow:0 8px 20px rgba(0,0,0,0.1);
-                display:none;
-                z-index:10;
-                min-width:180px;
-                max-height:220px;
-                overflow:auto;
-            }
-
-            .dropdown-item{
-                padding:8px 12px;
-                cursor:pointer;
-            }
-
-            .dropdown-item:hover{
-                background:#f3f4f6;
-            }
-
-            /* CAR LIST */
-            .container{
-                padding:24px 32px;
-            }
-
-            .car-grid{
-                display:grid;
-                grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-                gap:20px;
-            }
-
-            .car-card{
-                background:#fff;
-                border-radius:14px;
-                overflow:hidden;
-                box-shadow:0 4px 14px rgba(0,0,0,0.08);
-                transition:0.25s;
-            }
-
-            .car-card:hover{
-                transform:translateY(-4px);
-                box-shadow:0 12px 24px rgba(0,0,0,0.15);
-            }
-
-            .car-card img{
-                width:100%;
-                height:170px;
-                object-fit:cover;
-                background:#f3f4f6;
-            }
-
-            .car-body{
-                padding:14px;
-            }
-
-            .car-title{
-                font-weight:700;
-                font-size:17px;
-            }
-
-            .car-location{
-                font-size:13px;
-                color:#6b7280;
-                margin:6px 0;
-            }
-
-            .price{
-                font-size:20px;
-                font-weight:800;
-                color:#10b981;
-                margin-top:8px;
-            }
-            .car-status {
-                display: inline-block;
-                padding: 4px 10px;
-                border-radius: 12px;
-                font-size: 13px;
-                font-weight: bold;
-                text-transform: capitalize;
-            }
-
-            .car-status.available {
-                background-color: #d4edda;
-                color: #155724;
-            }
-
-            .car-status.unavailable {
-                background-color: #f8d7da;
-                color: #721c24;
-            }
-
-            .booking-btn{
-                width: 90%;
-                margin: 12px auto 16px auto;
-                display: block;
-                background: linear-gradient(135deg,#10b981,#059669);
-                border: none;
-                border-radius: 10px;
-                padding: 10px;
-                font-size: 15px;
-                font-weight: 600;
+            /* --- SEARCH SECTION --- */
+            .hero-search {
+                background: #0f172a;
+                padding: 40px 20px;
                 color: white;
+            }
+
+            .search-container {
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+
+            .search-bar {
+                background: rgba(255, 255, 255, 0.05);
+                backdrop-filter: blur(10px);
+                padding: 24px;
+                border-radius: 20px;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .field-group {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .field-group label {
+                font-size: 13px;
+                font-weight: 600;
+                color: #94a3b8;
+                margin-left: 4px;
+            }
+
+            .input-style {
+                background: white;
+                border: none;
+                border-radius: 12px;
+                padding: 12px 16px;
+                font-size: 14px;
+                font-family: inherit;
+                outline: none;
+                width: 100%;
+            }
+
+            .btn-search {
+                background: var(--primary);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                padding: 12px;
+                font-weight: 700;
                 cursor: pointer;
-                transition: 0.25s;
+                transition: all 0.3s;
+                align-self: flex-end;
+                height: 48px;
             }
 
-            .booking-btn:hover{
+            .btn-search:hover {
+                background: var(--primary-dark);
                 transform: translateY(-2px);
-                box-shadow: 0 6px 14px rgba(0,0,0,0.15);
-                background: linear-gradient(135deg,#059669,#047857);
             }
 
-            .booking-btn:active{
-                transform: translateY(0);
-                box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-            }
-            .filter-bar{
-                display:flex;
-                gap:16px;
-                align-items:flex-end;
-                flex-wrap:wrap;
-            }
-
-            .filter{
-                display:flex;
-                flex-direction:column;
-                font-size:13px;
-                font-weight:600;
-                color:#374151;
+            /* --- FILTER BAR --- */
+            .filter-section {
+                background: white;
+                padding: 16px 0;
+                border-bottom: 1px solid #e2e8f0;
+                position: sticky;
+                top: 0;
+                z-index: 100;
             }
 
-            .filter select{
-                margin-top:4px;
-                padding:8px 10px;
-                border-radius:8px;
-                border:1px solid #e5e7eb;
-                background:white;
-                min-width:160px;
-                font-size:14px;
-                transition:0.2s;
+            .filter-container {
+                max-width: 1100px;
+                margin: 0 auto;
+                padding: 0 20px;
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                flex-wrap: wrap;
             }
 
-            .filter select:focus{
-                outline:none;
-                border-color:#10b981;
-                box-shadow:0 0 0 2px rgba(16,185,129,0.15);
+            .filter-select {
+                padding: 8px 12px;
+                border-radius: 8px;
+                border: 1px solid #cbd5e1;
+                background: #f1f5f9;
+                font-weight: 500;
+                outline: none;
             }
 
-            .filter-btn{
-                background:#10b981;
-                border:none;
-                color:white;
-                padding:10px 18px;
-                border-radius:10px;
-                font-weight:600;
-                cursor:pointer;
-                transition:0.25s;
+            .btn-filter {
+                background: #f1f5f9;
+                color: var(--text-main);
+                border: 1px solid #cbd5e1;
+                padding: 8px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
             }
 
-            .filter-btn:hover{
-                background:#059669;
-                transform:translateY(-1px);
-                box-shadow:0 4px 10px rgba(0,0,0,0.15);
+            /* --- CAR GRID --- */
+            .main-content {
+                max-width: 1100px;
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+            .car-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 24px;
             }
 
+            .car-card {
+                background: white;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+                transition: all 0.3s;
+                border: 1px solid #f1f5f9;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+
+            .car-card:hover {
+                transform: translateY(-8px);
+                box-shadow: var(--card-shadow);
+            }
+
+            .image-box {
+                position: relative;
+                height: 200px;
+                overflow: hidden;
+            }
+            .car-card img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .status-badge {
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                padding: 4px 12px;
+                border-radius: 99px;
+                font-size: 11px;
+                font-weight: 700;
+            }
+            .status-badge.available {
+                background: #d1fae5;
+                color: #065f46;
+            }
+            .status-badge.unavailable {
+                background: #fee2e2;
+                color: #991b1b;
+            }
+
+            .car-info {
+                padding: 20px;
+                flex-grow: 1;
+            }
+            .car-name {
+                font-size: 18px;
+                font-weight: 700;
+                margin-bottom: 8px;
+            }
+            .car-meta {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                color: var(--text-muted);
+                font-size: 13px;
+                margin-bottom: 8px;
+            }
+
+            .car-price {
+                border-top: 1px dashed #e2e8f0;
+                padding: 15px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .price-val {
+                font-size: 18px;
+                font-weight: 800;
+                color: var(--primary);
+            }
+
+            .booking-btn {
+                width: 100%;
+                background: var(--primary);
+                color: white;
+                border: none;
+                padding: 14px;
+                font-weight: 700;
+                cursor: pointer;
+                border-radius: 0 0 20px 20px;
+            }
+
+            .error-msg {
+                max-width: 1100px;
+                margin: 20px auto;
+                padding: 15px;
+                background: #fef2f2;
+                border-radius: 12px;
+                color: #b91c1c;
+                text-align: center;
+            }
         </style>
     </head>
 
     <body>
 
-        <!-- SEARCH -->
-        <div class="search-bar-wrap">
-            <form class="search-bar" action="${pageContext.request.contextPath}/searchcar" method="post">
-
-                <div class="field">
-                    <span>Location</span>
-                    <input type="text" name="local" placeholder="Tìm theo tên, địa điểm...">
-                </div>
-
-                <div class="field">
-                    <span>Pick-Up Date</span>
-                    <input type="date" name="pickupTime">
-                </div>
-
-                <div class="field">
-                    <span>Return Date</span>
-                    <input type="date" name="returnTime">
-                </div>
-
-                <div class="field" style="justify-content:center;">
-                    <button type="submit" class="search-btn">Search</button>
-                </div>
-
-            </form>
-            <c:if test="${not empty error}">
-                <div style="color:red; font-weight:600; padding:10px 32px;">
-                    ${error}
-                </div>
-            </c:if>
-        </div>
-
-        <!-- FILTER -->
-        <div class="filter-bar-wrap">
-            <form class="filter-bar" action="${pageContext.request.contextPath}/filter" method="get">
-                <div class="filter">
-                    <label>Brand</label>
-                    <select name="brand">
-                        <option value="">Tất cả</option>
-                        <c:forEach var="brand" items="${BrandList}">
-                            <option value="${brand}">${brand}</option>
-                        </c:forEach>
-                    </select>
-                </div>
-                <div class="filter">
-                    <label>Price Range</label>
-                    <select name="price">
-                        <option value="">Tất cả</option>
-                        <option value="60000000-100000000">60m - 100m</option>
-                        <option value="100000000-150000000">100m - 150m</option>
-                        <option value="150000000-250000000">150m - 250m</option>
-                    </select>
-                </div>
-                <button type="submit" class="filter-btn">Filter</button>
-            </form>
-        </div>
-
-        <!-- CAR LIST -->
-        <div class="container">
-            <div class="car-grid">
-                <c:choose>
-                   <c:when test="${not empty user}">
-                        <c:choose>
-                            <c:when test="${not empty FilterCar}">
-                                <c:forEach var="car" items="${FilterCar}">
-                                    <form  action="${pageContext.request.contextPath}/booking" method="get">
-                                        <input type="hidden" name="carId" value="${car.id}">
-                                        <div class="car-card">
-                                            <img src="${car.img}" alt="">
-                                            <div class="car-body">
-                                                <div class="car-title">${car.name}</div>
-                                                <span class="car-status
-                                                      ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">
-                                                    ${car.status}
-                                                </span>
-                                                <div class="car-location">${car.local}</div>
-                                                <div>${car.brand} - ${car.model}</div>
-                                                <div class="price">${car.pricePerDay} / ngày</div>
-                                            </div>
-                                            <div style="justify-content:center; color: greenyellow">
-                                                <button type="submit" class="booking-btn">Booking</button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </c:forEach>
-                            </c:when>
-                            <c:when test="${not empty SearchByDate}">
-                                <c:forEach var="car" items="${SearchByDate}">
-                                    <form  action="${pageContext.request.contextPath}/booking" method="get">
-                                        <input type="hidden" name="carId" value="${car.id}">
-                                        <div class="car-card">
-                                            <img src="${car.img}" alt="">
-                                            <div class="car-body">
-                                                <div class="car-title">${car.name}</div>
-                                                <span class="car-status
-                                                      ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">
-                                                    ${car.status}
-                                                </span>
-                                                <div class="car-location">${car.local}</div>
-                                                <div>${car.brand} - ${car.model}</div>
-                                                <div class="price">${car.pricePerDay} / ngày</div>
-                                            </div>
-                                            <div style="justify-content:center; color: greenyellow">
-                                                <button type="submit" class="booking-btn">Booking</button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <c:forEach var="car" items="${CarList}">
-                                    <form  action="${pageContext.request.contextPath}/booking" method="get">
-                                        <input type="hidden" name="carId" value="${car.id}">
-                                        <div class="car-card">
-                                            <img src="${car.img}" alt="">
-                                            <div class="car-body">
-                                                <div class="car-title">${car.name}</div>
-                                                <span class="car-status
-                                                      ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">
-                                                    ${car.status}
-                                                </span>
-                                                <div class="car-location">${car.local}</div>
-                                                <div>${car.brand} - ${car.model}</div>
-                                                <div class="price">${car.pricePerDay} / ngày</div>
-                                                <div style="justify-content:center; color: greenyellow">
-                                                    <button type="submit" class="booking-btn">Booking</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </c:forEach>
-                            </c:otherwise>
-                        </c:choose>
-                    </c:when>
-                    <c:when test="${empty user}">
-                        <c:choose>
-                            <c:when test="${not empty SearchByDate}">
-                                <c:forEach var="car" items="${SearchByDate}">
-                                    <form  action="${pageContext.request.contextPath}/login" method="post">
-                                        <input type="hidden" name="carId" value="${car.id}">
-                                        <div class="car-card">
-                                            <img src="${car.img}" alt="">
-                                            <div class="car-body">
-                                                <div class="car-title">${car.name}</div>
-                                                <span class="car-status
-                                                      ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">
-                                                    ${car.status}
-                                                </span>
-                                                <div class="car-location">${car.local}</div>
-                                                <div>${car.brand} - ${car.model}</div>
-                                                <div class="price">${car.pricePerDay} / ngày</div>
-                                            </div>
-                                            <div style="justify-content:center; color: greenyellow">
-                                                <button type="submit" class="booking-btn">Booking</button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <c:forEach var="car" items="${CarList}">
-                                    <form  action="${pageContext.request.contextPath}/login" method="post">
-                                        <input type="hidden" name="carId" value="${car.id}">
-                                        <div class="car-card">
-                                            <img src="${car.img}" alt="">
-                                            <div class="car-body">
-                                                <div class="car-title">${car.name}</div>
-                                                <span class="car-status
-                                                      ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">
-                                                    ${car.status}
-                                                </span>
-                                                <div class="car-location">${car.local}</div>
-                                                <div>${car.brand} - ${car.model}</div>
-                                                <div class="price">${car.pricePerDay} / ngày</div>
-                                                <div style="justify-content:center; color: greenyellow">
-                                                    <button type="submit" class="booking-btn">Booking</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </c:forEach>
-                            </c:otherwise>
-                        </c:choose>
-                    </c:when>
-                </c:choose>
+        <div class="hero-search">
+            <div class="search-container">
+                <h2 style="margin-bottom: 20px;">Khám phá hành trình của bạn</h2>
+                <form class="search-bar" action="${pageContext.request.contextPath}/searchcar" method="post">
+                    <div class="field-group">
+                        <label><i class="fa-solid fa-location-dot"></i> Địa điểm</label>
+                        <select name="local" class="input-style">
+                            <option value="" ${empty param.local ? "selected" : ""}>Tất cả</option>
+                            <c:forEach var="localItem" items="${LocalList}">
+                                <option value="${localItem}" ${param.local == localItem ? "selected" : ""}>${localItem}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label><i class="fa-solid fa-calendar"></i> Ngày nhận</label>
+                        <input type="date" name="pickupTime" class="input-style" value="${param.pickupTime != null ? param.pickupTime : ''}">
+                    </div>
+                    <div class="field-group">
+                        <label><i class="fa-solid fa-calendar-check"></i> Ngày trả</label>
+                        <input type="date" name="returnTime" class="input-style" value="${param.returnTime != null ? param.returnTime : ''}">
+                    </div>
+                    <button type="submit" class="btn-search">Tìm kiếm</button>
+                </form>
             </div>
         </div>
 
-        <script>
-            function toggleDropdown(id) {
-                var dd = document.getElementById(id);
-                dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
-            }
+        <c:if test="${not empty error}">
+            <div class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> ${error}</div>
+        </c:if>
 
-            document.addEventListener('click', function (e) {
-                document.querySelectorAll('.dropdown').forEach(function (dd) {
-                    if (!dd.parentElement.contains(e.target)) {
-                        dd.style.display = 'none';
-                    }
-                });
-            });
-        </script>
+        <div class="filter-section">
+            <form class="filter-container" action="${pageContext.request.contextPath}/filter" method="get">
+                <select name="brand" class="filter-select">
+                    <option value="">Hãng xe</option>
+                    <c:forEach var="brand" items="${BrandList}">
+                        <option value="${brand}" ${param.brand == brand ? "selected" : ""}>${brand}</option>
+                    </c:forEach>
+                </select>
+                <select name="price" class="filter-select">
+                    <option value="">Mức giá</option>
+                    <option value="600000-1000000">600k - 1tr</option>
+                    <option value="1000000-1500000">1tr - 1.5tr</option>
+                    <option value="1500000-2500000">1.5tr - 2.5tr</option>
+                </select>
+                <button type="submit" class="btn-filter">Lọc xe</button>
+            </form>
+        </div>
 
+        <div class="main-content">
+            <div class="car-grid">
+                <c:choose>
+                    <%-- ĐÃ ĐĂNG NHẬP --%>
+                    <c:when test="${not empty user}">
+                        <c:set var="listToDisplay" value="${not empty FilterCar ? FilterCar : (not empty SearchByDate ? SearchByDate : CarList)}" />
+                        <c:forEach var="car" items="${listToDisplay}">
+                            <form action="${pageContext.request.contextPath}/booking" method="get">
+                                <input type="hidden" name="carId" value="${car.id}">
+                                <div class="car-card">
+                                    <div class="image-box">
+                                        <img src="${car.img}" alt="">
+                                        <span class="status-badge ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">${car.status}</span>
+                                    </div>
+                                    <div class="car-info">
+                                        <div class="car-name">${car.name}</div>
+                                        <div class="car-meta"><span><i class="fa-solid fa-tag"></i> ${car.brand}</span></div>
+                                        <div class="car-meta"><span><i class="fa-solid fa-location-crosshairs"></i> ${car.local}</span></div>
+                                    </div>
+                                    <div class="car-price">
+                                        <span class="price-val">${car.pricePerDay}</span>
+                                        <small>/ ngày</small>
+                                    </div>
+                                    <button type="submit" class="booking-btn">ĐẶT XE NGAY</button>
+                                </div>
+                            </form>
+                        </c:forEach>
+                    </c:when>
+
+                    <%-- CHƯA ĐĂNG NHẬP --%>
+                    <c:otherwise>
+                        <c:set var="listToDisplayGuest" value="${not empty FilterCar ? FilterCar : (not empty SearchByDate ? SearchByDate : CarList)}" />
+                        <c:forEach var="car" items="${listToDisplayGuest}">
+                            <form action="${pageContext.request.contextPath}/login" method="post">
+                                <input type="hidden" name="carId" value="${car.id}">
+                                <div class="car-card">
+                                    <div class="image-box">
+                                        <img src="${car.img}" alt="">
+                                        <span class="status-badge ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">${car.status}</span>
+                                    </div>
+                                    <div class="car-info">
+                                        <div class="car-name">${car.name}</div>
+                                        <div class="car-meta"><span><i class="fa-solid fa-tag"></i> ${car.brand}</span></div>
+                                        <div class="car-meta"><span><i class="fa-solid fa-location-crosshairs"></i> ${car.local}</span></div>
+                                    </div>
+                                    <div class="car-price">
+                                        <span class="price-val">${car.pricePerDay}</span>
+                                        <small>/ ngày</small>
+                                    </div>
+                                    <button type="submit" class="booking-btn">ĐĂNG NHẬP ĐỂ ĐẶT</button>
+                                </div>
+                            </form>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
     </body>
 </html>

@@ -62,12 +62,13 @@ public class SearchCarServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         CarDAO carDAO = new CarDAO();
         List<Car> CarList = carDAO.getAllCars();
         List<String> BrandList = carDAO.getAllBrandCars();
-        HttpSession session = request.getSession();
+        List<String> LocalList = carDAO.getAllLocalCars();
+        HttpSession session = request.getSession(true);
         session.setAttribute("CarList", CarList);
+        session.setAttribute("LocalList", LocalList);
         session.setAttribute("BrandList", BrandList);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
         dispatcher.forward(request, response);
