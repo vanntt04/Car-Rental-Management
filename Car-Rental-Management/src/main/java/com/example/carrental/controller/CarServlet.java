@@ -1,8 +1,10 @@
 package com.example.carrental.controller;
 
+import com.example.carrental.model.dao.BookingDAO;
 import com.example.carrental.model.dao.CarAvailabilityDAO;
 import com.example.carrental.model.dao.CarDAO;
 import com.example.carrental.model.dao.CarImageDAO;
+import com.example.carrental.model.entity.Booking;
 import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.entity.CarAvailability;
 import com.example.carrental.model.entity.CarImage;
@@ -28,6 +30,7 @@ public class CarServlet extends HttpServlet {
     private CarDAO carDAO;
     private CarImageDAO carImageDAO;
     private CarAvailabilityDAO availabilityDAO;
+    private BookingDAO bookingDAO;
 
     @Override
     public void init() throws ServletException {
@@ -35,6 +38,7 @@ public class CarServlet extends HttpServlet {
         carDAO = new CarDAO();
         carImageDAO = new CarImageDAO();
         availabilityDAO = new CarAvailabilityDAO();
+        bookingDAO = new BookingDAO();
     }
 
     @Override
@@ -77,10 +81,14 @@ public class CarServlet extends HttpServlet {
         }
         List<CarImage> carImages = carImageDAO.getByCarId(carId);
         List<CarAvailability> carAvailabilities = availabilityDAO.getByCarId(carId);
+        List<Booking> carBookings = bookingDAO.getByCarId(carId, "all");
         request.setAttribute("car", car);
         request.setAttribute("carImages", carImages);
         request.setAttribute("carAvailabilities", carAvailabilities);
+        request.setAttribute("carBookings", carBookings);
         RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/car/detail.jsp");
         rd.forward(request, response);
     }
+    
+    
 }

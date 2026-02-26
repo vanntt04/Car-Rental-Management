@@ -126,7 +126,12 @@ public class CarDAO {
         }
         return cars;
     }
-
+    
+    public List<Car> getStatusCars()
+    {
+        List<Car> cars = new ArrayList<>()'
+        String 
+    }
     /**
      * Lấy xe theo ID
      */

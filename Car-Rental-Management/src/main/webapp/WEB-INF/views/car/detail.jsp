@@ -135,6 +135,51 @@
                 </div>
             </c:if>
 
+            <c:if test="${not empty carBookings}">
+                <div style="margin-top: 32px;">
+                    <h5 style="margin-bottom: 16px;"><i class="bi bi-calendar-check"></i> Lịch đặt xe (booking)</h5>
+                    <div class="woox-table-wrap">
+                        <table class="woox-table">
+                            <thead>
+                            <tr>
+                                <th>Từ ngày</th>
+                                <th>Đến ngày</th>
+                                <c:if test="${sessionScope.role == 'OWNER' || sessionScope.role == 'ADMIN'}">
+                                    <th>Khách hàng</th>
+                                </c:if>
+                                <th>Số ngày</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <c:forEach var="b" items="${carBookings}">
+                                <tr>
+                                    <td><fmt:formatDate value="${b.startDate}" pattern="dd/MM/yyyy"/></td>
+                                    <td><fmt:formatDate value="${b.endDate}" pattern="dd/MM/yyyy"/></td>
+                                    <c:if test="${sessionScope.role == 'OWNER' || sessionScope.role == 'ADMIN'}">
+                                        <td><c:choose><c:when test="${not empty b.customerName}">${b.customerName}</c:when><c:otherwise>Khách #${b.customerId}</c:otherwise></c:choose></td>
+                                    </c:if>
+                                    <td>${b.totalDays}</td>
+                                    <td>
+                                        <span class="badge ${b.bookingStatus == 'COMPLETED' ? 'badge-avail' : b.bookingStatus == 'APPROVED' || b.bookingStatus == 'PENDING' ? 'badge-rented' : 'badge-maint'}">
+                                            <c:choose>
+                                                <c:when test="${b.bookingStatus == 'PENDING'}">Chờ duyệt</c:when>
+                                                <c:when test="${b.bookingStatus == 'APPROVED'}">Đã duyệt</c:when>
+                                                <c:when test="${b.bookingStatus == 'COMPLETED'}">Hoàn thành</c:when>
+                                                <c:when test="${b.bookingStatus == 'REJECTED'}">Từ chối</c:when>
+                                                <c:when test="${b.bookingStatus == 'CANCELLED'}">Đã hủy</c:when>
+                                                <c:otherwise>${b.bookingStatus}</c:otherwise>
+                                            </c:choose>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </c:if>
+
             <p style="margin-top: 30px;">
                 <span class="border-button"><a href="${ctx}/cars"><i class="bi bi-arrow-left"></i> Quay lại danh sách xe</a></span>
             </p>

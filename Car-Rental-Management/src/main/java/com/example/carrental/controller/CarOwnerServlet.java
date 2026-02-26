@@ -126,7 +126,7 @@ public class CarOwnerServlet extends HttpServlet {
         return true;
     }
 
-    private static final int PAGE_SIZE = 10;
+    private static final int PAGE_SIZE = 5;
 
     private void listOwnerCars(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
