@@ -61,13 +61,22 @@
             </div>
             <div class="woox-form-row cols-2">
                 <div>
-                    <label class="woox-label">Trạng thái</label>
+                    <label class="woox-label">Trạng thái thuê</label>
                     <select name="status">
                         <option value="AVAILABLE" ${car.status == 'AVAILABLE' ? 'selected' : ''}>Sẵn có</option>
                         <option value="RENTED" ${car.status == 'RENTED' ? 'selected' : ''}>Đang thuê</option>
                         <option value="MAINTENANCE" ${car.status == 'MAINTENANCE' ? 'selected' : ''}>Bảo trì</option>
                     </select>
                 </div>
+                <div>
+                    <label class="woox-label">Trạng thái hoạt động</label>
+                    <select name="active">
+                        <option value="1" ${car.active ? 'selected' : ''}>Còn hoạt động</option>
+                        <option value="0" ${not car.active ? 'selected' : ''}>Không còn hoạt động</option>
+                    </select>
+                </div>
+            </div>
+            <div class="woox-form-row cols-2">
                 <div>
                     <label class="woox-label">Ảnh chính (tải từ máy)</label>
                     <input type="file" name="imageFile" accept="image/jpeg,image/png,image/gif,image/webp">

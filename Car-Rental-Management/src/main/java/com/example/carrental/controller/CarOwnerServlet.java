@@ -89,8 +89,8 @@ public class CarOwnerServlet extends HttpServlet {
         try {
             if ("create".equals(action) || "update".equals(action)) {
                 saveCar(request, response);
-            } else if ("delete".equals(action)) {
-                deleteCar(request, response);
+            } else if ("set-active".equals(action)) {
+                setCarActive(request, response);
             } else if ("add-availability".equals(action)) {
                 addAvailability(request, response);
             } else if ("delete-availability".equals(action)) {
@@ -126,29 +126,31 @@ public class CarOwnerServlet extends HttpServlet {
         return true;
     }
 
-    private static final int PAGE_SIZE = 5;
+    private static final int PAGE_SIZE = 10;
 
     private void listOwnerCars(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         User user = (User) request.getSession().getAttribute("user");
         String pageParam = request.getParameter("page");
         String statusFilter = request.getParameter("status");
+        String activeFilter = request.getParameter("active");
         String sortBy = request.getParameter("sort");
         if (sortBy == null || sortBy.isEmpty()) sortBy = "date_desc";
         int page = 1;
         try {
             if (pageParam != null && !pageParam.isEmpty()) page = Math.max(1, Integer.parseInt(pageParam));
         } catch (NumberFormatException ignored) { }
-        int totalCount = carDAO.countCarsByOwnerId(user.getId(), statusFilter);
+        int totalCount = carDAO.countCarsByOwnerId(user.getId(), statusFilter, activeFilter);
         int totalPages = totalCount == 0 ? 1 : (int) Math.ceil((double) totalCount / PAGE_SIZE);
         page = Math.min(page, totalPages);
         int offset = (page - 1) * PAGE_SIZE;
-        List<Car> cars = carDAO.getCarsByOwnerId(user.getId(), offset, PAGE_SIZE, statusFilter, sortBy);
+        List<Car> cars = carDAO.getCarsByOwnerId(user.getId(), offset, PAGE_SIZE, statusFilter, activeFilter, sortBy);
         request.setAttribute("cars", cars);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalCount", totalCount);
         request.setAttribute("statusFilter", statusFilter);
+        request.setAttribute("activeFilter", activeFilter);
         request.setAttribute("sortBy", sortBy);
         forward(request, response, "/WEB-INF/views/owner/list.jsp");
     }
@@ -201,6 +203,8 @@ public class CarOwnerServlet extends HttpServlet {
         String priceStr = request.getParameter("pricePerDay");
         if (priceStr != null && !priceStr.isEmpty()) car.setPricePerDay(new BigDecimal(priceStr));
         car.setStatus(request.getParameter("status") != null ? request.getParameter("status") : "AVAILABLE");
+        String activeParam = request.getParameter("active");
+        car.setActive(activeParam == null || activeParam.isEmpty() ? true : "1".equals(activeParam));
         car.setDescription(request.getParameter("description"));
 
         Part imagePart = null;
@@ -237,16 +241,27 @@ public class CarOwnerServlet extends HttpServlet {
         }
     }
 
-    private void deleteCar(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void setCarActive(HttpServletRequest request, HttpServletResponse response) throws IOException {
         User user = (User) request.getSession().getAttribute("user");
-        int carId = Integer.parseInt(request.getParameter("id"));
+        String idParam = request.getParameter("id");
+        String activeParam = request.getParameter("active");
+        if (idParam == null || activeParam == null) {
+            response.sendRedirect(request.getContextPath() + "/owner");
+            return;
+        }
+        int carId = Integer.parseInt(idParam);
         Car car = carDAO.getCarById(carId);
         if (car == null || (!"ADMIN".equals(user.getRole()) && (car.getOwnerId() == null || car.getOwnerId() != user.getId()))) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
-        carDAO.deleteCar(carId);
-        response.sendRedirect(request.getContextPath() + "/owner?success=deleted");
+        car.setActive("1".equals(activeParam));
+        try {
+            carDAO.updateCar(car);
+            response.sendRedirect(request.getContextPath() + "/owner?success=" + (car.isActive() ? "activated" : "deactivated"));
+        } catch (SQLException e) {
+            response.sendRedirect(request.getContextPath() + "/owner?error=update");
+        }
     }
 
     private void showAvailability(HttpServletRequest request, HttpServletResponse response, int carId)

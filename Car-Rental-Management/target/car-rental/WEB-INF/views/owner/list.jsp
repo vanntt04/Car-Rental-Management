@@ -40,7 +40,8 @@
                 <c:choose>
                     <c:when test="${param.success == 'created'}">Đã thêm xe mới thành công!</c:when>
                     <c:when test="${param.success == 'updated'}">Đã cập nhật xe thành công!</c:when>
-                    <c:when test="${param.success == 'deleted'}">Đã xóa xe thành công!</c:when>
+                    <c:when test="${param.success == 'activated'}">Đã đưa xe vào hoạt động.</c:when>
+                    <c:when test="${param.success == 'deactivated'}">Đã ngừng hoạt động xe.</c:when>
                 </c:choose>
             </div>
         </c:if>
@@ -55,16 +56,22 @@
 
         <c:if test="${not empty cars}">
             <div class="list-toolbar">
-                <label>Trạng thái:</label>
+                <label>Trạng thái thuê:</label>
                 <select id="filterStatus" onchange="applyFilter()">
                     <option value="" ${empty statusFilter ? 'selected' : ''}>Tất cả</option>
                     <option value="AVAILABLE" ${statusFilter == 'AVAILABLE' ? 'selected' : ''}>Sẵn có</option>
                     <option value="RENTED" ${statusFilter == 'RENTED' ? 'selected' : ''}>Đang thuê</option>
                     <option value="MAINTENANCE" ${statusFilter == 'MAINTENANCE' ? 'selected' : ''}>Bảo trì</option>
                 </select>
+                <label style="margin-left: 10px;">Hoạt động:</label>
+                <select id="filterActive" onchange="applyFilter()">
+                    <option value="" ${empty activeFilter ? 'selected' : ''}>Tất cả</option>
+                    <option value="1" ${activeFilter == '1' ? 'selected' : ''}>Còn hoạt động</option>
+                    <option value="0" ${activeFilter == '0' ? 'selected' : ''}>Ngừng hoạt động</option>
+                </select>
                 <label style="margin-left: 10px;">Sắp xếp:</label>
-                <a href="${ctx}/owner?page=1&status=${statusFilter}&sort=date_desc" class="btn-link ${sortBy == 'date_desc' ? 'active' : ''}">Mới nhất</a>
-                <a href="${ctx}/owner?page=1&status=${statusFilter}&sort=date_asc" class="btn-link ${sortBy == 'date_asc' ? 'active' : ''}">Cũ nhất</a>
+                <a href="${ctx}/owner?page=1&status=${statusFilter}&active=${activeFilter}&sort=date_desc" class="btn-link ${sortBy == 'date_desc' ? 'active' : ''}">Mới nhất</a>
+                <a href="${ctx}/owner?page=1&status=${statusFilter}&active=${activeFilter}&sort=date_asc" class="btn-link ${sortBy == 'date_asc' ? 'active' : ''}">Cũ nhất</a>
             </div>
 
             <p style="font-size: 14px; color: var(--woox-text); margin-bottom: 12px;">Tổng: ${totalCount} xe</p>
@@ -77,7 +84,8 @@
                         <th>Biển số</th>
                         <th>Hãng</th>
                         <th>Giá/ngày</th>
-                        <th>Trạng thái</th>
+                        <th>Trạng thái thuê</th>
+                        <th>Hoạt động</th>
                         <th style="text-align: right;">Thao tác</th>
                     </tr>
                     </thead>
@@ -89,16 +97,33 @@
                             <td>${car.brand}</td>
                             <td><fmt:formatNumber value="${car.pricePerDay}" type="currency" currencyCode="VND"/></td>
                             <td><span class="badge ${car.status == 'AVAILABLE' ? 'badge-avail' : car.status == 'RENTED' ? 'badge-rented' : 'badge-maint'}">${car.status}</span></td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${car.active}">
+                                        <span class="badge badge-avail">Còn hoạt động</span>
+                                        <form action="${ctx}/owner" method="post" style="display: inline; margin-left: 6px;">
+                                            <input type="hidden" name="action" value="set-active">
+                                            <input type="hidden" name="id" value="${car.id}">
+                                            <input type="hidden" name="active" value="0">
+                                            <button type="submit" class="woox-danger" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 12px;" title="Ngừng hoạt động">Ngừng HĐ</button>
+                                        </form>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="badge badge-maint">Ngừng hoạt động</span>
+                                        <form action="${ctx}/owner" method="post" style="display: inline; margin-left: 6px;">
+                                            <input type="hidden" name="action" value="set-active">
+                                            <input type="hidden" name="id" value="${car.id}">
+                                            <input type="hidden" name="active" value="1">
+                                            <button type="submit" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--woox-primary); font-size: 12px;" title="Đưa vào hoạt động">Đưa vào HĐ</button>
+                                        </form>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
                             <td style="text-align: right;">
                                 <a href="${ctx}/cars?id=${car.id}" style="margin-right: 10px;" title="Xem"><i class="bi bi-eye"></i></a>
                                 <a href="${ctx}/owner/edit/${car.id}" style="margin-right: 10px;" title="Sửa"><i class="bi bi-pencil"></i></a>
                                 <a href="${ctx}/owner/availability/${car.id}" style="margin-right: 10px;" title="Lịch"><i class="bi bi-calendar3"></i></a>
-                                <a href="${ctx}/owner/images/${car.id}" style="margin-right: 10px;" title="Ảnh"><i class="bi bi-images"></i></a>
-                                <form action="${ctx}/owner" method="post" style="display: inline;" onsubmit="return confirm('Bạn có chắc muốn xóa xe này?');">
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="id" value="${car.id}">
-                                    <button type="submit" class="woox-danger" style="background: none; border: none; cursor: pointer; padding: 0;" title="Xóa"><i class="bi bi-trash"></i></button>
-                                </form>
+                                <a href="${ctx}/owner/images/${car.id}" title="Ảnh"><i class="bi bi-images"></i></a>
                             </td>
                         </tr>
                     </c:forEach>
@@ -109,20 +134,20 @@
             <c:if test="${totalPages > 1}">
                 <div class="pagination-wrap">
                     <c:if test="${currentPage > 1}">
-                        <a href="${ctx}/owner?page=${currentPage - 1}&status=${statusFilter}&sort=${sortBy}"><i class="bi bi-chevron-left"></i> Trước</a>
+                        <a href="${ctx}/owner?page=${currentPage - 1}&status=${statusFilter}&active=${activeFilter}&sort=${sortBy}"><i class="bi bi-chevron-left"></i> Trước</a>
                     </c:if>
                     <c:forEach begin="1" end="${totalPages}" var="p">
                         <c:if test="${p == 1 || p == totalPages || (p >= currentPage - 1 && p <= currentPage + 1)}">
                             <c:choose>
                                 <c:when test="${p == currentPage}"><span class="current">${p}</span></c:when>
-                                <c:otherwise><a href="${ctx}/owner?page=${p}&status=${statusFilter}&sort=${sortBy}">${p}</a></c:otherwise>
+                                <c:otherwise><a href="${ctx}/owner?page=${p}&status=${statusFilter}&active=${activeFilter}&sort=${sortBy}">${p}</a></c:otherwise>
                             </c:choose>
                         </c:if>
                         <c:if test="${p == currentPage - 2 && currentPage > 3}"><span class="ellipsis">…</span></c:if>
                         <c:if test="${p == currentPage + 2 && currentPage < totalPages - 2}"><span class="ellipsis">…</span></c:if>
                     </c:forEach>
                     <c:if test="${currentPage < totalPages}">
-                        <a href="${ctx}/owner?page=${currentPage + 1}&status=${statusFilter}&sort=${sortBy}">Sau <i class="bi bi-chevron-right"></i></a>
+                        <a href="${ctx}/owner?page=${currentPage + 1}&status=${statusFilter}&active=${activeFilter}&sort=${sortBy}">Sau <i class="bi bi-chevron-right"></i></a>
                     </c:if>
                 </div>
             </c:if>
@@ -137,8 +162,10 @@
 <script>
 function applyFilter() {
     var status = document.getElementById('filterStatus').value;
+    var active = document.getElementById('filterActive').value;
     var url = '${ctx}/owner?page=1&sort=${sortBy}';
     if (status) url += '&status=' + encodeURIComponent(status);
+    if (active) url += '&active=' + encodeURIComponent(active);
     window.location.href = url;
 }
 </script>

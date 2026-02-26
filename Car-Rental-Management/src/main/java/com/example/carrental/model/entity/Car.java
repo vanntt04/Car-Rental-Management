@@ -21,6 +21,7 @@ public class Car {
     private String fuelType;     // PETROL, DIESEL, ELECTRIC
     private BigDecimal pricePerDay;
     private String status; // AVAILABLE, RENTED, MAINTENANCE
+    private boolean active = true; // true = còn hoạt động, false = không còn hoạt động
     private String imageUrl;
     private String description;
     private LocalDateTime createdAt;
@@ -128,6 +129,14 @@ public class Car {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public String getImageUrl() {
