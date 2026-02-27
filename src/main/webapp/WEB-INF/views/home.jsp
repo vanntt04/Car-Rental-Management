@@ -115,6 +115,7 @@
                 <c:if test="${sessionScope.role == 'CUSTOMER'}">
                     <a href="<c:url value='/searchcar'/>">Danh sách xe</a>
                     <a href="<c:url value='/login'/>">Đặt xe</a>
+                    <a href="<c:url value='/pay'/>">My Booking</a>
                 </c:if>
 
                 <!-- OWNER -->

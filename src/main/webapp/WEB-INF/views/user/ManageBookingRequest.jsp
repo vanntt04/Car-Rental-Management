@@ -131,6 +131,35 @@
                 margin-bottom:20px;
                 font-weight:600;
             }
+            .header {
+                background-color: #1e3a8a; /* xanh đậm */
+                color: white;
+                padding: 15px 20px;
+                font-size: 20px;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                justify-content: space-between; /* để Home nút ra bên phải */
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+
+            .btn-home {
+                background-color: #facc15; /* vàng nổi bật */
+                color: #1e3a8a;
+                text-decoration: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-weight: bold;
+                transition: all 0.3s ease;
+            }
+
+            .btn-home:hover {
+                background-color: #fde68a; /* sáng hơn khi hover */
+                color: #1e3a8a;
+                transform: translateY(-2px);
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
         </style>
     </head>
 
@@ -138,6 +167,7 @@
 
         <div class="header">
             🚗 Admin Dashboard - Quản lý yêu cầu đặt xe
+            <a href="${pageContext.request.contextPath}/home" class="btn-home">🏠 Home</a>
         </div>
         <div class="container">
             <div class="card">
@@ -161,8 +191,14 @@
 
                     <c:forEach var="book" items="${bookingList}">
                         <tr>
-                            <td>${book.customer_id}</td>
-                            <td>${book.car_id}</td>
+                            <td>
+                                Name: ${book.cus.fullName}<br>
+                                Phone: ${book.cus.phone}<br>
+                            </td>
+                            <td>
+                                Name: ${book.car.brand}_${book.car.name}<br>
+                                Price/Day: ${book.car.pricePerDay}
+                            </td>
                             <td>${book.start_date}</td>
                             <td>${book.end_date}</td>
 
@@ -175,13 +211,13 @@
                             <td>
                                 <c:if test="${book.booking_status == 'PENDING'}">
 
-                                    <form action="${pageContext.request.contextPath}/bookingAction" method="post" style="display:inline;">
+                                    <form action="${pageContext.request.contextPath}/listbooking" method="post" style="display:inline;">
                                         <input type="hidden" name="bookingId" value="${book.booking_id}">
                                         <input type="hidden" name="action" value="accept">
                                         <button class="btn accept">Accept</button>
                                     </form>
 
-                                    <form action="${pageContext.request.contextPath}/bookingAction" method="post" style="display:inline;">
+                                    <form action="${pageContext.request.contextPath}/listbooking" method="post" style="display:inline;">
                                         <input type="hidden" name="bookingId" value="${book.booking_id}">
                                         <input type="hidden" name="action" value="reject">
                                         <button class="btn reject">Reject</button>
@@ -191,7 +227,6 @@
                             </td>
                         </tr>
                     </c:forEach>
-
                 </table>
             </div>
         </div>

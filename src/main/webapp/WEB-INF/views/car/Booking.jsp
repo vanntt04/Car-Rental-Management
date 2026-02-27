@@ -127,6 +127,41 @@
                     grid-template-columns:1fr;
                 }
             }
+            /* Base button style */
+            .btn {
+                padding: 8px 16px;
+                font-weight: bold;
+                border-radius: 6px;
+                border: none;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                margin-right: 10px;
+                font-size: 14px;
+            }
+
+            /* Xác nhận */
+            .btn-accept {
+                background-color: #10b981; /* xanh lá */
+                color: white;
+            }
+
+            .btn-accept:hover {
+                background-color: #34d399;
+                transform: translateY(-2px);
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+
+            /* Hủy */
+            .btn-reject {
+                background-color: #ef4444; /* đỏ */
+                color: white;
+            }
+
+            .btn-reject:hover {
+                background-color: #f87171;
+                transform: translateY(-2px);
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
         </style>
     </head>
     <body>
@@ -195,8 +230,13 @@
                     <div class="total">
                         Tổng tạm tính: <span id="totalPriceDisplay">0 ₫</span>
                     </div>
+                    <button type="submit" name="action" value="accept" class="btn btn-accept">
+                         Xác nhận Booking
+                    </button>
 
-                    <button type="submit" class="btn">Xác nhận Booking</button>
+                    <button type="submit" name="action" value="reject" class="btn btn-reject">
+                         Hủy Booking
+                    </button>
                 </form>
             </div>
         </div>

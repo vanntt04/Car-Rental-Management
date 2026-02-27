@@ -2,23 +2,28 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package com.example.carrental.model.entity;
 
 /**
  *
  * @author PC
  */
+import com.example.carrental.model.dao.CarDAO;
+import com.example.carrental.model.dao.UserDAO;
 import java.util.*;
 import java.lang.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
 public class Booking {
-    int booking_id , car_id , customer_id;
-    LocalDate start_date , end_date;
-    int Total_price ; 
+
+    int booking_id, car_id, customer_id;
+    LocalDate start_date, end_date;
+    int Total_price;
     String booking_status;
     LocalDateTime created_at;
+    Car car;
+    User cus;
 
     public Booking() {
     }
@@ -44,6 +49,22 @@ public class Booking {
 
     public int getCar_id() {
         return car_id;
+    }
+
+    public Car getCar() {
+        return car;
+    }
+
+    public void setCar(Car car) {
+        this.car = car;
+    }
+
+    public User getCus() {
+        return cus;
+    }
+
+    public void setCus(User user) {
+        this.cus = user;
     }
 
     public void setCar_id(int car_id) {
@@ -97,5 +118,5 @@ public class Booking {
     public void setCreated_at(LocalDateTime created_at) {
         this.created_at = created_at;
     }
-      
+
 }

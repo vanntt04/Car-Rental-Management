@@ -97,24 +97,29 @@ public class BookingServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        String note = request.getParameter("returnLocation");
-        LocalDate start_date = LocalDate.parse(request.getParameter("pickupTime"));
-        LocalDate end_date = LocalDate.parse(request.getParameter("returnTime"));
-        BookingDAO book = new BookingDAO();
-        Car car = (Car) session.getAttribute("BookCar");
-        User user = (User) session.getAttribute("user");
-        Booking bookcar = new Booking(123, car.getId(), user.getId(), start_date, end_date, car.getPricePerDay(), "PENDING", LocalDateTime.now());
-        book.insertBooking(bookcar);
-        session.setAttribute("note", note);
-        long days = java.time.temporal.ChronoUnit.DAYS.between(start_date, end_date);
-        int pricePerDay = car.getPricePerDay();
-        int totalPrice = (int) (days * pricePerDay);
-        request.setAttribute("total_price", totalPrice);
-        session.setAttribute("invoice", bookcar);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/Invoice.jsp");
-        dispatcher.forward(request, response);
-
+        String action = request.getParameter("action");
+        if ("accept".equals(action)) {
+            HttpSession session = request.getSession();
+            String note = request.getParameter("returnLocation");
+            LocalDate start_date = LocalDate.parse(request.getParameter("pickupTime"));
+            LocalDate end_date = LocalDate.parse(request.getParameter("returnTime"));
+            BookingDAO book = new BookingDAO();
+            Car car = (Car) session.getAttribute("BookCar");
+            User user = (User) session.getAttribute("user");
+            Booking bookcar = new Booking(0, car.getId(), user.getId(), start_date, end_date, car.getPricePerDay(), "PENDING", LocalDateTime.now());
+            book.insertBooking(bookcar);
+            session.setAttribute("note", note);
+            long days = java.time.temporal.ChronoUnit.DAYS.between(start_date, end_date);
+            int pricePerDay = car.getPricePerDay();
+            int totalPrice = (int) (days * pricePerDay);
+            request.setAttribute("total_price", totalPrice);
+            session.setAttribute("invoice", bookcar);
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/Invoice.jsp");
+            dispatcher.forward(request, response);
+        } else if ("reject".equals(action)) {
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
+            dispatcher.forward(request, response);
+        }
     }
 
     /**
