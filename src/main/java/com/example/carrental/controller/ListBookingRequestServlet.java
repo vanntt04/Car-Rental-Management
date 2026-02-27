@@ -10,7 +10,6 @@ import com.example.carrental.model.dao.UserDAO;
 import com.example.carrental.model.entity.Booking;
 import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.entity.User;
-import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -75,13 +74,19 @@ public class ListBookingRequestServlet extends HttpServlet {
 
         BookingDAO bookDAO = new BookingDAO();
         List<Booking> bookingList = bookDAO.getBookCarByOwen(currentUser.getId());
-
         if (bookingList == null || bookingList.isEmpty()) {
             request.setAttribute("error", "Chưa có yêu cầu booking nào");
+        } else {
+            for (Booking b : bookingList) {
+                CarDAO carDao = new CarDAO();
+                UserDAO userDao = new UserDAO();
+                Car car = carDao.getCarById(b.getCar_id());
+                User cus = userDao.getUserById(b.getCustomer_id());
+                b.setCar(car);
+                b.setCus(cus);
+            }
+            request.setAttribute("bookingList", bookingList);
         }
-
-        request.setAttribute("bookingList", bookingList);
-
         request.getRequestDispatcher("/WEB-INF/views/user/ManageBookingRequest.jsp")
                 .forward(request, response);
     }
@@ -97,7 +102,42 @@ public class ListBookingRequestServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        String action = request.getParameter("action");
+        String bookIdStr = request.getParameter("bookingId");
+        if (bookIdStr == null || bookIdStr.isEmpty()) {
+            request.setAttribute("error", "Booking ID không hợp lệ");
+            doGet(request, response);
+            return;
+        }
+
+        int book_id = Integer.parseInt(bookIdStr);
+        BookingDAO bookDAO = new BookingDAO();
+
+        if ("accept".equals(action)) {
+            bookDAO.updateBookingStatus(book_id, "APPROVED");
+        } else if ("reject".equals(action)) {
+            bookDAO.updateBookingStatus(book_id, "CANCELLED");
+        }
+        List<Booking> bookingList = bookDAO.getBookCarByOwen(currentUser.getId());
+        CarDAO carDao = new CarDAO();
+        UserDAO userDao = new UserDAO();
+        for (Booking b : bookingList) {
+            b.setCar(carDao.getCarById(b.getCar_id()));
+            b.setCus(userDao.getUserById(b.getCustomer_id()));
+        }
+
+        request.setAttribute("bookingList", bookingList);
+        request.getRequestDispatcher("/WEB-INF/views/user/ManageBookingRequest.jsp")
+                .forward(request, response);
     }
 
     /**

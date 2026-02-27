@@ -54,7 +54,7 @@ public class BookingDAO {
 
         try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                book.add(mapResultSetToCar(rs));
+                book.add(mapResultSetToBook(rs));
             }
         } catch (SQLException e) {
             System.err.println("Error getting all cars: " + e.getMessage());
@@ -63,11 +63,23 @@ public class BookingDAO {
 
         return book;
     }
-     public List<Booking> getBookCarByOwen(int owen_id) {
 
-        String sql = "SELECT c.* "
-                + "FROM cars c "
-                + "LEFT JOIN booking i ON c.car_id = i.car_id "
+    public void updateBookingStatus(int bookingId, String status) {
+        String sql = "UPDATE bookings SET booking_status = ? WHERE booking_id = ?";
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, bookingId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Booking> getBookCarByOwen(int owen_id) {
+
+        String sql = "SELECT i.* "
+                + "FROM bookings i "
+                + "JOIN cars c ON c.car_id = i.car_id "
                 + "WHERE c.owner_id = ?";
 
         List<Booking> cars = new ArrayList<>();
@@ -79,7 +91,7 @@ public class BookingDAO {
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
-                Booking book = mapResultSetToCar(rs);
+                Booking book = mapResultSetToBook(rs);
                 cars.add(book);
             }
 
@@ -92,7 +104,7 @@ public class BookingDAO {
         return cars;
     }
 
-    private Booking mapResultSetToCar(ResultSet rs) throws SQLException {
+    private Booking mapResultSetToBook(ResultSet rs) throws SQLException {
         Booking book = new Booking();
         book.setBooking_id(rs.getInt("booking_id"));
         book.setBooking_status(rs.getString("booking_status"));
