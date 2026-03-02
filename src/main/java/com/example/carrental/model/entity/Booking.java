@@ -1,3 +1,4 @@
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
@@ -9,9 +10,9 @@ package com.example.carrental.model.entity;
  * @author PC
  */
 import com.example.carrental.model.dao.CarDAO;
-import com.example.carrental.model.dao.UserDAO;
 import java.util.*;
 import java.lang.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -19,24 +20,24 @@ public class Booking {
 
     int booking_id, car_id, customer_id;
     LocalDate start_date, end_date;
-    int Total_price;
+    BigDecimal Total_price;
     String booking_status;
-    LocalDateTime created_at;
     Car car;
     User cus;
+    int total_days;
 
     public Booking() {
     }
 
-    public Booking(int booking_id, int car_id, int customer_id, LocalDate start_date, LocalDate end_date, int Total_price, String booking_status, LocalDateTime created_at) {
+    public Booking(int booking_id, int car_id, int customer_id, LocalDate start_date, int total_days, LocalDate end_date, BigDecimal Total_price, String booking_status) {
         this.booking_id = booking_id;
         this.car_id = car_id;
+        this.total_days = total_days;
         this.customer_id = customer_id;
         this.start_date = start_date;
         this.end_date = end_date;
         this.Total_price = Total_price;
         this.booking_status = booking_status;
-        this.created_at = created_at;
     }
 
     public int getBooking_id() {
@@ -91,15 +92,23 @@ public class Booking {
         return end_date;
     }
 
+    public int getTotal_days() {
+        return total_days;
+    }
+
+    public void setTotal_days(int total_days) {
+        this.total_days = total_days;
+    }
+
     public void setEnd_date(LocalDate end_date) {
         this.end_date = end_date;
     }
 
-    public int getTotal_price() {
+    public BigDecimal getTotal_price() {
         return Total_price;
     }
 
-    public void setTotal_price(int Total_price) {
+    public void setTotal_price(BigDecimal Total_price) {
         this.Total_price = Total_price;
     }
 
@@ -110,13 +119,4 @@ public class Booking {
     public void setBooking_status(String booking_status) {
         this.booking_status = booking_status;
     }
-
-    public LocalDateTime getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(LocalDateTime created_at) {
-        this.created_at = created_at;
-    }
-
 }

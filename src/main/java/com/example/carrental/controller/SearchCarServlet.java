@@ -65,11 +65,11 @@ public class SearchCarServlet extends HttpServlet {
         CarDAO carDAO = new CarDAO();
         List<Car> CarList = carDAO.getAllCars();
         List<String> BrandList = carDAO.getAllBrandCars();
-        List<String> LocalList = carDAO.getAllLocalCars();
+        List<Integer> SeatList = carDAO.getAllSeat();
         HttpSession session = request.getSession(true);
         session.setAttribute("CarList", CarList);
-        session.setAttribute("LocalList", LocalList);
         session.setAttribute("BrandList", BrandList);
+        session.setAttribute("SeatList", SeatList);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
         dispatcher.forward(request, response);
 
@@ -112,12 +112,12 @@ public class SearchCarServlet extends HttpServlet {
         } else if (returnTime.isBefore(pickupTime)) {
             error = "Ngày trả xe phải sau ngày nhận";
         }
-        String location = request.getParameter("local");
+        String seat = request.getParameter("seat");
         CarDAO carDAO = new CarDAO();
         List<Car> SearchByDate = null;
         HttpSession session = request.getSession();
         if (error == null) {
-            SearchByDate = carDAO.getCarByDate(location, pickupTime, returnTime);
+            SearchByDate = carDAO.getCarByDate(Integer.valueOf(seat), pickupTime, returnTime);
             if (SearchByDate.isEmpty()) {
                 error = "Không tìm thấy kết quả phù hợp";
             }

@@ -9,33 +9,23 @@ import java.time.LocalDateTime;
  */
 public class Car {
     private int id;
-    private int owner_id;
-    private String img;
+    private Integer ownerId;
     private String name;
+    private String licensePlate;
     private String brand;
     private String model;
-    private String local;
-    private int pricePerDay;
-    private String status; 
-    private String des;
+    private Integer year;
+    private String color;
+    private Integer seats;
+    private String transmission; // AUTO, MANUAL
+    private String fuelType;     // PETROL, DIESEL, ELECTRIC
+    private BigDecimal pricePerDay;
+    private String status; // AVAILABLE, RENTED, MAINTENANCE
+    private boolean active = true; // true = còn hoạt động, false = không còn hoạt động
+    private String imageUrl;
+    private String description;
     private LocalDateTime createdAt;
-
-    public Car() {
-    }
-
-    public Car(int id, int owner_id, String img, String name, String brand, String model, String local,  int pricePerDay, String status, String des, LocalDateTime createdAt) {
-        this.id = id;
-        this.owner_id = owner_id;
-        this.img = img;
-        this.name = name;
-        this.brand = brand;
-        this.model = model;
-        this.local = local;
-        this.pricePerDay = pricePerDay;
-        this.status = status;
-        this.des = des;
-        this.createdAt = createdAt;
-    }
+    private LocalDateTime updatedAt;
 
     public int getId() {
         return id;
@@ -45,20 +35,12 @@ public class Car {
         this.id = id;
     }
 
-    public int getOwner_id() {
-        return owner_id;
+    public Integer getOwnerId() {
+        return ownerId;
     }
 
-    public void setOwner_id(int owner_id) {
-        this.owner_id = owner_id;
-    }
-
-    public String getImg() {
-        return img;
-    }
-
-    public void setImg(String img) {
-        this.img = img;
+    public void setOwnerId(Integer ownerId) {
+        this.ownerId = ownerId;
     }
 
     public String getName() {
@@ -67,6 +49,14 @@ public class Car {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getLicensePlate() {
+        return licensePlate;
+    }
+
+    public void setLicensePlate(String licensePlate) {
+        this.licensePlate = licensePlate;
     }
 
     public String getBrand() {
@@ -85,19 +75,51 @@ public class Car {
         this.model = model;
     }
 
-    public String getLocal() {
-        return local;
+    public Integer getYear() {
+        return year;
     }
 
-    public void setLocal(String local) {
-        this.local = local;
+    public void setYear(Integer year) {
+        this.year = year;
     }
 
-    public int getPricePerDay() {
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public Integer getSeats() {
+        return seats;
+    }
+
+    public void setSeats(Integer seats) {
+        this.seats = seats;
+    }
+
+    public String getTransmission() {
+        return transmission;
+    }
+
+    public void setTransmission(String transmission) {
+        this.transmission = transmission;
+    }
+
+    public String getFuelType() {
+        return fuelType;
+    }
+
+    public void setFuelType(String fuelType) {
+        this.fuelType = fuelType;
+    }
+
+    public BigDecimal getPricePerDay() {
         return pricePerDay;
     }
 
-    public void setPricePerDay(int pricePerDay) {
+    public void setPricePerDay(BigDecimal pricePerDay) {
         this.pricePerDay = pricePerDay;
     }
 
@@ -109,12 +131,28 @@ public class Car {
         this.status = status;
     }
 
-    public String getDes() {
-        return des;
+    public boolean isActive() {
+        return active;
     }
 
-    public void setDes(String des) {
-        this.des = des;
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -125,9 +163,13 @@ public class Car {
         this.createdAt = createdAt;
     }
 
-   
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 
-   
-}
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     
+}

@@ -256,30 +256,30 @@
                 <h2 style="margin-bottom: 20px;">Khám phá hành trình của bạn</h2>
                 <form class="search-bar" action="${pageContext.request.contextPath}/searchcar" method="post">
                     <div class="field-group">
-                        <label><i class="fa-solid fa-location-dot"></i> Địa điểm</label>
-                        <select name="local" class="input-style">
-                            <option value="" ${empty param.local ? "selected" : ""}>Tất cả</option>
-                            <c:forEach var="localItem" items="${LocalList}">
-                                <option value="${localItem}" ${param.local == localItem ? "selected" : ""}>${localItem}</option>
-                            </c:forEach>
-                        </select>
+                        <label><i class="fa-solid fa-location-dot"></i> Loại Xe</label>
+                        <select name="seat" class="input-style"> 
+                            <option value="" ${empty param.seat ? "selected" : ""}>Tất cả</option> 
+                            <c:forEach var="seatItem" items="${SeatList}"> 
+                                <option value="${seatItem}" ${param.seat != null && (param.seat eq seatItem.toString()) ? "selected" : ""}> Loại ${seatItem} </option>
+                            </c:forEach> 
+                        </select> 
                     </div>
                     <div class="field-group">
                         <label><i class="fa-solid fa-calendar"></i> Ngày nhận</label>
-                        <input type="date" name="pickupTime" class="input-style" value="${param.pickupTime != null ? param.pickupTime : ''}">
+                        <input type="date" name="pickupTime" class="input-style" value="${param.pickupTime}">
                     </div>
+
                     <div class="field-group">
                         <label><i class="fa-solid fa-calendar-check"></i> Ngày trả</label>
-                        <input type="date" name="returnTime" class="input-style" value="${param.returnTime != null ? param.returnTime : ''}">
+                        <input type="date" name="returnTime" class="input-style" value="${param.returnTime}">
                     </div>
+
                     <button type="submit" class="btn-search">Tìm kiếm</button>
                 </form>
             </div>
         </div>
 
-        <c:if test="${not empty error}">
-            <div class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> ${error}</div>
-        </c:if>
+
 
         <div class="filter-section">
             <form class="filter-container" action="${pageContext.request.contextPath}/filter" method="get">
@@ -289,11 +289,11 @@
                         <option value="${brand}" ${param.brand == brand ? "selected" : ""}>${brand}</option>
                     </c:forEach>
                 </select>
-                <select name="price" class="filter-select">
-                    <option value="">Mức giá</option>
-                    <option value="600000-1000000">600k - 1tr</option>
-                    <option value="1000000-1500000">1tr - 1.5tr</option>
-                    <option value="1500000-2500000">1.5tr - 2.5tr</option>
+                <select name="price">
+                    <option value="">Tất cả</option>
+                    <option value="500000-1500000">500k - 1.5tr</option>
+                    <option value="1500001-2500000">1.5tr - 2.5tr</option>
+                    <option value="2500001-3500000">2.5tr - 3.5tr</option>
                 </select>
                 <button type="submit" class="btn-filter">Lọc xe</button>
             </form>
@@ -310,17 +310,18 @@
                                 <input type="hidden" name="carId" value="${car.id}">
                                 <div class="car-card">
                                     <div class="image-box">
-                                        <img src="${car.img}" alt="">
+                                        <img src="${car.imageUrl}" alt="${car.name}">
                                         <span class="status-badge ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">${car.status}</span>
                                     </div>
                                     <div class="car-info">
                                         <div class="car-name">${car.name}</div>
                                         <div class="car-meta"><span><i class="fa-solid fa-tag"></i> ${car.brand}</span></div>
-                                        <div class="car-meta"><span><i class="fa-solid fa-location-crosshairs"></i> ${car.local}</span></div>
+                                        <div class="car-meta">
+                                            <span><i class="fa-solid fa-user"></i> ${car.seats} chỗ</span>
+                                        </div>
                                     </div>
                                     <div class="car-price">
-                                        <span class="price-val">${car.pricePerDay}</span>
-                                        <small>/ ngày</small>
+                                        <span><i class="price-val"></i> ${car.pricePerDay}/ngày</span>
                                     </div>
                                     <button type="submit" class="booking-btn">ĐẶT XE NGAY</button>
                                 </div>
@@ -336,17 +337,18 @@
                                 <input type="hidden" name="carId" value="${car.id}">
                                 <div class="car-card">
                                     <div class="image-box">
-                                        <img src="${car.img}" alt="">
+                                        <img src="${car.imageUrl}" alt="${car.name}">
                                         <span class="status-badge ${car.status == 'AVAILABLE' ? 'available' : 'unavailable'}">${car.status}</span>
                                     </div>
                                     <div class="car-info">
                                         <div class="car-name">${car.name}</div>
                                         <div class="car-meta"><span><i class="fa-solid fa-tag"></i> ${car.brand}</span></div>
-                                        <div class="car-meta"><span><i class="fa-solid fa-location-crosshairs"></i> ${car.local}</span></div>
+                                        <div class="car-meta">
+                                            <span><i class="fa-solid fa-user"></i> ${car.seats} chỗ</span>
+                                        </div>
                                     </div>
                                     <div class="car-price">
-                                        <span class="price-val">${car.pricePerDay}</span>
-                                        <small>/ ngày</small>
+                                        <span><i class="price-val"></i> ${car.pricePerDay}/ngày</span>
                                     </div>
                                     <button type="submit" class="booking-btn">ĐĂNG NHẬP ĐỂ ĐẶT</button>
                                 </div>
