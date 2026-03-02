@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -88,8 +89,8 @@ public class FilterCarServlet extends HttpServlet {
         if (price != null && !price.isEmpty() && (brand == null || brand.isEmpty())) {
             try {
                 String[] parts = price.split("-");
-                int minPrice = Integer.parseInt(parts[0].trim());
-                int maxPrice = Integer.parseInt(parts[1].trim());
+                BigDecimal minPrice = new BigDecimal(parts[0].trim());
+                BigDecimal maxPrice = new BigDecimal(parts[1].trim());
                 result = carDAO.filterCarByPrice(minPrice, maxPrice, result);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -99,8 +100,8 @@ public class FilterCarServlet extends HttpServlet {
         if (brand != null && !brand.isEmpty() && price != null && !price.isEmpty()) {
             try {
                 String[] parts = price.split("-");
-                int minPrice = Integer.parseInt(parts[0].trim());
-                int maxPrice = Integer.parseInt(parts[1].trim());
+                BigDecimal minPrice = new BigDecimal(parts[0].trim());
+                BigDecimal maxPrice = new BigDecimal(parts[1].trim());
                 result = carDAO.filterCar(brand, minPrice, maxPrice, result); // phương thức filter cả 2
             } catch (Exception e) {
                 e.printStackTrace();

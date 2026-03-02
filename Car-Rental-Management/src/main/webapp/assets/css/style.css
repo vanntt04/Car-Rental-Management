@@ -1,0 +1,40 @@
+/* CarRental - Common Styles (Header & Footer) */
+:root {
+    --primary: #0d6efd;
+    --primary-dark: #0a58ca;
+    --accent: #ff6b35;
+    --dark: #1a1a2e;
+    --light-bg: #f8f9fa;
+}
+
+* { box-sizing: border-box; }
+body { font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; color: #333; }
+
+/* Header */
+.site-header { background: #fff; box-shadow: 0 2px 20px rgba(0,0,0,.08); position: sticky; top: 0; z-index: 1000; }
+.site-header .navbar { padding: 0.75rem 0; }
+.site-header .logo { font-size: 1.5rem; font-weight: 700; color: var(--dark) !important; display: flex; align-items: center; gap: 0.5rem; }
+.site-header .logo-icon { font-size: 1.75rem; }
+.site-header .nav-link { font-weight: 500; color: #495057 !important; padding: 0.5rem 1rem !important; border-radius: 8px; transition: all 0.2s; }
+.site-header .nav-link:hover, .site-header .nav-link.active { color: var(--primary) !important; background: rgba(13,110,253,.08); }
+.site-header .cta-link { background: var(--primary) !important; color: #fff !important; border-radius: 8px; }
+.site-header .cta-link:hover { background: var(--primary-dark) !important; color: #fff !important; }
+.site-header .user-greeting { font-size: 0.9rem; margin-right: 0.5rem; color: #666; }
+
+/* Footer */
+.site-footer { background: var(--dark); color: #fff; }
+.site-footer .footer-main { padding: 4rem 0 2rem; }
+.site-footer .footer-brand { display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
+.site-footer .footer-desc { color: rgba(255,255,255,.7); font-size: 0.95rem; line-height: 1.7; }
+.site-footer .footer-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+.site-footer .footer-links, .site-footer .footer-contact { list-style: none; padding: 0; margin: 0; }
+.site-footer .footer-links li, .site-footer .footer-contact li { margin-bottom: 0.5rem; }
+.site-footer .footer-links a { color: rgba(255,255,255,.7); text-decoration: none; font-size: 0.95rem; }
+.site-footer .footer-links a:hover { color: #fff; }
+.site-footer .footer-contact { color: rgba(255,255,255,.7); font-size: 0.95rem; }
+.site-footer .footer-contact li { display: flex; align-items: flex-start; gap: 0.5rem; }
+.site-footer .footer-contact i { margin-top: 3px; }
+.site-footer .footer-bottom { padding: 1.5rem 0; border-top: 1px solid rgba(255,255,255,.1); }
+.site-footer .copyright { margin: 0; font-size: 0.9rem; color: rgba(255,255,255,.6); }
+.site-footer .footer-social a { color: rgba(255,255,255,.7); font-size: 1.25rem; margin-left: 1rem; transition: color 0.2s; }
+.site-footer .footer-social a:hover { color: #fff; }

@@ -169,7 +169,7 @@
             <div class="left">
                 <c:choose>
                     <c:when test="${not empty BookCar}">
-                        <img class="car-img" src="${BookCar.img}" alt="${BookCar.name}" />
+                        <img class="car-img" src="${BookCar.imageUrl}" alt="${BookCar.name}" />
                         <h3>${BookCar.name}</h3>
                         <div class="muted">Model: <strong>${BookCar.model}</strong></div>
                         <div class="info-row">
