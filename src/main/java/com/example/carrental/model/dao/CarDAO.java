@@ -174,10 +174,10 @@ public class CarDAO {
                 + "FROM cars c "
                 + "LEFT JOIN car_images r ON c.id = r.car_id AND r.is_primary = 1 "
                 + "WHERE c.seats = ? "
-                + "AND NOT EXISTS ( "
+                + "AND EXISTS ( "
                 + "   SELECT 1 FROM car_availability i "
                 + "   WHERE i.car_id = c.id "
-                + "   AND NOT (? < i.start_date OR ? > i.end_date) "
+                + "   AND (? <= i.end_date AND ? >= i.start_date) "
                 + ")";
 
         List<Car> cars = new ArrayList<>();
@@ -375,8 +375,8 @@ public class CarDAO {
         CarDAO carDAO = new CarDAO();
         // ===== Test getCarByDate =====
         int seat = 5; // số chỗ
-        LocalDate pickTime = LocalDate.of(2026, 3, 6);
-        LocalDate returnTime = LocalDate.of(2026, 3, 7);
+        LocalDate pickTime = LocalDate.of(2026, 12, 6);
+        LocalDate returnTime = LocalDate.of(2026, 12, 7);
 
         List<Car> carsByDate = carDAO.getCarByDate(seat, pickTime, returnTime);
 
