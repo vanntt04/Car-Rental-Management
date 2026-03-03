@@ -112,23 +112,27 @@ public class SearchCarServlet extends HttpServlet {
         } else if (returnTime.isBefore(pickupTime)) {
             error = "Ngày trả xe phải sau ngày nhận";
         }
-        String seat = request.getParameter("seat");
         CarDAO carDAO = new CarDAO();
-        List<Car> SearchByDate = null;
-        HttpSession session = request.getSession();
+        List<Car> resultList = null;
+
         if (error == null) {
-            SearchByDate = carDAO.getCarByDate(Integer.valueOf(seat), pickupTime, returnTime);
-            if (SearchByDate.isEmpty()) {
+            String seat = request.getParameter("seat");
+            resultList = carDAO.getCarByDate(Integer.valueOf(seat), pickupTime, returnTime);
+
+            if (resultList == null || resultList.isEmpty()) {
                 error = "Không tìm thấy kết quả phù hợp";
+                resultList = carDAO.getAllCars(); // HIỂN THỊ LẠI TOÀN BỘ XE
             }
         } else {
-            SearchByDate = carDAO.getAllCars();
+            resultList = carDAO.getAllCars();
         }
-        session.setAttribute("error", error);
-        session.setAttribute("pickupTime", pickupTime);
-        session.setAttribute("returnTime", returnTime);
-        session.setAttribute("SearchByDate", SearchByDate);
-        session.setAttribute("FilterCar", SearchByDate);
+
+        request.setAttribute("error", error);
+        request.setAttribute("CarList", resultList);  // CHỈ DÙNG 1 BIẾN
+        request.setAttribute("error", error);
+        request.setAttribute("pickupTime", pickupTime);
+        request.setAttribute("returnTime", returnTime);
+        request.setAttribute("CarList", resultList);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
         dispatcher.forward(request, response);
     }
