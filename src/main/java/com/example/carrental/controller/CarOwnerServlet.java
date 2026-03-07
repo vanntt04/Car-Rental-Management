@@ -175,7 +175,7 @@ public class CarOwnerServlet extends HttpServlet {
         }
     }
 
-    private void saveCar(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    private void saveCar(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException, SQLException {
         User user = (User) request.getSession().getAttribute("user");
         String action = request.getParameter("action");
         String idParam = request.getParameter("id");
@@ -230,7 +230,7 @@ public class CarOwnerServlet extends HttpServlet {
         }
     }
 
-    private void setCarActive(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void setCarActive(HttpServletRequest request, HttpServletResponse response) throws IOException, SQLException {
         User user = (User) request.getSession().getAttribute("user");
         String idParam = request.getParameter("id");
         String activeParam = request.getParameter("active");

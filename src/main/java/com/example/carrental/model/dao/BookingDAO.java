@@ -6,6 +6,7 @@
 package com.example.carrental.model.dao;
 
 import com.example.carrental.model.entity.Booking;
+import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.util.DBConnection;
 import java.math.BigDecimal;
 
@@ -16,18 +17,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BookingDAO {
-    
+
     private DBConnection dbConnection;
-    
+
     public BookingDAO() {
         this.dbConnection = DBConnection.getInstance();
     }
-    
+
     public int insertBooking(Booking booking) {
         String sql = "INSERT INTO bookings (booking_id ,car_id, customer_id, start_date, end_date,total_days, total_price,booking_status) VALUES (?, ?, ?, ?, ?, ?, ?,?)";
-        
+
         try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             ps.setInt(1, booking.getBooking_id());
             ps.setInt(2, booking.getCar_id());
             ps.setInt(3, booking.getCustomer_id());
@@ -37,34 +38,40 @@ public class BookingDAO {
             ps.setBigDecimal(7, booking.getTotal_price());
             ps.setString(8, "PENDING");
             ps.executeUpdate();
-            
+
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
                 return rs.getInt(1);
             }
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }
         return -1;
     }
-    
-    public List<Booking> getAllBookCars() {
+
+    public List<Booking> getAllBookCars(int user_id) {
+        String sql = "SELECT bookings.* FROM bookings WHERE customer_id = ? ";
         List<Booking> book = new ArrayList<>();
-        String sql = "SELECT c.*  FROM booking c ";
-        
-        try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, user_id);
+            ResultSet rs = pstmt.executeQuery();
+
             while (rs.next()) {
                 book.add(mapResultSetToBook(rs));
             }
+
+            rs.close();
         } catch (SQLException e) {
-            System.err.println("Error getting all cars: " + e.getMessage());
+            System.err.println("Error getting car by id: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         return book;
     }
-    
+
     public void updateBookingStatus(int bookingId, String status) {
         String sql = "UPDATE bookings SET booking_status = ? WHERE booking_id = ?";
         try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -75,36 +82,61 @@ public class BookingDAO {
             e.printStackTrace();
         }
     }
-    
+
     public List<Booking> getBookCarByOwen(int owen_id) {
-        
+
         String sql = "SELECT i.* "
                 + "FROM bookings i "
                 + "JOIN cars c ON c.id = i.car_id "
                 + "WHERE c.owner_id = ?";
-        
+
         List<Booking> cars = new ArrayList<>();
-        
+
         try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+
             pstmt.setInt(1, owen_id);
-            
+
             ResultSet rs = pstmt.executeQuery();
-            
+
             while (rs.next()) {
                 Booking book = mapResultSetToBook(rs);
                 cars.add(book);
             }
-            
+
             rs.close();
-            
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
+
         return cars;
     }
-    
+
+    public Booking getBookCarByID(int customer_id, int car_id) {
+
+        String sql = "SELECT i.* "
+                + "FROM bookings i "
+                + "WHERE i.car_id = ? AND  i.customer_id = ?";
+        Booking book = null;
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, car_id);
+            pstmt.setInt(2, customer_id);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                book = mapResultSetToBook(rs);
+            }
+
+            rs.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return book;
+    }
+
     public List<Booking> getByCarId(int carId, String filter) {
         List<Booking> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
@@ -131,7 +163,7 @@ public class BookingDAO {
         }
         return list;
     }
-    
+
     private Booking mapResultSetToBook(ResultSet rs) throws SQLException {
         Booking book = new Booking();
         book.setBooking_id(rs.getInt("booking_id"));
@@ -144,4 +176,24 @@ public class BookingDAO {
         book.setTotal_days(rs.getInt("total_days"));
         return book;
     }
+    public static void main(String[] args) {
+    BookingDAO bookingDAO = new BookingDAO();
+
+    int customerId = 4;
+    int carId = 1;
+
+    Booking booking = bookingDAO.getBookCarByID(customerId, carId);
+
+    if (booking == null) {
+        System.out.println("No booking found for customer_id = " + customerId + " and car_id = " + carId);
+    } else {
+        System.out.println("Booking found:");
+        System.out.println("Booking ID: " + booking.getBooking_id());
+        System.out.println("Car ID: " + booking.getCar_id());
+        System.out.println("Customer ID: " + booking.getCustomer_id());
+        System.out.println("Status: " + booking.getBooking_status());
+        System.out.println("Start Date: " + booking.getStart_date());
+        System.out.println("End Date: " + booking.getEnd_date());
+    }
+}
 }
