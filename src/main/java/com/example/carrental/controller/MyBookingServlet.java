@@ -4,7 +4,9 @@
  */
 package com.example.carrental.controller;
 
+import com.example.carrental.model.dao.BookingDAO;
 import com.example.carrental.model.dao.CarDAO;
+import com.example.carrental.model.entity.Booking;
 import com.example.carrental.model.entity.Car;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
@@ -14,14 +16,14 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  *
  * @author PC
  */
-public class FilterCarServlet extends HttpServlet {
+public class MyBookingServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -40,10 +42,10 @@ public class FilterCarServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet FilterCarServlet</title>");
+            out.println("<title>Servlet MyBookingServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet FilterCarServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet MyBookingServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -61,58 +63,21 @@ public class FilterCarServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        HttpSession session = request.getSession(true);
-        String brand = request.getParameter("brand");
-        String price = request.getParameter("price");
-
-        // Lấy danh sách nguồn
-        List<Car> sourceList = (List<Car>) session.getAttribute("SearchByDate");
-        if (sourceList == null || sourceList.isEmpty()) {
-            sourceList = (List<Car>) session.getAttribute("CarList");
+        CarDAO car = new CarDAO();
+        BookingDAO book = new BookingDAO();
+        HttpSession session = request.getSession();
+        int userId = (int) session.getAttribute("userId");
+        List<Car> list_select = car.getAllSelectCars(userId);
+        List<Booking> list_book = book.getAllBookCars(userId);
+        List<Car> book_car = new ArrayList<>();
+        for(int i = 0 ; i < list_book.size();i++){
+            Car c = car.getCarById(list_book.get(i).getCar_id());
+            book_car.add(c);
         }
-
-        if (sourceList == null) {
-            CarDAO carDAO = new CarDAO();
-            sourceList = carDAO.getAllCars(); // load từ DB nếu chưa có
-            session.setAttribute("CarList", sourceList);
-        }
-
-        List<Car> result = sourceList;
-        CarDAO carDAO = new CarDAO();
-
-
-        if (brand != null && !brand.isEmpty() && (price == null || price.isEmpty())) {
-            /*result = carDAO.filterCarByBrand(brand, result);*/
-        }
-
-        if (price != null && !price.isEmpty() && (brand == null || brand.isEmpty())) {
-            try {
-                String[] parts = price.split("-");
-                BigDecimal minPrice = new BigDecimal(parts[0].trim());
-                BigDecimal maxPrice = new BigDecimal(parts[1].trim());
-                /*result = carDAO.filterCarByPrice(minPrice, maxPrice, result);*/
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (brand != null && !brand.isEmpty() && price != null && !price.isEmpty()) {
-            try {
-                String[] parts = price.split("-");
-                BigDecimal minPrice = new BigDecimal(parts[0].trim());
-                BigDecimal maxPrice = new BigDecimal(parts[1].trim());
-                /*result = carDAO.filterCar(brand, minPrice, maxPrice, result); // phương thức filter cả 2*/
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Lưu vào session để JSP có thể dùng
-        request.setAttribute("FilterCar", result);
-
-        // Chuyển tiếp sang JSP
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
+        request.setAttribute("Select-List", list_select);
+        request.setAttribute("Book-List", list_book);
+        request.setAttribute("Book-Car", book_car);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/MyBooking.jsp");
         dispatcher.forward(request, response);
     }
 
@@ -127,6 +92,7 @@ public class FilterCarServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        processRequest(request, response);
     }
 
     /**

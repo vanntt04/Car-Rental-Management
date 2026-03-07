@@ -7,6 +7,7 @@ package com.example.carrental.controller;
 import com.example.carrental.model.dao.CarDAO;
 import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.entity.User;
+import com.example.carrental.model.util.HoldCleanupScheduler;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -63,13 +65,20 @@ public class SearchCarServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         CarDAO carDAO = new CarDAO();
-        List<Car> CarList = carDAO.getAllCars();
-        List<String> BrandList = carDAO.getAllBrandCars();
-        List<Integer> SeatList = carDAO.getAllSeat();
+        List<Car> List = carDAO.getAllCars();
+        List<Car> CarList = new ArrayList<>();
+        /*List<String> BrandList = carDAO.getAllBrandCars();*/
+        /*List<Integer> SeatList = carDAO.getAllSeat();*/
         HttpSession session = request.getSession(true);
+        for(int i= 0 ; i < List.size();i++){
+            if(!List.get(i).getStatus().equals("RENTED")){
+                CarList.add(List.get(i));
+            }
+        }
         session.setAttribute("CarList", CarList);
-        session.setAttribute("BrandList", BrandList);
-        session.setAttribute("SeatList", SeatList);
+        /*session.setAttribute("BrandList", BrandList);*/
+        /*session.setAttribute("SeatList", SeatList);*/
+        HoldCleanupScheduler.start();
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
         dispatcher.forward(request, response);
 
@@ -117,7 +126,7 @@ public class SearchCarServlet extends HttpServlet {
 
         if (error == null) {
             String seat = request.getParameter("seat");
-            resultList = carDAO.getCarByDate(Integer.valueOf(seat), pickupTime, returnTime);
+            /*resultList = carDAO.getCarByDate(Integer.valueOf(seat), pickupTime, returnTime);*/
 
             if (resultList == null || resultList.isEmpty()) {
                 error = "Không tìm thấy kết quả phù hợp";

@@ -2,12 +2,15 @@ package com.example.carrental.model.dao;
 
 import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.util.DBConnection;
-import java.math.BigDecimal;
 
+import java.math.BigDecimal;
 import java.sql.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Data Access Object cho Car entity Model layer - DAO pattern
@@ -21,256 +24,10 @@ public class CarDAO {
     }
 
     /**
-     * Lấy tất cả các xe
-     *
-     * @return
+     * Sort: date_desc (mới nhất), date_asc (cũ nhất). Status: null/empty = tất
+     * cả. activeFilter: null/empty = tất cả, "1" = còn hoạt động, "0" = ngừng
+     * hoạt động
      */
-    public List<Car> getAllCars() {
-        List<Car> cars = new ArrayList<>();
-        String sql = "SELECT c.*, i.image_url "
-                + "FROM cars c "
-                + "LEFT JOIN car_images i ON c.id = i.car_id AND i.is_primary = 1";
-
-        try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                cars.add(mapResultSetToCar(rs));
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getting all cars: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return cars;
-    }
-
-    public List<String> getAllBrandCars() {
-        List<String> brands = new ArrayList<>();
-        String sql = "SELECT DISTINCT brand FROM cars ORDER BY brand";
-
-        try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                brands.add(rs.getString("brand"));
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getting all brands: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return brands;
-    }
-
-    public List<Integer> getAllSeat() {
-        List<Integer> Seat = new ArrayList<>();
-        String sql = "SELECT DISTINCT seats FROM cars ORDER BY seats";
-
-        try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                Seat.add(rs.getInt("seats"));
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getting all brands: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return Seat;
-    }
-
-    /**
-     * Lấy xe theo ID
-     */
-    public Car getCarById(int id) {
-        String sql = "SELECT c.*, i.image_url FROM cars c LEFT JOIN car_images i ON c.id = i.car_id WHERE c.id = ?";
-        Car car = null;
-
-        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, id);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                car = mapResultSetToCar(rs);
-            }
-
-            rs.close();
-        } catch (SQLException e) {
-            System.err.println("Error getting car by id: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return car;
-    }
-
-    public List<Car> getCarByBrand(String brand) {
-
-        String sql = "SELECT c.*, i.image_url "
-                + "FROM cars c "
-                + "LEFT JOIN car_images i ON c.car_id = i.car_id "
-                + "WHERE c.brand = ?";
-
-        List<Car> cars = new ArrayList<>();
-
-        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, brand);
-
-            ResultSet rs = pstmt.executeQuery();
-
-            while (rs.next()) {
-                Car car = mapResultSetToCar(rs);
-                cars.add(car);
-            }
-
-            rs.close();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return cars;
-    }
-
-    public List<Car> filterCar(String brand, BigDecimal minPrice, BigDecimal maxPrice, List<Car> list) {
-        List<Car> result = new ArrayList<>();
-
-        for (Car car : list) {
-            BigDecimal price = car.getPricePerDay();
-            if (car.getBrand().equalsIgnoreCase(brand) && price.compareTo(minPrice) >= 0 && price.compareTo(maxPrice) <= 0) {
-                result.add(car);
-            }
-        }
-
-        return result;
-    }
-
-    public List<Car> filterCarByBrand(String brand, List<Car> list) {
-        List<Car> result = new ArrayList<>();
-
-        for (Car car : list) {
-            if (car.getBrand().equalsIgnoreCase(brand)) {
-                result.add(car);
-            }
-        }
-
-        return result;
-    }
-
-    public List<Car> filterCarByPrice(BigDecimal minPrice, BigDecimal maxPrice, List<Car> list) {
-        List<Car> result = new ArrayList<>();
-        for (Car car : list) {
-            BigDecimal price = car.getPricePerDay();
-            if (price.compareTo(minPrice) >= 0 && price.compareTo(maxPrice) <= 0) {
-                result.add(car);
-            }
-        }
-
-        return result;
-    }
-
-    public List<Car> getCarByDate(Integer seat, LocalDate pickTime, LocalDate returnTime) {
-        String sql = "SELECT  c.id, c.name, c.brand, c.model, "
-                + "c.price_per_day, c.status, c.seats, r.image_url , c.description , c.created_at "
-                + "FROM cars c "
-                + "LEFT JOIN car_images r ON c.id = r.car_id AND r.is_primary = 1 "
-                + "WHERE c.seats = ? "
-                + "AND EXISTS ( "
-                + "   SELECT 1 FROM car_availability i "
-                + "   WHERE i.car_id = c.id "
-                + "   AND (? <= i.end_date AND ? >= i.start_date) "
-                + ")";
-
-        List<Car> cars = new ArrayList<>();
-
-        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, seat);
-            pstmt.setDate(2, Date.valueOf(pickTime));
-            pstmt.setDate(3, Date.valueOf(returnTime));
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    cars.add(mapResultSetToCar(rs));
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return cars;
-    }
-
-    public boolean addCar(Car car) {
-        String sql = "INSERT INTO cars (car_name, brand, model, location, description, price_per_day, status, owner_id, created_at) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, car.getName());
-            pstmt.setString(2, car.getBrand());
-            pstmt.setString(3, car.getModel());
-            pstmt.setString(5, car.getDescription());
-            pstmt.setBigDecimal(6, car.getPricePerDay());
-            pstmt.setString(7, car.getStatus());
-            pstmt.setInt(8, car.getOwnerId());
-
-            if (car.getCreatedAt() != null) {
-                pstmt.setTimestamp(9, Timestamp.valueOf(car.getCreatedAt()));
-            } else {
-                pstmt.setTimestamp(9, new Timestamp(System.currentTimeMillis()));
-            }
-
-            return pstmt.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error adding car: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Cập nhật thông tin xe
-     */
-    public boolean updateCar(Car car) {
-        String sql = "UPDATE cars SET car_name = ?, brand = ?, model = ?, price_per_day = ?, status = ? WHERE car_id = ?";
-
-        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, car.getName());
-            pstmt.setString(2, car.getBrand());
-            pstmt.setString(3, car.getModel());
-            pstmt.setBigDecimal(4, car.getPricePerDay());
-            pstmt.setString(5, car.getStatus());
-            pstmt.setInt(6, car.getId());
-
-            return pstmt.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error updating car: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Xóa xe
-     */
-    public boolean deleteCar(int id) {
-        String sql = "DELETE FROM cars WHERE car_id = ?";
-
-        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, id);
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("Error deleting car: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public List<Car> getCarsByOwnerId(int ownerId, int offset, int limit, String statusFilter, String activeFilter, String sortBy) {
         List<Car> cars = new ArrayList<>();
         String order = "date_asc".equalsIgnoreCase(sortBy) ? "id ASC" : "id DESC";
@@ -335,6 +92,54 @@ public class CarDAO {
         return 0;
     }
 
+    /**
+     * Lấy xe theo chủ sở hữu (owner) - không phân trang (giữ cho tương thích)
+     */
+    public List<Car> getCarsByOwnerId(int ownerId) {
+        return getCarsByOwnerId(ownerId, 0, Integer.MAX_VALUE, null, null, "date_desc");
+    }
+
+    /**
+     * Lấy tất cả các xe (dùng nội bộ, không lọc active)
+     */
+    public List<Car> getAllCars() {
+        List<Car> cars = new ArrayList<>();
+        String sql = "SELECT * FROM cars ORDER BY id DESC";
+        try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                cars.add(mapResultSetToCar(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting all cars: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return cars;
+    }
+    public List<Car> getAllSelectCars(int user_id) {
+        String sql = "SELECT cars.* FROM cars join car_select on cars.id = car_select.car_id WHERE user_id = ? ";
+        List<Car> cars = new ArrayList<>();
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, user_id);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                cars.add(mapResultSetToCar(rs));
+            }
+
+            rs.close();
+        } catch (SQLException e) {
+            System.err.println("Error getting car by id: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return cars;
+    }
+
+    /**
+     * Lấy danh sách xe còn hoạt động (cho khách xem danh sách công khai)
+     */
     public List<Car> getActiveCars() {
         List<Car> cars = new ArrayList<>();
         String sql = "SELECT * FROM cars WHERE is_active = 1 ORDER BY id DESC";
@@ -348,51 +153,251 @@ public class CarDAO {
         return cars;
     }
 
+    public boolean setCarOnHold(int carId, int userId, LocalDateTime holdStart, int minutes) {
+        String insertHold = "INSERT INTO car_select (car_id, user_id, hold_start, hold_until) VALUES (?, ?, ?, ?)";
+        String updateCar = "UPDATE cars SET status = 'RENTED' WHERE id = ?";
+
+        try (Connection conn = dbConnection.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement ps1 = conn.prepareStatement(insertHold); PreparedStatement ps2 = conn.prepareStatement(updateCar)) {
+
+                // Chuyển LocalDateTime sang Timestamp
+                Timestamp tsStart = Timestamp.valueOf(holdStart);
+                Timestamp tsEnd = Timestamp.valueOf(holdStart.plusMinutes(minutes));
+
+                // Lưu hold vào bảng car_select
+                ps1.setInt(1, carId);
+                ps1.setInt(2, userId);
+                ps1.setTimestamp(3, tsStart);
+                ps1.setTimestamp(4, tsEnd);
+                ps1.executeUpdate();
+
+                // Cập nhật trạng thái xe thành RENTED
+                ps2.setInt(1, carId);
+                ps2.executeUpdate();
+
+                conn.commit();
+                return true;
+
+            } catch (SQLException e) {
+                conn.rollback();
+                e.printStackTrace();
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public void releaseExpiredHolds() {
+        String selectHolds = "SELECT car_id, hold_until FROM car_select";
+        String updateCar = "UPDATE cars SET status = 'AVAILABLE' WHERE id = ?";
+        String deleteHold = "DELETE FROM car_select WHERE car_id = ?";
+
+        try (Connection conn = dbConnection.getConnection()) {
+            conn.setAutoCommit(false);
+
+            // 1. Giờ hiện tại chuẩn UTC
+            LocalDateTime nowUtc = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+
+            // 2. Lấy danh sách hold
+            try (PreparedStatement psSelect = conn.prepareStatement(selectHolds)) {
+                ResultSet rs = psSelect.executeQuery();
+                while (rs.next()) {
+                    // Lấy hold_until chuẩn UTC
+                    Timestamp ts = rs.getTimestamp("hold_until");
+                    LocalDateTime holdUntilUtc = ts.toLocalDateTime();
+
+                    int carId = rs.getInt("car_id");
+
+                    // 3. Nếu hold đã hết hạn → update status và xóa hold
+                    if (holdUntilUtc.isBefore(nowUtc)) {
+                        // Update status xe
+                        try (PreparedStatement psUpdate = conn.prepareStatement(updateCar)) {
+                            psUpdate.setInt(1, carId);
+                            psUpdate.executeUpdate();
+                        }
+
+                        // Xóa hold
+                        try (PreparedStatement psDelete = conn.prepareStatement(deleteHold)) {
+                            psDelete.setInt(1, carId);
+                            psDelete.executeUpdate();
+                        }
+
+                        System.out.println("Released hold for Car ID: " + carId);
+                    }
+                }
+            }
+
+            conn.commit();
+            System.out.println("Expired holds released successfully.");
+
+        } catch (SQLException e) {
+
+        }
+    }
+
+    /**
+     * Lấy xe theo ID
+     * @param id
+     * @return 
+     */
+    public Car getCarById(int id) {
+        String sql = "SELECT * FROM cars WHERE id = ?";
+        Car car = null;
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    car = mapResultSetToCar(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting car by id: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return car;
+    }
+
+    /**
+     * Thêm xe mới
+     */
+    public boolean addCar(Car car) throws SQLException {
+        String sql = "INSERT INTO cars (owner_id, name, license_plate, brand, model, year, color, price_per_day, status, is_active, image_url, description) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setObject(1, car.getOwnerId(), Types.INTEGER);
+            pstmt.setString(2, car.getName());
+            pstmt.setString(3, car.getLicensePlate());
+            pstmt.setString(4, car.getBrand());
+            pstmt.setString(5, car.getModel());
+            pstmt.setObject(6, car.getYear(), Types.INTEGER);
+            pstmt.setString(7, car.getColor());
+            pstmt.setBigDecimal(8, car.getPricePerDay());
+            pstmt.setString(9, car.getStatus());
+            pstmt.setInt(10, car.isActive() ? 1 : 0);
+            pstmt.setString(11, car.getImageUrl());
+            pstmt.setString(12, car.getDescription());
+            return pstmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Cập nhật thông tin xe
+     */
+    public boolean updateCar(Car car) throws SQLException {
+        String sql = "UPDATE cars SET owner_id = ?, name = ?, license_plate = ?, brand = ?, model = ?, "
+                + "year = ?, color = ?, price_per_day = ?, status = ?, is_active = ?, image_url = ?, description = ? "
+                + "WHERE id = ?";
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setObject(1, car.getOwnerId(), Types.INTEGER);
+            pstmt.setString(2, car.getName());
+            pstmt.setString(3, car.getLicensePlate());
+            pstmt.setString(4, car.getBrand());
+            pstmt.setString(5, car.getModel());
+            pstmt.setObject(6, car.getYear(), Types.INTEGER);
+            pstmt.setString(7, car.getColor());
+            pstmt.setBigDecimal(8, car.getPricePerDay());
+            pstmt.setString(9, car.getStatus());
+            pstmt.setInt(10, car.isActive() ? 1 : 0);
+            pstmt.setString(11, car.getImageUrl());
+            pstmt.setString(12, car.getDescription());
+            pstmt.setInt(13, car.getId());
+            return pstmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Xóa xe
+     */
+    public boolean deleteCar(int id) {
+        String sql = "DELETE FROM cars WHERE id = ?";
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, id);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error deleting car: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     /**
      * Map ResultSet thành Car object
      */
     private Car mapResultSetToCar(ResultSet rs) throws SQLException {
         Car car = new Car();
         car.setId(rs.getInt("id"));
-        car.setSeats(rs.getInt("seats"));
+        try {
+            int ownerId = rs.getInt("owner_id");
+            car.setOwnerId(rs.wasNull() ? null : ownerId);
+        } catch (SQLException e) {
+            car.setOwnerId(null);
+        }
         car.setName(rs.getString("name"));
+        car.setLicensePlate(rs.getString("license_plate"));
         car.setBrand(rs.getString("brand"));
         car.setModel(rs.getString("model"));
-        car.setPricePerDay(rs.getBigDecimal("price_per_day"));
-        car.setImageUrl(rs.getString("image_url"));
-        car.setStatus(rs.getString("status"));
-        car.setDescription(rs.getString("description"));
+        car
+                .setYear(rs.getObject("year", Integer.class
+                ));
+        car.setColor(rs.getString("color"));
 
-        Timestamp createdAt = rs.getTimestamp("created_at");
-        if (createdAt != null) {
-            car.setCreatedAt(createdAt.toLocalDateTime());
+        try {
+            car.setSeats(rs.getObject("seats", Integer.class
+            ));
+        } catch (SQLException e) {
+            car.setSeats(null);
+        }
+        try {
+            car.setTransmission(rs.getString("transmission"));
+        } catch (SQLException e) {
+            car.setTransmission(null);
+        }
+        try {
+            car.setFuelType(rs.getString("fuel_type"));
+        } catch (SQLException e) {
+            car.setFuelType(null);
+        }
+        car.setPricePerDay(rs.getBigDecimal("price_per_day"));
+        car.setStatus(rs.getString("status"));
+        try {
+            car.setActive(rs.getInt("is_active") == 1);
+        } catch (SQLException e) {
+            car.setActive(true);
+        }
+        try {
+            car.setImageUrl(rs.getString("image_url"));
+        } catch (SQLException e) {
+            car.setImageUrl(null);
+        }
+        try {
+            car.setDescription(rs.getString("description"));
+        } catch (SQLException e) {
+            car.setDescription(null);
+        }
+        try {
+            Timestamp createdAt = rs.getTimestamp("created_at");
+            if (createdAt != null) {
+                car.setCreatedAt(createdAt.toLocalDateTime());
+            }
+        } catch (SQLException e) {
+        }
+        try {
+            Timestamp updatedAt = rs.getTimestamp("updated_at");
+            if (updatedAt != null) {
+                car.setUpdatedAt(updatedAt.toLocalDateTime());
+            }
+        } catch (SQLException e) {
         }
         return car;
     }
-
-    public static void main(String[] args) {
-        // Khởi tạo DAO
-        CarDAO carDAO = new CarDAO();
-        // ===== Test getCarByDate =====
-        int seat = 5; // số chỗ
-        LocalDate pickTime = LocalDate.of(2026, 12, 6);
-        LocalDate returnTime = LocalDate.of(2026, 12, 7);
-
-        List<Car> carsByDate = carDAO.getCarByDate(seat, pickTime, returnTime);
-
-        System.out.println("\n==== Danh sách xe theo số chỗ " + seat + " từ " + pickTime + " đến " + returnTime + " ====");
-        for (Car car : carsByDate) {
-            System.out.println("ID: " + car.getId());
-            System.out.println("Tên xe: " + car.getName());
-            System.out.println("Hãng: " + car.getBrand());
-            System.out.println("Model: " + car.getModel());
-            System.out.println("Giá/ngày: " + car.getPricePerDay());
-            System.out.println("Trạng thái: " + car.getStatus());
-            System.out.println("Ảnh chính: " + car.getImageUrl());
-            System.out.println("Số chỗ: " + car.getSeats());
-            System.out.println("-----------------------------");
-        }
-        System.out.println("Tổng số xe theo ngày và số chỗ: " + carsByDate.size());
-    }
-
 }
