@@ -18,14 +18,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 /**
- * Servlet hiển thị danh sách xe (cho khách) và trang chi tiết xe.
- * GET /cars -> danh sách tất cả xe
- * GET /cars?id=1 -> chi tiết xe
+ * Servlet hiển thị danh sách xe (cho khách) và trang chi tiết xe. GET /cars ->
+ * danh sách tất cả xe GET /cars?id=1 -> chi tiết xe
  */
-@WebServlet(name = "CarServlet", urlPatterns = { "/cars" })
+@WebServlet(name = "CarServlet", urlPatterns = {"/cars"})
 public class CarServlet extends HttpServlet {
 
     private CarDAO carDAO;
@@ -50,10 +51,10 @@ public class CarServlet extends HttpServlet {
 
         if (idParam != null && !idParam.trim().isEmpty()) {
             try {
-                int carId = Integer.parseInt(idParam.trim());
+                int carId = Integer.parseInt(idParam);
                 showCarDetail(request, response, carId);
-                return;
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
 
         showCarList(request, response);
@@ -82,13 +83,13 @@ public class CarServlet extends HttpServlet {
         // Nếu xe không active thì chỉ ADMIN hoặc OWNER mới xem được
         if (!car.isActive()) {
 
-            HttpSession session = request.getSession(false);
+            HttpSession session = request.getSession();
             User user = session != null ? (User) session.getAttribute("user") : null;
 
-            boolean canView =
-                    user != null &&
-                    ("ADMIN".equals(user.getRole()) ||
-                     (car.getOwnerId() != null && car.getOwnerId().equals(user.getId())));
+            boolean canView
+                    = user != null
+                    && ("ADMIN".equals(user.getRole())
+                    || (car.getOwnerId() != null && car.getOwnerId().equals(user.getId())));
 
             if (!canView) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy xe");
@@ -99,13 +100,29 @@ public class CarServlet extends HttpServlet {
         List<CarImage> carImages = carImageDAO.getByCarId(carId);
         List<CarAvailability> carAvailabilities = availabilityDAO.getByCarId(carId);
         List<Booking> carBookings = bookingDAO.getByCarId(carId, "all");
-
-        request.setAttribute("car", car);
+        request.setAttribute("car_detail", car);
         request.setAttribute("carImages", carImages);
         request.setAttribute("carAvailabilities", carAvailabilities);
         request.setAttribute("carBookings", carBookings);
 
         RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/car/detail.jsp");
         rd.forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        int userId = (int) session.getAttribute("userId");
+        int carId = Integer.parseInt(request.getParameter("id"));
+        LocalDateTime holdStart = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        CarDAO car_dao = new CarDAO();
+        int minutes = 1;
+        car_dao.setCarOnHold(carId, userId, holdStart, 1);
+        String notification = "Car select add to My Booking";
+        request.setAttribute("Notification", notification);
+        session.setAttribute("hold_until", holdStart.plusMinutes(minutes));
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
+        dispatcher.forward(request, response);
     }
 }
