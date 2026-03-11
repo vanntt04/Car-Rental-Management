@@ -1,6 +1,4 @@
--- ============================================================
--- CAR RENTAL DB - Schema khớp với code Java (CarDAO, UserDAO, CarAvailabilityDAO, CarImageDAO)
--- ============================================================
+
 DROP DATABASE IF EXISTS car_rental_db;
 CREATE DATABASE car_rental_db;
 USE car_rental_db;
@@ -16,9 +14,7 @@ CREATE TABLE roles (
 INSERT INTO roles (role_name)
 VALUES ('ADMIN'), ('OWNER'), ('CUSTOMER');
 
--- =============================
--- USERS (code dùng user_id, map sang User.id)
--- =============================
+
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -65,9 +61,7 @@ INSERT INTO user_roles VALUES
 (4,3),(5,3),(6,3),(7,3),(8,3),(9,3),
 (10,3),(11,3),(12,3),(13,3),(14,3),(15,3);
 
--- =============================
--- CARS (code: id, owner_id, name, license_plate, brand, model, year, color, seats, transmission, fuel_type, price_per_day, status, image_url, description, created_at, updated_at)
--- =============================
+
 CREATE TABLE cars (
     id INT AUTO_INCREMENT PRIMARY KEY,
     owner_id INT NOT NULL,
@@ -78,10 +72,10 @@ CREATE TABLE cars (
     year INT,
     color VARCHAR(30),
     seats INT DEFAULT 4,
-    transmission ENUM('AUTO','MANUAL'),
     fuel_type ENUM('PETROL','DIESEL','ELECTRIC'),
     price_per_day DECIMAL(12,2) NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE' COMMENT 'AVAILABLE, RENTED, MAINTENANCE',
+    status ENUM('AVAILABLE, RENTED, MAINTENANCE') DEFAULT 'AVAILABLE',
+    is_active TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1=còn hoạt động, 0=không còn hoạt động (ẩn khỏi danh sách, không xóa)',
     image_url VARCHAR(500) NULL,
     description TEXT NULL COMMENT 'Mô tả chi tiết xe',
     created_at DATETIME NULL,
@@ -108,22 +102,9 @@ VALUES
 (3,'Toyota Innova','30C-44444','Toyota','Innova',2022,'Silver',7,'MANUAL','PETROL',1000000,'AVAILABLE'),
 (3,'Hyundai i10','30C-55555','Hyundai','i10',2021,'White',5,'AUTO','PETROL',500000,'AVAILABLE');
 
--- =============================
--- CAR_AVAILABILITY (code: CarAvailabilityDAO)
--- =============================
-CREATE TABLE car_availability (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    car_id INT NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    is_available TINYINT(1) NOT NULL DEFAULT 1,
-    note VARCHAR(255),
-    FOREIGN KEY(car_id) REFERENCES cars(id) ON DELETE CASCADE
-);
 
--- =============================
--- CAR_IMAGES (code: CarImageDAO)
--- =============================
+
+
 CREATE TABLE car_images (
     id INT AUTO_INCREMENT PRIMARY KEY,
     car_id INT NOT NULL,
@@ -194,7 +175,7 @@ CREATE TABLE payments (
     booking_id INT NOT NULL,
     amount DECIMAL(12,2) NOT NULL,
     payment_method ENUM('CASH','MOMO','VNPAY','PAYPAL'),
-    payment_status ENUM('UNPAID','PAID','REFUNDED') DEFAULT 'UNPAID',
+    payment_status ENUM('UNPAID','PAID') DEFAULT 'UNPAID',
     paid_at DATETIME,
     FOREIGN KEY(booking_id) REFERENCES bookings(booking_id)
 );

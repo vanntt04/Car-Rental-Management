@@ -20,7 +20,7 @@ public class CarDAO {
         this.dbConnection = DBConnection.getInstance();
     }
 
-    /** Sort: date_desc (mới nhất), date_asc (cũ nhất). Status: null/empty = tất cả. activeFilter: null/empty = tất cả, "1" = còn hoạt động, "0" = ngừng hoạt động */
+    /** Sort: date_desc (m?i nh?t), date_asc (c? nh?t). Status: null/empty = t?t c?. activeFilter: null/empty = t?t c?, "1" = c�n ho?t ??ng, "0" = ng?ng ho?t ??ng */
     public List<Car> getCarsByOwnerId(int ownerId, int offset, int limit, String statusFilter, String activeFilter, String sortBy) {
         List<Car> cars = new ArrayList<>();
         String order = "date_asc".equalsIgnoreCase(sortBy) ? "id ASC" : "id DESC";
@@ -55,7 +55,7 @@ public class CarDAO {
         return cars;
     }
 
-    /** Đếm số xe của owner (có thể lọc theo status và active) */
+    /** ??m s? xe c?a owner (c� th? l?c theo status v� active) */
     public int countCarsByOwnerId(int ownerId, String statusFilter, String activeFilter) {
         String sql = "SELECT COUNT(*) FROM cars WHERE owner_id = ?";
         if (statusFilter != null && !statusFilter.isEmpty()) {
@@ -84,14 +84,14 @@ public class CarDAO {
     }
 
     /**
-     * Lấy xe theo chủ sở hữu (owner) - không phân trang (giữ cho tương thích)
+     * L?y xe theo ch? s? h?u (owner) - kh�ng ph�n trang (gi? cho t??ng th�ch)
      */
     public List<Car> getCarsByOwnerId(int ownerId) {
         return getCarsByOwnerId(ownerId, 0, Integer.MAX_VALUE, null, null, "date_desc");
     }
 
     /**
-     * Lấy tất cả các xe (dùng nội bộ, không lọc active)
+     * L?y t?t c? c�c xe (d�ng n?i b?, kh�ng l?c active)
      */
     public List<Car> getAllCars() {
         List<Car> cars = new ArrayList<>();
@@ -110,7 +110,7 @@ public class CarDAO {
     }
 
     /**
-     * Lấy danh sách xe còn hoạt động (cho khách xem danh sách công khai)
+     * L?y danh s�ch xe c�n ho?t ??ng (cho kh�ch xem danh s�ch c�ng khai)
      */
     public List<Car> getActiveCars() {
         List<Car> cars = new ArrayList<>();
@@ -120,6 +120,7 @@ public class CarDAO {
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 cars.add(mapResultSetToCar(rs));
+                
             }
         } catch (SQLException e) {
             System.err.println("Error getting active cars: " + e.getMessage());
@@ -133,7 +134,7 @@ public class CarDAO {
         String 
     }
     /**
-     * Lấy xe theo ID
+     * L?y xe theo ID
      */
     public Car getCarById(int id) {
         String sql = "SELECT * FROM cars WHERE id = ?";
@@ -159,7 +160,7 @@ public class CarDAO {
     }
 
     /**
-     * Thêm xe mới
+     * Th�m xe m?i
      */
     public boolean addCar(Car car) throws SQLException {
         String sql = "INSERT INTO cars (owner_id, name, license_plate, brand, model, year, color, price_per_day, status, is_active, image_url, description) " +
@@ -183,7 +184,7 @@ public class CarDAO {
     }
 
     /**
-     * Cập nhật thông tin xe
+     * C?p nh?t th�ng tin xe
      */
     public boolean updateCar(Car car) throws SQLException {
         String sql = "UPDATE cars SET owner_id = ?, name = ?, license_plate = ?, brand = ?, model = ?, " +
@@ -209,7 +210,7 @@ public class CarDAO {
     }
 
     /**
-     * Xóa xe
+     * X�a xe
      */
     public boolean deleteCar(int id) {
         String sql = "DELETE FROM cars WHERE id = ?";
@@ -227,7 +228,7 @@ public class CarDAO {
     }
 
     /**
-     * Map ResultSet thành Car object
+     * Map ResultSet th�nh Car object
      */
     private Car mapResultSetToCar(ResultSet rs) throws SQLException {
         Car car = new Car();
