@@ -1,8 +1,8 @@
-com\example\carrental\controller\CarOwnerServlet.class
 com\example\carrental\model\dao\CarAvailabilityDAO.class
 com\example\carrental\model\dao\CarDAO.class
 com\example\carrental\model\dao\BookingDAO.class
 com\example\carrental\controller\HomeServlet.class
+com\example\carrental\controller\ImageServlet.class
 com\example\carrental\controller\UserServlet.class
 com\example\carrental\model\entity\Car.class
 com\example\carrental\model\entity\Role.class
@@ -11,6 +11,7 @@ com\example\carrental\model\dao\UserDAO.class
 com\example\carrental\model\entity\CarAvailability.class
 com\example\carrental\model\entity\Booking.class
 com\example\carrental\model\util\DBConnection.class
+com\example\carrental\controller\AvailabilityServlet.class
 com\example\carrental\model\dao\CarImageDAO.class
 com\example\carrental\model\entity\CarImage.class
 com\example\carrental\model\entity\User.class

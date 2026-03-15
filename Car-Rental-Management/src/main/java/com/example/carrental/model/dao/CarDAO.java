@@ -10,17 +10,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Data Access Object cho Car entity
- * Model layer - DAO pattern
+ * Data Access Object cho Car entity Model layer - DAO pattern
  */
 public class CarDAO {
+
     private DBConnection dbConnection;
 
     public CarDAO() {
         this.dbConnection = DBConnection.getInstance();
     }
 
-    /** Sort: date_desc (m?i nh?t), date_asc (c? nh?t). Status: null/empty = t?t c?. activeFilter: null/empty = t?t c?, "1" = c�n ho?t ??ng, "0" = ng?ng ho?t ??ng */
+    /**
+     * Sort: date_desc (mới nhất), date_asc (cũ nhất). Status: null/empty = tất
+     * cả. activeFilter: null/empty = tất cả, "1" = còn hoạt động, "0" = ngừng
+     * hoạt động
+     */
     public List<Car> getCarsByOwnerId(int ownerId, int offset, int limit, String statusFilter, String activeFilter, String sortBy) {
         List<Car> cars = new ArrayList<>();
         String order = "date_asc".equalsIgnoreCase(sortBy) ? "id ASC" : "id DESC";
@@ -32,8 +36,7 @@ public class CarDAO {
             sql += "AND is_active = ? ";
         }
         sql += "ORDER BY " + order + " LIMIT ? OFFSET ?";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             int idx = 1;
             ps.setInt(idx++, ownerId);
             if (statusFilter != null && !statusFilter.isEmpty()) {
@@ -55,7 +58,9 @@ public class CarDAO {
         return cars;
     }
 
-    /** ??m s? xe c?a owner (c� th? l?c theo status v� active) */
+    /**
+     * Đếm số xe của owner (có thể lọc theo status và active)
+     */
     public int countCarsByOwnerId(int ownerId, String statusFilter, String activeFilter) {
         String sql = "SELECT COUNT(*) FROM cars WHERE owner_id = ?";
         if (statusFilter != null && !statusFilter.isEmpty()) {
@@ -64,8 +69,7 @@ public class CarDAO {
         if (activeFilter != null && !activeFilter.isEmpty()) {
             sql += " AND is_active = ?";
         }
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             int idx = 1;
             ps.setInt(idx++, ownerId);
             if (statusFilter != null && !statusFilter.isEmpty()) {
@@ -75,7 +79,9 @@ public class CarDAO {
                 ps.setInt(idx++, "1".equals(activeFilter) ? 1 : 0);
             }
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt(1);
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
             rs.close();
         } catch (SQLException e) {
             System.err.println("Error count cars by owner: " + e.getMessage());
@@ -84,21 +90,19 @@ public class CarDAO {
     }
 
     /**
-     * L?y xe theo ch? s? h?u (owner) - kh�ng ph�n trang (gi? cho t??ng th�ch)
+     * Lấy xe theo chủ sở hữu (owner) - không phân trang (giữ cho tương thích)
      */
     public List<Car> getCarsByOwnerId(int ownerId) {
         return getCarsByOwnerId(ownerId, 0, Integer.MAX_VALUE, null, null, "date_desc");
     }
 
     /**
-     * L?y t?t c? c�c xe (d�ng n?i b?, kh�ng l?c active)
+     * Lấy tất cả các xe (dùng nội bộ, không lọc active)
      */
     public List<Car> getAllCars() {
         List<Car> cars = new ArrayList<>();
         String sql = "SELECT * FROM cars ORDER BY id DESC";
-        try (Connection conn = dbConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 cars.add(mapResultSetToCar(rs));
             }
@@ -109,89 +113,137 @@ public class CarDAO {
         return cars;
     }
 
+    public List<Car> searchCarsByOwner(int ownerId, String keyword,
+            String status, String sort,
+            int offset, int limit) {
+
+        List<Car> cars = new ArrayList<>();
+
+        String sql = "SELECT * FROM cars WHERE owner_id=?";
+
+        if (keyword != null && !keyword.isEmpty()) {
+            sql += " AND (name LIKE ? OR license_plate LIKE ?)";
+        }
+
+        if (status != null && !status.isEmpty()) {
+            sql += " AND status=?";
+        }
+
+        if ("oldest".equals(sort)) {
+            sql += " ORDER BY id ASC";
+        } else {
+            sql += " ORDER BY id DESC";
+        }
+
+        sql += " LIMIT ? OFFSET ?";
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            int i = 1;
+            pstmt.setInt(i++, ownerId);
+
+            if (keyword != null && !keyword.isEmpty()) {
+                pstmt.setString(i++, "%" + keyword + "%");
+                pstmt.setString(i++, "%" + keyword + "%");
+            }
+
+            if (status != null && !status.isEmpty()) {
+                pstmt.setString(i++, status);
+            }
+
+            pstmt.setInt(i++, limit);
+            pstmt.setInt(i++, offset);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                cars.add(mapResultSetToCar(rs));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return cars;
+    }
+
     /**
-     * L?y danh s�ch xe c�n ho?t ??ng (cho kh�ch xem danh s�ch c�ng khai)
+     * Lấy danh sách xe còn hoạt động (cho khách xem danh sách công khai)
      */
     public List<Car> getActiveCars() {
         List<Car> cars = new ArrayList<>();
         String sql = "SELECT * FROM cars WHERE is_active = 1 ORDER BY id DESC";
-        try (Connection conn = dbConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (Connection conn = dbConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 cars.add(mapResultSetToCar(rs));
-                
             }
         } catch (SQLException e) {
             System.err.println("Error getting active cars: " + e.getMessage());
         }
         return cars;
     }
-    
-    public List<Car> getStatusCars()
-    {
-        List<Car> cars = new ArrayList<>()'
-        String 
-    }
+
     /**
-     * L?y xe theo ID
+     * Lấy xe theo ID
      */
     public Car getCarById(int id) {
         String sql = "SELECT * FROM cars WHERE id = ?";
         Car car = null;
-        
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
-            
+
             if (rs.next()) {
                 car = mapResultSetToCar(rs);
             }
-            
+
             rs.close();
         } catch (SQLException e) {
             System.err.println("Error getting car by id: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         return car;
     }
 
     /**
-     * Th�m xe m?i
+     * Thêm xe mới
      */
     public boolean addCar(Car car) throws SQLException {
-        String sql = "INSERT INTO cars (owner_id, name, license_plate, brand, model, year, color, price_per_day, status, is_active, image_url, description) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setObject(1, car.getOwnerId(), Types.INTEGER);
-            pstmt.setString(2, car.getName());
-            pstmt.setString(3, car.getLicensePlate());
-            pstmt.setString(4, car.getBrand());
-            pstmt.setString(5, car.getModel());
-            pstmt.setObject(6, car.getYear(), Types.INTEGER);
-            pstmt.setString(7, car.getColor());
-            pstmt.setBigDecimal(8, car.getPricePerDay());
-            pstmt.setString(9, car.getStatus());
-            pstmt.setInt(10, car.isActive() ? 1 : 0);
-            pstmt.setString(11, car.getImageUrl());
-            pstmt.setString(12, car.getDescription());
-            return pstmt.executeUpdate() > 0;
+        String sql = "INSERT INTO cars (owner_id, name, license_plate, brand, model, year, color, seats, transmission, fuel_type, price_per_day, status, image_url, description) "
+                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, car.getOwnerId());
+            ps.setString(2, car.getName());
+            ps.setString(3, car.getLicensePlate());
+            ps.setString(4, car.getBrand());
+            ps.setString(5, car.getModel());
+            ps.setInt(6, car.getYear());
+            ps.setString(7, car.getColor());
+            ps.setInt(8, car.getSeats());
+            ps.setString(9, car.getTransmission());
+            ps.setString(10, car.getFuelType());
+            ps.setBigDecimal(11, car.getPricePerDay());
+            ps.setString(12, car.getStatus());
+            ps.setString(13, car.getImageUrl());
+            ps.setString(14, car.getDescription());
+            return ps.executeUpdate() > 0;
         }
     }
 
     /**
-     * C?p nh?t th�ng tin xe
+     * Cập nhật thông tin xe
      */
     public boolean updateCar(Car car) throws SQLException {
-        String sql = "UPDATE cars SET owner_id = ?, name = ?, license_plate = ?, brand = ?, model = ?, " +
-                     "year = ?, color = ?, price_per_day = ?, status = ?, is_active = ?, image_url = ?, description = ? " +
-                     "WHERE id = ?";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        String sql = "UPDATE cars SET owner_id = ?, name = ?, license_plate = ?, brand = ?, model = ?, "
+                + "year = ?, color = ?, price_per_day = ?, status = ?,  image_url = ?, description = ? "
+                + "WHERE id = ?";
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
             pstmt.setObject(1, car.getOwnerId(), Types.INTEGER);
             pstmt.setString(2, car.getName());
             pstmt.setString(3, car.getLicensePlate());
@@ -201,23 +253,26 @@ public class CarDAO {
             pstmt.setString(7, car.getColor());
             pstmt.setBigDecimal(8, car.getPricePerDay());
             pstmt.setString(9, car.getStatus());
-            pstmt.setInt(10, car.isActive() ? 1 : 0);
+
+            pstmt.setInt(10, 1); // active
+
             pstmt.setString(11, car.getImageUrl());
             pstmt.setString(12, car.getDescription());
+
             pstmt.setInt(13, car.getId());
+
             return pstmt.executeUpdate() > 0;
         }
     }
 
     /**
-     * X�a xe
+     * Xóa xe
      */
     public boolean deleteCar(int id) {
         String sql = "DELETE FROM cars WHERE id = ?";
-        
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
             pstmt.setInt(1, id);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -228,7 +283,7 @@ public class CarDAO {
     }
 
     /**
-     * Map ResultSet th�nh Car object
+     * Map ResultSet thành Car object
      */
     private Car mapResultSetToCar(ResultSet rs) throws SQLException {
         Car car = new Car();
@@ -245,22 +300,63 @@ public class CarDAO {
         car.setModel(rs.getString("model"));
         car.setYear(rs.getObject("year", Integer.class));
         car.setColor(rs.getString("color"));
-        try { car.setSeats(rs.getObject("seats", Integer.class)); } catch (SQLException e) { car.setSeats(null); }
-        try { car.setTransmission(rs.getString("transmission")); } catch (SQLException e) { car.setTransmission(null); }
-        try { car.setFuelType(rs.getString("fuel_type")); } catch (SQLException e) { car.setFuelType(null); }
+        try {
+            car.setSeats(rs.getObject("seats", Integer.class));
+        } catch (SQLException e) {
+            car.setSeats(null);
+        }
+        try {
+            car.setTransmission(rs.getString("transmission"));
+        } catch (SQLException e) {
+            car.setTransmission(null);
+        }
+        try {
+            car.setFuelType(rs.getString("fuel_type"));
+        } catch (SQLException e) {
+            car.setFuelType(null);
+        }
         car.setPricePerDay(rs.getBigDecimal("price_per_day"));
         car.setStatus(rs.getString("status"));
-        try { car.setActive(rs.getInt("is_active") == 1); } catch (SQLException e) { car.setActive(true); }
-        try { car.setImageUrl(rs.getString("image_url")); } catch (SQLException e) { car.setImageUrl(null); }
-        try { car.setDescription(rs.getString("description")); } catch (SQLException e) { car.setDescription(null); }
+        try {
+            car.setImageUrl(rs.getString("image_url"));
+        } catch (SQLException e) {
+            car.setImageUrl(null);
+        }
+        try {
+            car.setDescription(rs.getString("description"));
+        } catch (SQLException e) {
+            car.setDescription(null);
+        }
         try {
             Timestamp createdAt = rs.getTimestamp("created_at");
-            if (createdAt != null) car.setCreatedAt(createdAt.toLocalDateTime());
-        } catch (SQLException e) { }
+            if (createdAt != null) {
+                car.setCreatedAt(createdAt.toLocalDateTime());
+            }
+        } catch (SQLException e) {
+        }
         try {
             Timestamp updatedAt = rs.getTimestamp("updated_at");
-            if (updatedAt != null) car.setUpdatedAt(updatedAt.toLocalDateTime());
-        } catch (SQLException e) { }
+            if (updatedAt != null) {
+                car.setUpdatedAt(updatedAt.toLocalDateTime());
+            }
+        } catch (SQLException e) {
+        }
         return car;
+    }
+
+    public boolean isLicensePlateExist(String licensePlate) {
+        String sql = "SELECT COUNT(*) FROM cars WHERE license_plate = ?";
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, licensePlate);
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
