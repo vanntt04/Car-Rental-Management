@@ -23,11 +23,12 @@
         </div>
         <div class="owner-page">
             <div class="owner-card">
-                <form method="post" action="${ctx}/owner" enctype="multipart/form-data">
-                    <input type="hidden" name="action" value="add-image-upload">
+                <form method="post" action="${ctx}/owner/images/${car.id}" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="add">
                     <input type="hidden" name="carId" value="${car.id}">
                     <label class="owner-label">Chọn một hoặc nhiều ảnh</label>
                     <input class="owner-input" type="file" name="imageFile" accept="image/*" multiple>
+                    <small style="color:#64748b; font-size:12px; display:block; margin-top:4px;">JPG, PNG, WEBP. Tối đa 5MB, ảnh resize 500×500px</small>
                     <div class="owner-actions"><button type="submit" class="owner-btn primary"><i class="bi bi-upload"></i> Tải ảnh lên</button></div>
                 </form>
             </div>
@@ -41,14 +42,14 @@
                                 <c:if test="${img.primary}"><span class="badge badge-avail">Ảnh chính</span></c:if>
                                 <div class="owner-actions">
                                     <c:if test="${not img.primary}">
-                                        <form action="${ctx}/owner" method="post" style="display:inline;">
-                                            <input type="hidden" name="action" value="set-primary-image">
+                                        <form action="${ctx}/owner/images/${car.id}" method="post" style="display:inline;">
+                                            <input type="hidden" name="action" value="primary">
                                             <input type="hidden" name="id" value="${img.id}">
                                             <button type="submit" class="owner-btn outline">Đặt chính</button>
                                         </form>
                                     </c:if>
-                                    <form action="${ctx}/owner" method="post" style="display:inline;" onsubmit="return confirm('Xóa ảnh này?');">
-                                        <input type="hidden" name="action" value="delete-image">
+                                    <form action="${ctx}/owner/images/${car.id}" method="post" style="display:inline;" onsubmit="return confirm('Xóa ảnh này?');">
+                                        <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="id" value="${img.id}">
                                         <button type="submit" class="owner-btn outline"><i class="bi bi-trash"></i></button>
                                     </form>

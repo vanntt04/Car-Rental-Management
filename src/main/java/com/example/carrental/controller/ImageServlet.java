@@ -4,7 +4,6 @@ import com.example.carrental.model.dao.CarDAO;
 import com.example.carrental.model.dao.CarImageDAO;
 import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.entity.CarImage;
-import com.example.carrental.model.entity.User;
 import com.example.carrental.model.util.ImageUploadUtil;
 
 import jakarta.servlet.ServletException;
@@ -62,16 +61,22 @@ public class ImageServlet extends HttpServlet {
             throws IOException, ServletException {
 
         int carId = Integer.parseInt(request.getParameter("carId"));
-
-        Part file = request.getPart("imageFile");
-
-        String path = ImageUploadUtil.saveCarImage(file, getServletContext());
-
         List<CarImage> list = carImageDAO.getByCarId(carId);
+        int added = 0;
 
-        CarImage img = new CarImage(carId, path, list.isEmpty(), list.size());
-
-        carImageDAO.add(img);
+        for (Part part : request.getParts()) {
+            if (!"imageFile".equals(part.getName()) || part.getSize() == 0) continue;
+            String path = ImageUploadUtil.saveCarImage(part, getServletContext());
+            if (path != null) {
+                boolean isFirst = list.isEmpty() && added == 0;
+                CarImage img = new CarImage(carId, path, isFirst, list.size() + added);
+                carImageDAO.add(img);
+                if (isFirst) {
+                    carDAO.updateCarImageUrl(carId, path);
+                }
+                added++;
+            }
+        }
 
         response.sendRedirect(request.getContextPath() + "/owner/images/" + carId);
     }
@@ -80,12 +85,28 @@ public class ImageServlet extends HttpServlet {
             throws IOException {
 
         int id = Integer.parseInt(request.getParameter("id"));
-
         CarImage img = carImageDAO.getById(id);
+        if (img == null) {
+            response.sendRedirect(request.getContextPath() + "/owner");
+            return;
+        }
+        int carId = img.getCarId();
+        boolean wasPrimary = img.isPrimary();
 
         carImageDAO.delete(id);
 
-        response.sendRedirect(request.getContextPath() + "/owner/images/" + img.getCarId());
+        if (wasPrimary) {
+            List<CarImage> remaining = carImageDAO.getByCarId(carId);
+            if (!remaining.isEmpty()) {
+                CarImage next = remaining.get(0);
+                carImageDAO.setPrimary(carId, next.getId());
+                carDAO.updateCarImageUrl(carId, next.getImageUrl());
+            } else {
+                carDAO.updateCarImageUrl(carId, null);
+            }
+        }
+
+        response.sendRedirect(request.getContextPath() + "/owner/images/" + carId);
     }
 
     private void setPrimary(HttpServletRequest request, HttpServletResponse response)
@@ -94,8 +115,13 @@ public class ImageServlet extends HttpServlet {
         int id = Integer.parseInt(request.getParameter("id"));
 
         CarImage img = carImageDAO.getById(id);
+        if (img == null) {
+            response.sendRedirect(request.getContextPath() + "/owner");
+            return;
+        }
 
         carImageDAO.setPrimary(img.getCarId(), id);
+        carDAO.updateCarImageUrl(img.getCarId(), img.getImageUrl());
 
         response.sendRedirect(request.getContextPath() + "/owner/images/" + img.getCarId());
     }

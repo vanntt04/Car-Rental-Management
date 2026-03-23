@@ -42,18 +42,27 @@ public class CarImageDAO {
     }
 
     public boolean add(CarImage img) {
+        return addAndGetId(img) > 0;
+    }
+
+    /** Thêm ảnh và trả về ID vừa tạo. Trả về -1 nếu thất bại. */
+    public int addAndGetId(CarImage img) {
         String sql = "INSERT INTO car_images (car_id, image_url, is_primary, sort_order) VALUES (?,?,?,?)";
         try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, img.getCarId());
             ps.setString(2, img.getImageUrl());
             ps.setInt(3, img.isPrimary() ? 1 : 0);
             ps.setInt(4, img.getSortOrder());
-            return ps.executeUpdate() > 0;
+            if (ps.executeUpdate() > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) return rs.getInt(1);
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+        return -1;
     }
 
     public boolean update(CarImage img) {

@@ -150,7 +150,7 @@
                         <div class="upload-dropzone" onclick="document.getElementById('imageFile').click()">
                             <i class="bi bi-cloud-arrow-up"></i>
                             <p style="margin: 10px 0 5px; font-weight: 500;">Bấm để tải ảnh xe lên</p>
-                            <p style="font-size: 12px; color: #64748b;">Hỗ trợ: JPG, PNG, WEBP (Tối đa 2MB)</p>
+                            <p style="font-size: 12px; color: #64748b;">Hỗ trợ: JPG, PNG, WEBP. Tối đa 5MB, ảnh sẽ được resize 500×500px</p>
                             <input type="file" name="imageFile" id="imageFile" accept="image/*" style="display: none;" onchange="previewImage(this)">
                         </div>
 

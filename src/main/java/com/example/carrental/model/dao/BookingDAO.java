@@ -210,6 +210,20 @@ public class BookingDAO {
         return cars;
     }
 
+    /** Lấy booking theo booking_id */
+    public Booking getById(int bookingId) {
+        String sql = "SELECT * FROM bookings WHERE booking_id = ?";
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, bookingId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapResultSetToBook(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getById booking: " + e.getMessage());
+        }
+        return null;
+    }
+
     public Booking getBookCarByID(int customer_id, int car_id) {
 
         String sql = "SELECT i.* "

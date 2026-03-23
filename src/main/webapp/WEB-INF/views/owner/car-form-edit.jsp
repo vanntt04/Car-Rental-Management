@@ -71,7 +71,7 @@
             </c:if>
 
             <div class="owner-card">
-                <form action="${ctx}/owner?action=update" method="post" id="updateCarForm">
+                <form action="${ctx}/owner?action=update" method="post" id="updateCarForm" enctype="multipart/form-data">
                     <input type="hidden" name="id" value="${car.id}">
                     
                     <div class="owner-form-section">
@@ -154,9 +154,13 @@
                                 <div class="preview-label">Ảnh hiện tại</div>
                             </div>
                             <div style="flex: 1;">
-                                <label class="owner-label">Thay đổi ảnh xe</label>
-                                <a href="${ctx}/owner/images/${car.id}" class="owner-btn outline"><i class="bi bi-images"></i> Quản lý ảnh xe</a>
-                                <small style="color: #64748b; display:block; margin-top:8px;">Để thêm/xóa ảnh, dùng trang Quản lý ảnh</small>
+                                <label class="owner-label">Thay đổi ảnh chính</label>
+                                <input type="file" name="imageFile" id="imageFile" accept="image/*" style="margin-bottom:8px;" onchange="previewNewImage(this)">
+                                <div id="newImgPreview" style="display:none; margin-top:8px;">
+                                    <img id="newImg" class="preview-box" alt="Ảnh mới" style="max-height:80px;">
+                                    <button type="button" class="owner-btn outline" style="margin-top:4px; font-size:12px;" onclick="clearNewImage()">Bỏ ảnh mới</button>
+                                </div>
+                                <a href="${ctx}/owner/images/${car.id}" class="owner-btn outline" style="display:inline-block; margin-top:8px;"><i class="bi bi-images"></i> Quản lý nhiều ảnh</a>
                             </div>
                         </div>
 
@@ -179,6 +183,19 @@
 </div>
 
 <script>
+    function previewNewImage(input) {
+        var preview = document.getElementById('newImgPreview');
+        var img = document.getElementById('newImg');
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) { img.src = e.target.result; preview.style.display = 'block'; };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    function clearNewImage() {
+        document.getElementById('imageFile').value = '';
+        document.getElementById('newImgPreview').style.display = 'none';
+    }
     document.getElementById('updateCarForm').onsubmit = function() {
         return confirm('Bạn có chắc chắn muốn cập nhật các thay đổi này không?');
     };

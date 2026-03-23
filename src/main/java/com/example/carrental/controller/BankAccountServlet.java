@@ -16,7 +16,7 @@ import java.io.IOException;
  * Servlet quản lý tài khoản ngân hàng của chủ xe (owner).
  * URL: /owner/bank-account
  */
-@WebServlet(name = "BankAccountServlet", urlPatterns = "/owner/bank-account")
+@WebServlet(name = "BankAccountServlet", urlPatterns = {"/owner/bank-account", "/owner/bank-qr"})
 public class BankAccountServlet extends HttpServlet {
 
     private BankAccountDAO bankAccountDAO;
@@ -29,13 +29,33 @@ public class BankAccountServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        showForm(request, response);
+        if (request.getServletPath().endsWith("/bank-qr")) {
+            showBankQR(request, response);
+        } else {
+            showForm(request, response);
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         saveBankAccount(request, response);
+    }
+
+    private void showBankQR(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        BankAccount bank = bankAccountDAO.getByOwnerId(user.getId());
+        if (bank == null || bank.getBankCode() == null || bank.getAccountNumber() == null || bank.getAccountNumber().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/owner/bank-account?error=no-account");
+            return;
+        }
+        request.setAttribute("bankAccount", bank);
+        request.getRequestDispatcher("/WEB-INF/views/owner/bank-qr.jsp").forward(request, response);
     }
 
     private void showForm(HttpServletRequest request, HttpServletResponse response)

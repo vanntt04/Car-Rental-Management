@@ -261,10 +261,68 @@
                         </div>
                     </div>
 
+                    <c:if test="${payment != null}">
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="section-title">Thanh toán</div>
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <span class="text-muted">Phương thức: </span>
+                                    <strong>
+                                        <c:choose>
+                                            <c:when test="${payment.paymentMethod == 'BANK_TRANSFER'}">Chuyển khoản ngân hàng</c:when>
+                                            <c:when test="${payment.paymentMethod == 'CASH'}">Tiền mặt</c:when>
+                                            <c:when test="${payment.paymentMethod == 'MOMO'}">MoMo</c:when>
+                                            <c:when test="${payment.paymentMethod == 'VNPAY'}">VNPay</c:when>
+                                            <c:when test="${payment.paymentMethod == 'PAYPAL'}">PayPal</c:when>
+                                            <c:otherwise>${payment.paymentMethod}</c:otherwise>
+                                        </c:choose>
+                                    </strong>
+                                </div>
+                                <span class="badge ${payment.paymentStatus == 'PAID' ? 'bg-success' : payment.paymentStatus == 'REFUNDED' ? 'bg-secondary' : 'bg-warning text-dark'}">
+                                    <c:choose>
+                                        <c:when test="${payment.paymentStatus == 'PAID'}">Đã thanh toán</c:when>
+                                        <c:when test="${payment.paymentStatus == 'REFUNDED'}">Đã hoàn tiền</c:when>
+                                        <c:otherwise>Chưa thanh toán</c:otherwise>
+                                    </c:choose>
+                                </span>
+                            </div>
+                            <c:if test="${payment.paymentStatus == 'PAID' && payment.paidAt != null}">
+                                <p class="text-muted small mb-0 mt-1">Ngày thanh toán: <fmt:formatDate value="${payment.paidAt}" pattern="dd/MM/yyyy HH:mm"/></p>
+                            </c:if>
+                        </div>
+                    </c:if>
+
                     <div class="actions">
-                        <a href="${ctx}/pay?bookingId=${invoice.booking_id}" class="btn btn-success px-4 me-2">
-                            <i class="bi bi-credit-card me-2"></i>Thanh Toán Ngay
-                        </a>
+                        <button type="button" class="btn btn-outline-primary px-4 me-2" onclick="window.print()">
+                            <i class="bi bi-printer me-2"></i>In hóa đơn
+                        </button>
+                        <c:if test="${payment != null && payment.paymentStatus == 'PAID'}">
+                            <a href="${ctx}/receipt?book_id=${invoice.booking_id}&id=${BookCar.id}" class="btn btn-outline-success px-4 me-2">
+                                <i class="bi bi-receipt-cutoff me-2"></i>Biên lai thanh toán
+                            </a>
+                        </c:if>
+                        <c:choose>
+                            <c:when test="${invoice.booking_status == 'APPROVED' && (payment == null || payment.paymentStatus != 'PAID')}">
+                                <a href="${ctx}/pay?bookingId=${invoice.booking_id}" class="btn btn-success px-4 me-2">
+                                    <i class="bi bi-credit-card me-2"></i>Thanh Toán Ngay
+                                </a>
+                            </c:when>
+                            <c:when test="${invoice.booking_status == 'PENDING'}">
+                                <span class="btn btn-outline-secondary px-4 me-2 disabled">
+                                    <i class="bi bi-clock me-2"></i>Chờ chủ xe duyệt đơn để thanh toán
+                                </span>
+                            </c:when>
+                            <c:when test="${invoice.booking_status == 'COMPLETED'}">
+                                <span class="btn btn-outline-success px-4 me-2 disabled">
+                                    <i class="bi bi-check-circle me-2"></i>Đã hoàn thành
+                                </span>
+                            </c:when>
+                            <c:when test="${invoice.booking_status == 'REJECTED' || invoice.booking_status == 'CANCELLED'}">
+                                <span class="btn btn-outline-secondary px-4 me-2 disabled">
+                                    <i class="bi bi-x-circle me-2"></i>Đơn đã hủy
+                                </span>
+                            </c:when>
+                        </c:choose>
                         <a href="${ctx}/home" class="btn btn-primary px-4">
                             Quay về trang chủ
                         </a>

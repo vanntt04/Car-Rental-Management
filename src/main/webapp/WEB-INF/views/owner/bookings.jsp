@@ -58,7 +58,6 @@
                     <table class="owner-table">
                         <thead>
                         <tr>
-                            <th>Mã</th>
                             <th>Xe</th>
                             <th>Khách</th>
                             <th>Thời gian</th>
@@ -74,7 +73,6 @@
                         </c:if>
                         <c:forEach items="${bookings}" var="b">
                             <tr>
-                                <td>#${b.booking_id}</td>
                                 <td>${b.carName}</td>
                                 <td>${b.customerName}</td>
                                 <td>${b.start_date} -> ${b.end_date}</td>

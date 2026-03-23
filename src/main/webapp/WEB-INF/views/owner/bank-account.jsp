@@ -65,6 +65,11 @@
                     <i class="bi bi-check-circle-fill"></i> Đã cập nhật thông tin tài khoản ngân hàng thành công.
                 </div>
             </c:if>
+            <c:if test="${param.error == 'no-account'}">
+                <div class="owner-alert danger">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Vui lòng thiết lập tài khoản ngân hàng trước khi xem mã QR.
+                </div>
+            </c:if>
             <c:if test="${not empty error}">
                 <div class="owner-alert danger">
                     <i class="bi bi-exclamation-triangle-fill"></i> ${error}
@@ -135,7 +140,12 @@
 
                     <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;">
 
-                    <div class="owner-actions" style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <div class="owner-actions" style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap;">
+                        <c:if test="${bankAccount != null && not empty bankAccount.accountNumber}">
+                            <a href="${ctx}/owner/bank-qr" class="owner-btn outline" style="text-decoration: none;">
+                                <i class="bi bi-qr-code-scan"></i> Xem mã QR
+                            </a>
+                        </c:if>
                         <a href="${ctx}/owner" class="owner-btn outline" style="text-decoration: none;">Hủy bỏ</a>
                         <button type="submit" class="owner-btn primary" style="min-width: 180px;">
                             <i class="bi bi-check-lg"></i> Lưu thay đổi

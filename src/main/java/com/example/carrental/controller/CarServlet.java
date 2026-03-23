@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
+import jakarta.servlet.http.Part;
+import com.example.carrental.model.util.ImageUploadUtil;
 
 @MultipartConfig
 @WebServlet(name = "CarOwnerServlet", urlPatterns = {"/owner", "/owner/*"})
@@ -317,7 +319,19 @@ public class CarServlet extends HttpServlet {
         car.setDescription(description);
         car.setOwnerId(user.getId());
 
-        carDAO.addCar(car);
+        int carId = carDAO.addCar(car);
+        if (carId > 0) {
+            Part imagePart = request.getPart("imageFile");
+            if (imagePart != null && imagePart.getSize() > 0) {
+                String path = ImageUploadUtil.saveCarImage(imagePart, getServletContext());
+                if (path != null) {
+                    car.setImageUrl(path);
+                    carDAO.updateCarImageUrl(carId, path);
+                    CarImage img = new CarImage(carId, path, true, 0);
+                    carImageDAO.add(img);
+                }
+            }
+        }
 
         response.sendRedirect(request.getContextPath() + "/owner?success=created");
 //        System.out.println("licensePlate = [" + request.getParameter("licensePlate") + "]");
@@ -372,6 +386,21 @@ public class CarServlet extends HttpServlet {
         }
         car.setStatus(request.getParameter("status"));
         car.setDescription(request.getParameter("description"));
+
+        Part imagePart = request.getPart("imageFile");
+        if (imagePart != null && imagePart.getSize() > 0) {
+            String path = ImageUploadUtil.saveCarImage(imagePart, getServletContext());
+            if (path != null) {
+                car.setImageUrl(path);
+                List<CarImage> existing = carImageDAO.getByCarId(id);
+                CarImage newImg = new CarImage(id, path, true, existing.size());
+                int newImgId = carImageDAO.addAndGetId(newImg);
+                if (newImgId > 0) {
+                    carImageDAO.setPrimary(id, newImgId);
+                }
+                carDAO.updateCarImageUrl(id, path);
+            }
+        }
 
         carDAO.updateCar(car);
 
