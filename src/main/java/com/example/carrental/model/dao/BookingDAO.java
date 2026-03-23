@@ -1,44 +1,161 @@
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package com.example.carrental.model.dao;
 
 import com.example.carrental.model.entity.Booking;
+import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.util.DBConnection;
-
 import java.math.BigDecimal;
+
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DAO cho bảng bookings.
- * filter: "all" | "completed" (đã hoàn thành) | "upcoming" (sắp tới)
- */
 public class BookingDAO {
-    private final DBConnection dbConnection = DBConnection.getInstance();
 
-    /**
-     * Lấy danh sách đặt xe theo car_id, có thể lọc theo trạng thái thời gian.
-     * @param filter "all" = tất cả, "completed" = đã hoàn thành (qua ngày hoặc COMPLETED), "upcoming" = sắp tới (chưa kết thúc, PENDING/APPROVED)
-     */
+    private DBConnection dbConnection;
+
+    public BookingDAO() {
+        this.dbConnection = DBConnection.getInstance();
+    }
+
+    public int insertBooking(Booking booking) {
+        String sql = "INSERT INTO bookings (booking_id ,car_id, customer_id, start_date, end_date,total_days, total_price,booking_status) VALUES (?, ?, ?, ?, ?, ?, ?,?)";
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setInt(1, booking.getBooking_id());
+            ps.setInt(2, booking.getCar_id());
+            ps.setInt(3, booking.getCustomer_id());
+            ps.setObject(4, (LocalDate) booking.getStart_date());
+            ps.setObject(5, (LocalDate) booking.getEnd_date());
+            ps.setInt(6, booking.getTotal_days());
+            ps.setBigDecimal(7, booking.getTotal_price());
+            ps.setString(8, "PENDING");
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public List<Booking> getAllBookCars(int user_id) {
+        String sql = "SELECT bookings.* FROM bookings WHERE customer_id = ? ";
+        List<Booking> book = new ArrayList<>();
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, user_id);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                book.add(mapResultSetToBook(rs));
+            }
+
+            rs.close();
+        } catch (SQLException e) {
+            System.err.println("Error getting car by id: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return book;
+    }
+
+    public void updateBookingStatus(int bookingId, String status) {
+        String sql = "UPDATE bookings SET booking_status = ? WHERE booking_id = ?";
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, bookingId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Booking> getBookCarByOwen(int owen_id) {
+
+        String sql = "SELECT i.* "
+                + "FROM bookings i "
+                + "JOIN cars c ON c.id = i.car_id "
+                + "WHERE c.owner_id = ?";
+
+        List<Booking> cars = new ArrayList<>();
+
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, owen_id);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Booking book = mapResultSetToBook(rs);
+                cars.add(book);
+            }
+
+            rs.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return cars;
+    }
+
+    public Booking getBookCarByID(int customer_id, int car_id) {
+
+        String sql = "SELECT i.* "
+                + "FROM bookings i "
+                + "WHERE i.car_id = ? AND  i.customer_id = ?";
+        Booking book = null;
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, car_id);
+            pstmt.setInt(2, customer_id);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                book = mapResultSetToBook(rs);
+            }
+
+            rs.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return book;
+    }
+
     public List<Booking> getByCarId(int carId, String filter) {
         List<Booking> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT b.booking_id, b.car_id, b.customer_id, u.full_name AS customer_name, " +
-            "b.start_date, b.end_date, b.total_days, b.total_price, b.booking_status " +
-            "FROM bookings b " +
-            "LEFT JOIN users u ON b.customer_id = u.user_id " +
-            "WHERE b.car_id = ? ");
+                "SELECT b.booking_id, b.car_id, b.customer_id, u.full_name AS customer_name, "
+                + "b.start_date, b.end_date, b.total_days, b.total_price, b.booking_status "
+                + "FROM bookings b "
+                + "LEFT JOIN users u ON b.customer_id = u.user_id "
+                + "WHERE b.car_id = ? ");
         if ("completed".equalsIgnoreCase(filter)) {
             sql.append("AND (b.end_date < CURDATE() OR b.booking_status = 'COMPLETED') ");
         } else if ("upcoming".equalsIgnoreCase(filter)) {
             sql.append("AND b.end_date >= CURDATE() AND b.booking_status IN ('PENDING','APPROVED') ");
         }
         sql.append("ORDER BY b.start_date DESC");
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             ps.setInt(1, carId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(mapRs(rs));
+                    list.add(mapResultSetToBook(rs));
                 }
             }
         } catch (SQLException e) {
@@ -47,179 +164,36 @@ public class BookingDAO {
         return list;
     }
 
-    /**
-     * Lấy booking theo ID.
-     */
-    public Booking getById(int bookingId) {
-        String sql = "SELECT b.booking_id, b.car_id, b.customer_id, u.full_name AS customer_name, " +
-                "b.start_date, b.end_date, b.total_days, b.total_price, b.booking_status " +
-                "FROM bookings b LEFT JOIN users u ON b.customer_id = u.user_id WHERE b.booking_id = ?";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, bookingId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapRs(rs);
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getById booking: " + e.getMessage());
-        }
-        return null;
+    private Booking mapResultSetToBook(ResultSet rs) throws SQLException {
+        Booking book = new Booking();
+        book.setBooking_id(rs.getInt("booking_id"));
+        book.setBooking_status(rs.getString("booking_status"));
+        book.setCar_id(rs.getInt("car_id"));
+        book.setCustomer_id(rs.getInt("customer_id"));
+        book.setStart_date(rs.getObject("start_date", LocalDate.class));
+        book.setTotal_price(rs.getBigDecimal("total_price"));
+        book.setEnd_date(rs.getObject("end_date", LocalDate.class));
+        book.setTotal_days(rs.getInt("total_days"));
+        return book;
     }
+    public static void main(String[] args) {
+    BookingDAO bookingDAO = new BookingDAO();
 
-    /**
-     * Đếm số booking theo owner_id với lọc trạng thái.
-     * @param statusFilter null/empty = tất cả, PENDING, APPROVED, REJECTED, CANCELLED, COMPLETED
-     */
-    public int countByOwnerId(int ownerId, String statusFilter) {
-        StringBuilder sql = new StringBuilder(
-            "SELECT COUNT(*) FROM bookings b " +
-            "LEFT JOIN cars c ON b.car_id = c.id " +
-            "WHERE c.owner_id = ?");
-        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
-            sql.append(" AND b.booking_status = ?");
-        }
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            ps.setInt(1, ownerId);
-            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
-                ps.setString(2, statusFilter.trim());
-            }
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            System.err.println("Error countByOwnerId: " + e.getMessage());
-        }
-        return 0;
-    }
+    int customerId = 4;
+    int carId = 1;
 
-    /**
-     * Lấy danh sách booking theo owner_id (xe của chủ) có phân trang và lọc trạng thái.
-     * Trả về List<Map> với các key: booking_id, carName, customerName, start_date, end_date, total_price, booking_status.
-     * @param statusFilter null/empty = tất cả
-     */
-    public List<java.util.Map<String, Object>> getByOwnerId(int ownerId, String statusFilter, int page, int pageSize) {
-        List<java.util.Map<String, Object>> result = new ArrayList<>();
-        StringBuilder sql = new StringBuilder(
-            "SELECT b.booking_id, b.car_id, b.customer_id, u.full_name AS customer_name, " +
-            "b.start_date, b.end_date, b.total_days, b.total_price, b.booking_status, c.name AS car_name " +
-            "FROM bookings b " +
-            "LEFT JOIN users u ON b.customer_id = u.user_id " +
-            "LEFT JOIN cars c ON b.car_id = c.id " +
-            "WHERE c.owner_id = ?");
-        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
-            sql.append(" AND b.booking_status = ?");
-        }
-        sql.append(" ORDER BY b.start_date DESC LIMIT ? OFFSET ?");
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            int idx = 1;
-            ps.setInt(idx++, ownerId);
-            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
-                ps.setString(idx++, statusFilter.trim());
-            }
-            ps.setInt(idx++, pageSize);
-            ps.setInt(idx, (page - 1) * pageSize);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    java.util.Map<String, Object> row = new java.util.HashMap<>();
-                    Booking booking = mapRs(rs);
-                    row.put("booking", booking);
-                    row.put("booking_id", booking.getId());
-                    row.put("carName", rs.getString("car_name"));
-                    row.put("customerName", booking.getCustomerName());
-                    row.put("start_date", booking.getStart_date());
-                    row.put("end_date", booking.getEnd_date());
-                    row.put("total_price", booking.getTotalPrice());
-                    row.put("booking_status", booking.getBookingStatus());
-                    result.add(row);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getByOwnerId: " + e.getMessage());
-        }
-        return result;
-    }
+    Booking booking = bookingDAO.getBookCarByID(customerId, carId);
 
-    /** @deprecated Dùng getByOwnerId(ownerId, statusFilter, page, pageSize) */
-    public List<java.util.Map<String, Object>> getByOwnerId(int ownerId) {
-        return getByOwnerId(ownerId, null, 1, Integer.MAX_VALUE);
+    if (booking == null) {
+        System.out.println("No booking found for customer_id = " + customerId + " and car_id = " + carId);
+    } else {
+        System.out.println("Booking found:");
+        System.out.println("Booking ID: " + booking.getBooking_id());
+        System.out.println("Car ID: " + booking.getCar_id());
+        System.out.println("Customer ID: " + booking.getCustomer_id());
+        System.out.println("Status: " + booking.getBooking_status());
+        System.out.println("Start Date: " + booking.getStart_date());
+        System.out.println("End Date: " + booking.getEnd_date());
     }
-
-    /**
-     * Lấy danh sách booking theo customer_id.
-     */
-    public List<Booking> getByCustomerId(int customerId) {
-        List<Booking> list = new ArrayList<>();
-        String sql = "SELECT b.booking_id, b.car_id, b.customer_id, u.full_name AS customer_name, " +
-                "b.start_date, b.end_date, b.total_days, b.total_price, b.booking_status " +
-                "FROM bookings b LEFT JOIN users u ON b.customer_id = u.user_id " +
-                "WHERE b.customer_id = ? ORDER BY b.start_date DESC";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, customerId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) list.add(mapRs(rs));
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getByCustomerId: " + e.getMessage());
-        }
-        return list;
-    }
-
-    /**
-     * Cập nhật trạng thái booking (CANCELLED, APPROVED, etc.)
-     */
-    public boolean updateStatus(int bookingId, String status) {
-        String sql = "UPDATE bookings SET booking_status = ? WHERE booking_id = ?";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, status);
-            ps.setInt(2, bookingId);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("Error updateStatus: " + e.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Thêm booking mới, trả về ID được tạo.
-     */
-    public int insertBooking(Booking b) throws SQLException {
-        String sql = "INSERT INTO bookings (car_id, customer_id, start_date, end_date, total_days, total_price, booking_status) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, b.getCarId());
-            ps.setInt(2, b.getCustomerId());
-            ps.setDate(3, Date.valueOf(b.getStartDate()));
-            ps.setDate(4, Date.valueOf(b.getEndDate()));
-            ps.setInt(5, b.getTotalDays());
-            ps.setBigDecimal(6, b.getTotalPrice());
-            ps.setString(7, b.getBookingStatus());
-            ps.executeUpdate();
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) return rs.getInt(1);
-            }
-        }
-        throw new SQLException("Could not get generated booking id");
-    }
-
-    private Booking mapRs(ResultSet rs) throws SQLException {
-        Booking b = new Booking();
-        b.setId(rs.getInt("booking_id"));
-        b.setCarId(rs.getInt("car_id"));
-        b.setCustomerId(rs.getInt("customer_id"));
-        b.setCustomerName(rs.getString("customer_name"));
-        Date sd = rs.getDate("start_date");
-        if (sd != null) b.setStartDate(sd.toLocalDate());
-        Date ed = rs.getDate("end_date");
-        if (ed != null) b.setEndDate(ed.toLocalDate());
-        b.setTotalDays(rs.getInt("total_days"));
-        BigDecimal price = rs.getBigDecimal("total_price");
-        b.setTotalPrice(price);
-        b.setBookingStatus(rs.getString("booking_status"));
-        return b;
-    }
+}
 }

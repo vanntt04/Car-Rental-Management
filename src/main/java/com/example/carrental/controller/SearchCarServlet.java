@@ -1,83 +1,159 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
+ */
 package com.example.carrental.controller;
 
-import com.example.carrental.model.dao.CarAvailabilityDAO;
 import com.example.carrental.model.dao.CarDAO;
-import com.example.carrental.model.dao.CarImageDAO;
 import com.example.carrental.model.entity.Car;
-import com.example.carrental.model.entity.CarImage;
+import com.example.carrental.model.entity.User;
+import com.example.carrental.model.util.HoldCleanupScheduler;
 import jakarta.servlet.RequestDispatcher;
+import java.io.IOException;
+import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
+import jakarta.servlet.http.HttpSession;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Servlet phục vụ danh sách xe và chi tiết xe cho khách hàng.
- * URL: /searchcar (danh sách), /searchcar?id=123 (chi tiết)
+ *
+ * @author PC
  */
 public class SearchCarServlet extends HttpServlet {
 
-    private final CarDAO carDAO = new CarDAO();
-    private final CarAvailabilityDAO availabilityDAO = new CarAvailabilityDAO();
-    private final CarImageDAO carImageDAO = new CarImageDAO();
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet SearchCarServlet</title>");
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet SearchCarServlet at " + request.getContextPath() + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
 
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String idParam = request.getParameter("id");
-        if (idParam != null && !idParam.trim().isEmpty()) {
-            try {
-                int carId = Integer.parseInt(idParam.trim());
-                Car car = carDAO.getCarById(carId);
-                if (car == null) {
-                    response.sendRedirect(request.getContextPath() + "/searchcar");
-                    return;
-                }
-                java.util.List<CarImage> carImages = carImageDAO.getByCarId(carId);
-                if (car.getImageUrl() == null || car.getImageUrl().trim().isEmpty()) {
-                    if (!carImages.isEmpty() && carImages.get(0).getImageUrl() != null) {
-                        String url = carImages.get(0).getImageUrl();
-                        car.setImageUrl(url.startsWith("/") ? url : "/" + url);
-                    }
-                }
-                request.setAttribute("car_detail", car);
-                request.setAttribute("carAvailabilities", availabilityDAO.getByCarId(carId));
-                RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/car/detail.jsp");
-                rd.forward(request, response);
-            } catch (NumberFormatException e) {
-                response.sendRedirect(request.getContextPath() + "/searchcar");
+        CarDAO carDAO = new CarDAO();
+        List<Car> List = carDAO.getAllCars();
+        List<Car> CarList = new ArrayList<>();
+        /*List<String> BrandList = carDAO.getAllBrandCars();*/
+        /*List<Integer> SeatList = carDAO.getAllSeat();*/
+        HttpSession session = request.getSession(true);
+        for(int i= 0 ; i < List.size();i++){
+            if(!List.get(i).getStatus().equals("RENTED")){
+                CarList.add(List.get(i));
             }
-        } else {
-            String keyword = request.getParameter("keyword");
-            List<Car> cars;
-            if (keyword != null && !keyword.trim().isEmpty()) {
-                String kw = keyword.trim().toLowerCase();
-                cars = carDAO.getActiveCars().stream()
-                        .filter(c -> (c.getName() != null && c.getName().toLowerCase().contains(kw))
-                                || (c.getLicensePlate() != null && c.getLicensePlate().toLowerCase().contains(kw))
-                                || (c.getBrand() != null && c.getBrand().toLowerCase().contains(kw)))
-                        .collect(Collectors.toList());
-            } else {
-                cars = carDAO.getActiveCars();
-            }
-            request.setAttribute("cars", cars);
-            RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/car/list.jsp");
-            rd.forward(request, response);
         }
+        session.setAttribute("CarList", CarList);
+        /*session.setAttribute("BrandList", BrandList);*/
+        /*session.setAttribute("SeatList", SeatList);*/
+        HoldCleanupScheduler.start();
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
+        dispatcher.forward(request, response);
+
     }
 
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String idParam = request.getParameter("id");
-        if (idParam != null && !idParam.trim().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/booking?carId=" + idParam.trim());
-        } else {
-            doGet(request, response);
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+        String pickupStr = request.getParameter("pickupTime");
+        LocalDate pickupTime = null;
+        try {
+            if (pickupStr != null && !pickupStr.isEmpty()) {
+                pickupTime = LocalDate.parse(pickupStr);
+            }
+        } catch (Exception e) {
+            System.out.println("pickupTime null hoặc sai định dạng, bỏ qua");
         }
+        String returnStr = request.getParameter("returnTime");
+        LocalDate returnTime = null;
+        try {
+            if (returnStr != null && !returnStr.isEmpty()) {
+                returnTime = LocalDate.parse(returnStr);
+            }
+        } catch (Exception e) {
+            System.out.println("returnTime null hoặc sai định dạng, bỏ qua");
+        }
+        String error = null;
+        if (pickupTime == null || returnTime == null) {
+            error = "Vui lòng nhập đủ ngày nhận và trả xe";
+        } else if (returnTime.isBefore(pickupTime)) {
+            error = "Ngày trả xe phải sau ngày nhận";
+        }
+        CarDAO carDAO = new CarDAO();
+        List<Car> resultList = null;
+
+        if (error == null) {
+            String seat = request.getParameter("seat");
+            /*resultList = carDAO.getCarByDate(Integer.valueOf(seat), pickupTime, returnTime);*/
+
+            if (resultList == null || resultList.isEmpty()) {
+                error = "Không tìm thấy kết quả phù hợp";
+                resultList = carDAO.getAllCars(); // HIỂN THỊ LẠI TOÀN BỘ XE
+            }
+        } else {
+            resultList = carDAO.getAllCars();
+        }
+
+        request.setAttribute("error", error);
+        request.setAttribute("CarList", resultList);  // CHỈ DÙNG 1 BIẾN
+        request.setAttribute("error", error);
+        request.setAttribute("pickupTime", pickupTime);
+        request.setAttribute("returnTime", returnTime);
+        request.setAttribute("CarList", resultList);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
+        dispatcher.forward(request, response);
     }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }// </editor-fold>
+
 }
