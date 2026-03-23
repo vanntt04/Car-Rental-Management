@@ -239,7 +239,7 @@ public class CarDAO {
      */
     public boolean updateCar(Car car) throws SQLException {
         String sql = "UPDATE cars SET owner_id = ?, name = ?, license_plate = ?, brand = ?, model = ?, "
-                + "year = ?, color = ?, price_per_day = ?, status = ?,  image_url = ?, description = ? "
+                + "year = ?, color = ?, seats = ?, price_per_day = ?, status = ?, image_url = ?, description = ? "
                 + "WHERE id = ?";
 
         try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -251,14 +251,11 @@ public class CarDAO {
             pstmt.setString(5, car.getModel());
             pstmt.setObject(6, car.getYear(), Types.INTEGER);
             pstmt.setString(7, car.getColor());
-            pstmt.setBigDecimal(8, car.getPricePerDay());
-            pstmt.setString(9, car.getStatus());
-
-            pstmt.setInt(10, 1); // active
-
+            pstmt.setObject(8, car.getSeats(), Types.INTEGER);
+            pstmt.setBigDecimal(9, car.getPricePerDay());
+            pstmt.setString(10, car.getStatus());
             pstmt.setString(11, car.getImageUrl());
             pstmt.setString(12, car.getDescription());
-
             pstmt.setInt(13, car.getId());
 
             return pstmt.executeUpdate() > 0;

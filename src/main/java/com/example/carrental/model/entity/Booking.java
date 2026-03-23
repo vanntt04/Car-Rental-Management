@@ -35,4 +35,13 @@ public class Booking {
     public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
     public String getBookingStatus() { return bookingStatus; }
     public void setBookingStatus(String bookingStatus) { this.bookingStatus = bookingStatus; }
+
+    /** Alias for JSP: ${invoice.booking_id} */
+    public int getBooking_id() { return id; }
+    /** Alias for JSP: ${invoice.booking_status} */
+    public String getBooking_status() { return bookingStatus; }
+    /** Alias for JSP: ${invoice.start_date} */
+    public String getStart_date() { return startDate != null ? startDate.toString() : ""; }
+    /** Alias for JSP: ${invoice.end_date} */
+    public String getEnd_date() { return endDate != null ? endDate.toString() : ""; }
 }

@@ -6,9 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Danh sách người dùng - Car Rental</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; }
+        body { font-family: 'Roboto', sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; }
         .container { max-width: 1000px; margin: 0 auto; }
         h1 { color: #333; }
         nav { margin-bottom: 1.5rem; }
@@ -28,7 +29,7 @@
     <h1>Danh sách người dùng</h1>
     <nav>
         <a href="<c:url value='/home'/>">Trang chủ</a>
-        <a href="<c:url value='/cars'/>">Danh sách xe</a>
+        <a href="<c:url value='/searchcar'/>">Danh sách xe</a>
         <a href="<c:url value='/users'/>">Danh sách người dùng</a>
     </nav>
 

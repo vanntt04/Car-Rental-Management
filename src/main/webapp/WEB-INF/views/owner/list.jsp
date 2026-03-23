@@ -8,109 +8,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Owner Dashboard - CarRental</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="${ctx}/assets/css/owner-dashboard.css" rel="stylesheet">
     <style>
-        :root {
-            --sidebar-bg: #24313f;
-            --sidebar-bg-2: #1d2732;
-            --sidebar-text: #d8e3ee;
-            --sidebar-muted: #9fb0bf;
-            --sidebar-active: #2ea1f8;
-            --page-bg: #eef2f6;
-            --card-bg: #ffffff;
-            --border-color: #d8e0e8;
-            --text-main: #2f3b48;
-            --text-sub: #7a8c9e;
-            --cyan: #28a9e0;
-            --blue: #5b8de3;
-            --yellow: #f4c300;
-            --red: #f46666;
-            --radius: 10px;
-        }
-
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Roboto, Arial, sans-serif;
-            color: var(--text-main);
-            background: var(--page-bg);
-        }
-
-        .owner-dashboard {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            min-height: 100vh;
-        }
-
-        .owner-sidebar {
-            background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-bg-2) 100%);
-            color: var(--sidebar-text);
-            padding: 20px 14px;
-        }
-        .brand {
-            font-weight: 700;
-            font-size: 20px;
-            padding: 8px 10px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            margin-bottom: 16px;
-        }
-        .sidebar-group-title {
-            color: var(--sidebar-muted);
-            font-size: 12px;
-            letter-spacing: 0.8px;
-            margin: 18px 10px 8px;
-            text-transform: uppercase;
-        }
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--sidebar-text);
-            text-decoration: none;
-            padding: 10px 12px;
-            margin: 4px 0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: 0.2s ease;
-        }
-        .sidebar-link:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-        .sidebar-link.active {
-            background: var(--sidebar-active);
-            color: #fff;
-        }
-
-        .owner-main {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-        }
-
-        .topbar {
-            background: #fff;
-            border-bottom: 1px solid var(--border-color);
-            padding: 14px 22px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-        }
-        .topbar-title {
-            font-size: 22px;
-            font-weight: 600;
-            margin: 0;
-        }
-        .topbar-user {
-            color: var(--text-sub);
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        .page-content {
-            padding: 20px 22px 28px;
-        }
-
+        :root { --cyan: #28a9e0; --blue: #5b8de3; --yellow: #f4c300; --red: #f46666; --radius: 10px; --border-color: #d8e0e8; --text-sub: #7a8c9e; --text-main: #2f3b48; --card-bg: #fff; --sidebar-active: #2ea1f8; }
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -138,13 +40,6 @@
         .stat-blue { background: var(--blue); }
         .stat-yellow { background: var(--yellow); color: #2f3b48; }
         .stat-red { background: var(--red); }
-
-        .panel {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            padding: 16px;
-        }
 
         .toolbar {
             display: flex;
@@ -305,49 +200,25 @@
 </head>
 <body>
 <div class="owner-dashboard">
-    <aside class="owner-sidebar">
-        <div class="brand">CarRental Owner</div>
-
-        <div class="sidebar-group-title">Dashboard</div>
-        <a href="${ctx}/owner" class="sidebar-link active"><i class="bi bi-speedometer2"></i> Quản lý xe</a>
-        <a href="${ctx}/owner/bookings" class="sidebar-link"><i class="bi bi-journal-check"></i> Yêu cầu đặt xe</a>
-        <a href="${ctx}/owner/bank-account" class="sidebar-link"><i class="bi bi-bank"></i> Tài khoản ngân hàng</a>
-        <a href="${ctx}/owner/new" class="sidebar-link"><i class="bi bi-plus-circle"></i> Thêm xe mới</a>
-
-        <div class="sidebar-group-title">Điều hướng</div>
-        <a href="${ctx}/home" class="sidebar-link"><i class="bi bi-house"></i> Về trang chủ</a>
-        <a href="${ctx}/logout" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a>
-    </aside>
+    <jsp:include page="sidebar.jsp">
+        <jsp:param name="activePage" value="owner"/>
+    </jsp:include>
 
     <main class="owner-main">
-        <div class="topbar">
-            <h1 class="topbar-title">Owner Dashboard</h1>
-            <div class="topbar-user">
-                Xin chào, <strong>${sessionScope.fullName != null ? sessionScope.fullName : sessionScope.username}</strong>
-            </div>
+        <div class="owner-topbar">
+            <h1>Owner Dashboard</h1>
+            <div class="owner-user">Xin chào, <strong>${sessionScope.fullName != null ? sessionScope.fullName : sessionScope.username}</strong></div>
         </div>
 
-        <div class="page-content">
+        <div class="owner-page">
             <div class="stats-grid">
                 <div class="stat-card stat-cyan">
                     <h3>${totalCount}</h3>
                     <p>Tổng số xe</p>
                 </div>
-                <div class="stat-card stat-blue">
-                    <h3>${currentPage}</h3>
-                    <p>Trang hiện tại</p>
-                </div>
-                <div class="stat-card stat-yellow">
-                    <h3>${totalPages}</h3>
-                    <p>Tổng số trang</p>
-                </div>
-                <div class="stat-card stat-red">
-                    <h3><c:out value="${empty statusFilter ? 'ALL' : statusFilter}"/></h3>
-                    <p>Bộ lọc trạng thái</p>
-                </div>
             </div>
 
-            <div class="panel">
+            <div class="owner-card">
                 <%-- Form GET: không phụ thuộc JS; Enter cũng lọc được --%>
                 <form class="toolbar" method="get" action="${ctx}/owner">
                     <input type="hidden" name="page" value="1">
@@ -371,10 +242,10 @@
                 <c:if test="${not empty param.success}">
                     <div class="summary-row" style="color:#1e8f44;">
                         <c:choose>
-                            <c:when test="${param.success == 'created'}">Da them xe moi thanh cong.</c:when>
-                            <c:when test="${param.success == 'updated'}">Da cap nhat xe thanh cong.</c:when>
-                            <c:when test="${param.success == 'activated'}">Da dua xe vao hoat dong.</c:when>
-                            <c:when test="${param.success == 'deactivated'}">Da ngung hoat dong xe.</c:when>
+                            <c:when test="${param.success == 'created'}">Đã thêm xe mới thành công.</c:when>
+                            <c:when test="${param.success == 'updated'}">Đã cập nhật xe thành công.</c:when>
+                            <c:when test="${param.success == 'activated'}">Đã đưa xe vào hoạt động.</c:when>
+                            <c:when test="${param.success == 'deactivated'}">Đã ngừng hoạt động xe.</c:when>
                         </c:choose>
                     </div>
                 </c:if>
@@ -405,7 +276,7 @@
 
                 <c:if test="${empty cars}">
                     <div class="empty">
-                        <p>Ban chua co xe nao. Bat dau bang cach them xe moi.</p>
+                        <p>Bạn chưa có xe nào. Bắt đầu bằng cách thêm xe mới.</p>
                     </div>
                 </c:if>
 

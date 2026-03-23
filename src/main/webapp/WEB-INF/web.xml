@@ -2,11 +2,59 @@
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
-         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-         version="6.0">
+         https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+         version="5.0">
 
     <display-name>Car Rental Management</display-name>
     <description>Ứng dụng thuê xe theo mô hình MVC</description>
+
+    <filter>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <filter-class>com.example.carrental.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
+
+    <servlet>
+        <servlet-name>BookingServlet</servlet-name>
+        <servlet-class>com.example.carrental.controller.BookingServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SearchCarServlet</servlet-name>
+        <servlet-class>com.example.carrental.controller.SearchCarServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MyBookingServlet</servlet-name>
+        <servlet-class>com.example.carrental.controller.MyBookingServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>RemoveServlet</servlet-name>
+        <servlet-class>com.example.carrental.controller.RemoveServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BookingServlet</servlet-name>
+        <url-pattern>/booking</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SearchCarServlet</servlet-name>
+        <url-pattern>/searchcar</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MyBookingServlet</servlet-name>
+        <url-pattern>/mybooking</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RemoveServlet</servlet-name>
+        <url-pattern>/remove</url-pattern>
+    </servlet-mapping>
 
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>

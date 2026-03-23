@@ -27,7 +27,7 @@
 
             body {
                 background-color: #f4f7f8;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                font-family: 'Roboto', sans-serif;
             }
 
             /* Custom Breadcrumb */
@@ -197,7 +197,7 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="${ctx}/home">Trang chủ</a></li>
-                        <li class="breadcrumb-item"><a href="${ctx}/cars">Danh sách xe</a></li>
+                        <li class="breadcrumb-item"><a href="${ctx}/${(sessionScope.role == 'OWNER' || sessionScope.role == 'ADMIN') ? 'owner' : 'searchcar'}">Danh sách xe</a></li>
                         <li class="breadcrumb-item active" aria-current="page">${car_detail.name}</li>
                     </ol>
                 </nav>
@@ -263,13 +263,14 @@
                             </div>
                         </div>
 
-                        <form action="${ctx}/cars" method="post">
-                            <input type="hidden" name="id" value="${car_detail.id}">
-                            <button type="submit" class="booking-btn shadow-sm">
-                                <i class="bi bi-calendar-plus me-2"></i> Select book
-                            </button>
-                        </form>
-
+                        <c:if test="${sessionScope.role != 'OWNER' || car_detail.ownerId != sessionScope.userId}">
+                            <form action="${ctx}/searchcar" method="post">
+                                <input type="hidden" name="id" value="${car_detail.id}">
+                                <button type="submit" class="booking-btn shadow-sm">
+                                    <i class="bi bi-calendar-plus me-2"></i> Đặt xe ngay
+                                </button>
+                            </form>
+                        </c:if>
                         <c:if test="${sessionScope.role == 'OWNER' || sessionScope.role == 'ADMIN'}">
                             <c:if test="${car_detail.ownerId == sessionScope.userId || sessionScope.role == 'ADMIN'}">
                                 <div class="admin-actions">
@@ -348,7 +349,7 @@
             </div>
 
             <div class="mt-4 mb-5 text-center">
-                <a href="${ctx}/cars" class="text-decoration-none text-muted">
+                <a href="${ctx}/${(sessionScope.role == 'OWNER' || sessionScope.role == 'ADMIN') ? 'owner' : 'searchcar'}" class="text-decoration-none text-muted">
                     <i class="bi bi-arrow-left"></i> Quay lại danh sách xe
                 </a>
             </div>
