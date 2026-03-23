@@ -104,7 +104,10 @@ public class AuthServlet extends HttpServlet {
                     session.setAttribute("userId", user.getId());
                     session.setAttribute("username", user.getUsername());
                     session.setAttribute("fullName", user.getFullName());
-                    session.setAttribute("role", user.getRole());
+                    // Chuẩn hóa role (DB có thể trả owner/OWNER) để JSP so sánh ổn định
+                    String roleNorm = user.getRole() != null ? user.getRole().trim().toUpperCase() : "CUSTOMER";
+                    session.setAttribute("role", roleNorm);
+                    user.setRole(roleNorm);
                     
                     // Chuyển hướng về trang chủ hoặc trang được yêu cầu trước đó
                     String redirectUrl = request.getParameter("redirect");

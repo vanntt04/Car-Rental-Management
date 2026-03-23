@@ -16,75 +16,213 @@
     <jsp:param name="page" value="home"/>
 </jsp:include>
 
-<!-- Hero - Woox style -->
-<section class="woox-hero">
-    <div class="container">
-        <h1>Thuê xe tự lái</h1>
-        <h2>An toàn · Tiện lợi · Giá tốt</h2>
-        <p class="lead">Đặt xe dễ dàng trong vài phút. Hàng trăm mẫu xe đa dạng đang chờ bạn. Ưu đãi hấp dẫn cho khách hàng mới.</p>
-        <div class="main-button"><a href="${ctx}/cars">Xem danh sách xe</a></div>
-        <div class="border-button"><a href="${ctx}/cars">Đặt xe ngay</a></div>
-    </div>
-</section>
+<style>
+    .home-hero {
+        border-radius: 18px;
+        overflow: hidden;
+        margin: 18px auto 0;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.10);
+        background:
+            linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.35)),
+            url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1600&q=80');
+        background-size: cover;
+        background-position: center;
+        min-height: 420px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 18px;
+    }
+    .home-hero h1 {
+        color: #fff;
+        font-size: clamp(28px, 4vw, 44px);
+        font-weight: 800;
+        text-align: center;
+        margin: 0 0 22px;
+        text-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+    .home-search {
+        position: absolute;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%);
+        width: min(980px, calc(100% - 24px));
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        display: grid;
+        grid-template-columns: 1.2fr 2fr auto;
+        gap: 0;
+        overflow: hidden;
+    }
+    .home-search .cell {
+        padding: 14px 16px;
+        border-right: 1px solid #f0f0f0;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+    .home-search .cell:last-child { border-right: none; }
+    .home-search .label {
+        font-size: 12px;
+        color: #8a8a8a;
+        margin-bottom: 4px;
+    }
+    .home-search select,
+    .home-search input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 14px;
+        color: #333;
+        padding: 0;
+        background: transparent;
+    }
+    .home-search .date-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .home-search .btn {
+        border: none;
+        background: #41c17b;
+        color: #fff;
+        font-weight: 700;
+        padding: 0 22px;
+        border-radius: 0;
+        min-width: 120px;
+    }
+    .home-section {
+        padding: 44px 0;
+    }
+    .home-card {
+        border-radius: 18px;
+        overflow: hidden;
+        background: #eef9f2;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        align-items: stretch;
+    }
+    .home-card.lightblue { background: #eaf4ff; }
+    .home-card .media {
+        background-size: cover;
+        background-position: center;
+        min-height: 260px;
+    }
+    .home-card .content {
+        padding: 30px 28px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 14px;
+    }
+    .home-card h2 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 800;
+        color: #1f2a37;
+    }
+    .home-card p {
+        margin: 0;
+        color: #6b7280;
+        line-height: 1.7;
+        font-size: 14px;
+    }
+    .home-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+    .btn-soft {
+        border-radius: 10px;
+        padding: 10px 18px;
+        font-weight: 700;
+        border: 1px solid #cfe4ff;
+        background: #fff;
+        color: #2563eb;
+    }
+    .btn-fill {
+        border-radius: 10px;
+        padding: 10px 18px;
+        font-weight: 700;
+        border: 1px solid #41c17b;
+        background: #41c17b;
+        color: #fff;
+    }
+    @media (max-width: 991px) {
+        .home-search { grid-template-columns: 1fr; }
+        .home-search .cell { border-right: none; border-bottom: 1px solid #f0f0f0; }
+        .home-search .cell:last-child { border-bottom: none; }
+        .home-search .btn { width: 100%; padding: 14px 18px; }
+        .home-card { grid-template-columns: 1fr; }
+        .home-card .media { min-height: 220px; }
+    }
+</style>
 
-<!-- Features -->
-<section class="woox-section">
-    <div class="container">
-        <div class="section-heading text-center">
-            <h2>Vì sao chọn CarRental?</h2>
-            <p>Cam kết mang đến trải nghiệm thuê xe tốt nhất cho bạn</p>
+<div class="container">
+    <section class="home-hero">
+        <div>
+            <h1>Thuê xe tự lái tại Hà Nội</h1>
         </div>
-        <div class="woox-features">
-            <div class="woox-feature">
-                <i class="bi bi-lightning-charge"></i>
-                <h4>Đặt xe nhanh</h4>
-                <p>Chỉ 3 bước đơn giản để hoàn tất đặt xe, xác nhận ngay qua email/SMS.</p>
-            </div>
-            <div class="woox-feature">
-                <i class="bi bi-shield-check"></i>
-                <h4>Xe chất lượng</h4>
-                <p>100% xe được bảo trì định kỳ, đảm bảo an toàn cho mọi chuyến đi.</p>
-            </div>
-            <div class="woox-feature">
-                <i class="bi bi-cash-stack"></i>
-                <h4>Giá tốt nhất</h4>
-                <p>Cam kết giá cạnh tranh, không phát sinh phí ẩn. Thanh toán linh hoạt.</p>
-            </div>
-            <div class="woox-feature">
-                <i class="bi bi-headset"></i>
-                <h4>Hỗ trợ 24/7</h4>
-                <p>Đội ngũ tư vấn luôn sẵn sàng hỗ trợ bạn mọi lúc, mọi nơi.</p>
-            </div>
-        </div>
-    </div>
-</section>
 
-<!-- About -->
-<section class="woox-section" id="about" style="background: #f9f9f9;">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <div class="section-heading">
-                    <h2>Về CarRental</h2>
-                    <p>CarRental là hệ thống thuê xe tự lái hàng đầu tại Việt Nam. Với nhiều năm kinh nghiệm, chúng tôi cam kết mang đến trải nghiệm thuê xe thuận tiện, an toàn với mức giá cạnh tranh nhất thị trường.</p>
-                    <p>Đội ngũ nhân viên chuyên nghiệp, xe đời mới được bảo trì thường xuyên, và quy trình đặt xe đơn giản giúp bạn tiết kiệm thời gian.</p>
+        <form class="home-search" action="${ctx}/cars" method="get">
+            <div class="cell">
+                <i class="bi bi-geo-alt" style="font-size: 18px; color: #8a8a8a;"></i>
+                <div style="width: 100%;">
+                    <div class="label">Địa điểm</div>
+                    <select name="location">
+                        <option value="Hà Nội">Hà Nội</option>
+                        <option value="Hồ Chí Minh">Hồ Chí Minh</option>
+                        <option value="Đà Nẵng">Đà Nẵng</option>
+                    </select>
                 </div>
             </div>
-            <div class="col-lg-6 text-center">
-                <span style="font-size: 120px; opacity: 0.15;">🚗</span>
+            <div class="cell">
+                <i class="bi bi-calendar3" style="font-size: 18px; color: #8a8a8a;"></i>
+                <div style="width: 100%;">
+                    <div class="label">Thời gian thuê</div>
+                    <div class="date-grid">
+                        <input type="datetime-local" name="start" required>
+                        <input type="datetime-local" name="end" required>
+                    </div>
+                </div>
+            </div>
+            <button class="btn" type="submit">Tìm Xe</button>
+        </form>
+    </section>
+
+    <section class="home-section">
+        <div class="home-card">
+            <div class="media" style="background-image:url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80');"></div>
+            <div class="content">
+                <div style="text-align:center; color:#22b3c1; font-weight:800; letter-spacing:1px;">MIOTO</div>
+                <h2>Bạn muốn biết thêm về Mioto?</h2>
+                <p>Mioto kết nối khách hàng có nhu cầu thuê xe với hàng ngàn chủ xe ở Hà Nội và các tỉnh thành khác. Tối ưu trải nghiệm đặt xe nhanh, minh bạch và tiện lợi.</p>
+                <div class="home-actions">
+                    <a class="btn-fill" href="${ctx}/home#about">Tìm hiểu thêm</a>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- CTA -->
-<section class="call-to-action">
-    <div class="container">
-        <h2>Sẵn sàng khởi hành?</h2>
-        <h4>Đặt xe ngay hôm nay và nhận ưu đãi đặc biệt cho khách hàng mới</h4>
-        <div class="border-button"><a href="${ctx}/cars">Đặt xe ngay</a></div>
-    </div>
-</section>
+    <section class="home-section" style="padding-top: 6px;">
+        <div class="home-card lightblue">
+            <div class="content">
+                <div style="color:#60a5fa; font-weight:800; letter-spacing:1px;"><i class="bi bi-car-front"></i></div>
+                <h2>Bạn muốn cho thuê xe?</h2>
+                <p>Đăng ký trở thành đối tác của chúng tôi ngay hôm nay để gia tăng thu nhập hàng tháng. Quản lý xe, lịch cho thuê và thanh toán dễ dàng.</p>
+                <div class="home-actions">
+                    <a class="btn-soft" href="${ctx}/home#about">Tìm hiểu ngay</a>
+                    <a class="btn-fill" href="${ctx}/owner">Đăng ký xe</a>
+                </div>
+            </div>
+            <div class="media" style="background-image:url('https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=1200&q=80');"></div>
+        </div>
+    </section>
+</div>
 
 <jsp:include page="layout/footer.jsp"/>
 

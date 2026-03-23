@@ -210,7 +210,7 @@ CREATE TABLE payments (
     payment_id INT AUTO_INCREMENT PRIMARY KEY,
     booking_id INT NOT NULL,
     amount DECIMAL(12,2) NOT NULL,
-    payment_method ENUM('CASH','MOMO','VNPAY','PAYPAL'),
+    payment_method ENUM('CASH','BANK_TRANSFER','MOMO','VNPAY','PAYPAL'),
     payment_status ENUM('UNPAID','PAID','REFUNDED') DEFAULT 'UNPAID',
     paid_at DATETIME,
     FOREIGN KEY(booking_id) REFERENCES bookings(booking_id)

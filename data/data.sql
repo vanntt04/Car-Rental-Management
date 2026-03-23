@@ -81,7 +81,7 @@ CREATE TABLE cars (
     transmission ENUM('AUTO','MANUAL'),
     fuel_type ENUM('PETROL','DIESEL','ELECTRIC'),
     price_per_day DECIMAL(12,2) NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE' COMMENT 'AVAILABLE, RENTED, MAINTENANCE',
+    status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE' COMMENT 'AVAILABLE, RENTED, MAINTENANCE,INACTIVE',
     image_url VARCHAR(500) NULL,
     description TEXT NULL COMMENT 'Mô tả chi tiết xe',
     created_at DATETIME NULL,
@@ -133,9 +133,23 @@ CREATE TABLE car_images (
     FOREIGN KEY(car_id) REFERENCES cars(id) ON DELETE CASCADE
 );
 
--- =============================
--- BOOKINGS (tham chiếu cars(id))
--- =============================
+
+CREATE TABLE bank_accounts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    owner_id INT NOT NULL,
+    bank_code VARCHAR(20) NOT NULL,
+    account_number VARCHAR(50) NOT NULL,
+    account_name VARCHAR(100) NOT NULL,
+    branch VARCHAR(100),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_bank_user
+        FOREIGN KEY (owner_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE
+);
+
 CREATE TABLE bookings (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
     car_id INT NOT NULL,
