@@ -199,7 +199,7 @@ public class CarServlet extends HttpServlet {
 
         List<Car> cars = carDAO.searchCarsByOwner(ownerId, keyword, status, sort, offset, PAGE_SIZE);
 
-        int totalCars = carDAO.countCarsByOwnerId(ownerId, status, null);
+        int totalCars = carDAO.countCarsByOwnerId(ownerId, status, null, keyword);
         int totalPages = (int) Math.ceil((double) totalCars / PAGE_SIZE);
 
         request.setAttribute("cars", cars);

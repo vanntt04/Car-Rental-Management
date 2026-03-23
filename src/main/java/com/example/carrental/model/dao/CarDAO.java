@@ -62,19 +62,90 @@ public class CarDAO {
     }
 
     /**
-     * Đếm số xe của owner (có thể lọc theo status và active)
+     * Tìm kiếm xe của owner với keyword (tên hoặc biển số), lọc status, sắp xếp, phân trang.
+     * sort: "newest" | "oldest" | "date_desc" | "date_asc"
      */
-    public int countCarsByOwnerId(int ownerId, String statusFilter, String activeFilter) {
-        String sql = "SELECT COUNT(*) FROM cars WHERE owner_id = ?";
+    public List<Car> searchCarsByOwner(int ownerId, String keyword, String statusFilter, String sort, int offset, int limit) {
+        List<Car> cars = new ArrayList<>();
+        String order = "oldest".equalsIgnoreCase(sort) || "date_asc".equalsIgnoreCase(sort) ? "id ASC" : "id DESC";
+        StringBuilder sql = new StringBuilder("SELECT * FROM cars WHERE owner_id = ? ");
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (name LIKE ? OR license_plate LIKE ?) ");
+        }
         if (statusFilter != null && !statusFilter.isEmpty()) {
-            sql += " AND status = ?";
+            sql.append("AND status = ? ");
         }
-        if (activeFilter != null && !activeFilter.isEmpty()) {
-            sql += " AND is_active = ?";
-        }
-        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        sql.append("ORDER BY ").append(order).append(" LIMIT ? OFFSET ?");
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             int idx = 1;
             ps.setInt(idx++, ownerId);
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String kw = "%" + keyword.trim() + "%";
+                ps.setString(idx++, kw);
+                ps.setString(idx++, kw);
+            }
+            if (statusFilter != null && !statusFilter.isEmpty()) {
+                ps.setString(idx++, statusFilter);
+            }
+            ps.setInt(idx++, limit);
+            ps.setInt(idx++, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    cars.add(mapResultSetToCar(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error searchCarsByOwner: " + e.getMessage());
+        }
+        return cars;
+    }
+
+    /**
+     * Kiểm tra biển số xe đã tồn tại chưa.
+     */
+    public boolean isLicensePlateExist(String licensePlate) {
+        if (licensePlate == null || licensePlate.trim().isEmpty()) return false;
+        String sql = "SELECT COUNT(*) FROM cars WHERE license_plate = ?";
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, licensePlate.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error isLicensePlateExist: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Đếm số xe của owner (có thể lọc theo status, active, keyword).
+     */
+    public int countCarsByOwnerId(int ownerId, String statusFilter, String activeFilter) {
+        return countCarsByOwnerId(ownerId, statusFilter, activeFilter, null);
+    }
+
+    /**
+     * Đếm số xe của owner (có thể lọc theo status, active, keyword).
+     */
+    public int countCarsByOwnerId(int ownerId, String statusFilter, String activeFilter, String keyword) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM cars WHERE owner_id = ?");
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (name LIKE ? OR license_plate LIKE ?)");
+        }
+        if (statusFilter != null && !statusFilter.isEmpty()) {
+            sql.append(" AND status = ?");
+        }
+        if (activeFilter != null && !activeFilter.isEmpty()) {
+            sql.append(" AND is_active = ?");
+        }
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            ps.setInt(idx++, ownerId);
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String kw = "%" + keyword.trim() + "%";
+                ps.setString(idx++, kw);
+                ps.setString(idx++, kw);
+            }
             if (statusFilter != null && !statusFilter.isEmpty()) {
                 ps.setString(idx++, statusFilter);
             }

@@ -42,6 +42,7 @@
             <div class="owner-card">
                 <form class="owner-toolbar" method="get" action="${ctx}/owner/bookings">
                     <input type="hidden" name="page" value="1">
+                    <input type="text" name="keyword" placeholder="Tìm xe, khách hàng..." value="${keyword}" style="border:1px solid #d8e0e8; border-radius:8px; padding:8px 12px; font-size:14px; min-width:180px;">
                     <select name="status">
                         <option value="" ${empty statusFilter ? 'selected' : ''}>Tất cả trạng thái</option>
                         <option value="PENDING" ${statusFilter == 'PENDING' ? 'selected' : ''}>Chờ duyệt</option>
@@ -92,6 +93,7 @@
                                             <input type="hidden" name="bookingId" value="${b.booking_id}"/>
                                             <input type="hidden" name="page" value="${currentPage}"/>
                                             <input type="hidden" name="status" value="${statusFilter}"/>
+                                            <input type="hidden" name="keyword" value="${keyword}"/>
                                             <button class="owner-btn primary" type="submit">Duyệt</button>
                                         </form>
                                         <form action="${ctx}/owner/bookings" method="post" style="display:inline;">
@@ -99,6 +101,7 @@
                                             <input type="hidden" name="bookingId" value="${b.booking_id}"/>
                                             <input type="hidden" name="page" value="${currentPage}"/>
                                             <input type="hidden" name="status" value="${statusFilter}"/>
+                                            <input type="hidden" name="keyword" value="${keyword}"/>
                                             <button class="owner-btn outline" type="submit">Từ chối</button>
                                         </form>
                                     </c:if>
@@ -108,6 +111,7 @@
                                             <input type="hidden" name="bookingId" value="${b.booking_id}"/>
                                             <input type="hidden" name="page" value="${currentPage}"/>
                                             <input type="hidden" name="status" value="${statusFilter}"/>
+                                            <input type="hidden" name="keyword" value="${keyword}"/>
                                             <button class="owner-btn primary" type="submit">Xác nhận đã nhận tiền</button>
                                         </form>
                                     </c:if>
@@ -124,6 +128,7 @@
                             <c:url var="prevUrl" value="/owner/bookings">
                                 <c:param name="page" value="${currentPage - 1}"/>
                                 <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
                             </c:url>
                             <a href="${prevUrl}"><i class="bi bi-chevron-left"></i> Trước</a>
                         </c:if>
@@ -135,6 +140,7 @@
                                         <c:url var="pageUrl" value="/owner/bookings">
                                             <c:param name="page" value="${p}"/>
                                             <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                            <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
                                         </c:url>
                                         <a href="${pageUrl}">${p}</a>
                                     </c:otherwise>
@@ -147,6 +153,7 @@
                             <c:url var="nextUrl" value="/owner/bookings">
                                 <c:param name="page" value="${currentPage + 1}"/>
                                 <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
                             </c:url>
                             <a href="${nextUrl}">Sau <i class="bi bi-chevron-right"></i></a>
                         </c:if>

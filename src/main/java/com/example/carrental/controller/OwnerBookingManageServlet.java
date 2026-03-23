@@ -54,16 +54,18 @@ public class OwnerBookingManageServlet extends HttpServlet {
         }
         String statusFilter = request.getParameter("status");
         if (statusFilter != null && statusFilter.trim().isEmpty()) statusFilter = null;
+        String keyword = request.getParameter("keyword");
+        if (keyword != null && keyword.trim().isEmpty()) keyword = null;
         int page = 1;
         try {
             String p = request.getParameter("page");
             if (p != null && !p.isEmpty()) page = Math.max(1, Integer.parseInt(p));
         } catch (NumberFormatException ignored) {}
 
-        int totalCount = bookingDAO.countByOwnerId(user.getId(), statusFilter);
+        int totalCount = bookingDAO.countByOwnerId(user.getId(), statusFilter, keyword);
         int totalPages = totalCount <= 0 ? 1 : (int) Math.ceil((double) totalCount / PAGE_SIZE);
 
-        var rows = bookingDAO.getByOwnerId(user.getId(), statusFilter, page, PAGE_SIZE);
+        var rows = bookingDAO.getByOwnerId(user.getId(), statusFilter, keyword, page, PAGE_SIZE);
         for (var row : rows) {
             var pay = paymentDAO.getByBookingId((Integer) row.get("booking_id"));
             row.put("paymentMethod", pay != null ? pay.getPaymentMethod() : null);
@@ -74,6 +76,7 @@ public class OwnerBookingManageServlet extends HttpServlet {
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("statusFilter", statusFilter);
+        request.setAttribute("keyword", keyword);
         request.getRequestDispatcher("/WEB-INF/views/owner/bookings.jsp").forward(request, response);
     }
 
@@ -93,6 +96,7 @@ public class OwnerBookingManageServlet extends HttpServlet {
         int bookingId = Integer.parseInt(bookingIdParam);
         String pageParam = request.getParameter("page");
         String statusParam = request.getParameter("status");
+        String keywordParam = request.getParameter("keyword");
         StringBuilder redirect = new StringBuilder(request.getContextPath()).append("/owner/bookings?");
         if ("approve-booking".equals(action)) {
             bookingDAO.updateStatus(bookingId, "APPROVED");
@@ -116,6 +120,9 @@ public class OwnerBookingManageServlet extends HttpServlet {
         if (pageParam != null && !pageParam.isEmpty()) redirect.append("&page=").append(pageParam);
         if (statusParam != null && !statusParam.isEmpty()) {
             redirect.append("&status=").append(URLEncoder.encode(statusParam, StandardCharsets.UTF_8));
+        }
+        if (keywordParam != null && !keywordParam.isEmpty()) {
+            redirect.append("&keyword=").append(URLEncoder.encode(keywordParam, StandardCharsets.UTF_8));
         }
         response.sendRedirect(redirect.toString());
     }
