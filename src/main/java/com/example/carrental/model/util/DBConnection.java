@@ -7,33 +7,33 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 /**
- * Utility class để quản lý kết nối database Model layer - Utilities
+ * Utility class để quản lý kết nối database
+ * Model layer - Utilities
  */
 public class DBConnection {
-
     private String dbUrl;
     private String dbUser;
     private String dbPassword;
     private String dbDriver;
-
+    
     private static DBConnection instance;
-
+    
     private DBConnection() {
         loadProperties();
         loadDriver();
     }
-
+    
     /**
      * Load cấu hình database từ file properties
      */
     private void loadProperties() {
         Properties props = new Properties();
         InputStream input = null;
-
+        
         try {
             // Thử load từ file properties
             input = getClass().getClassLoader().getResourceAsStream("db.properties");
-
+            
             if (input != null) {
                 props.load(input);
                 dbUrl = props.getProperty("db.url");
@@ -58,18 +58,18 @@ public class DBConnection {
                 }
             }
         }
-
+        
         // Nếu password rỗng trong properties, dùng giá trị mặc định
         if (dbPassword == null || dbPassword.trim().isEmpty()) {
             System.out.println("Warning: Password is empty in db.properties, using default");
             dbPassword = "vanh"; // Default password
         }
-
+        
         // Kiểm tra và override bằng environment variables nếu có
         String envUrl = System.getenv("DB_URL");
         String envUser = System.getenv("DB_USER");
         String envPassword = System.getenv("DB_PASSWORD");
-
+        
         if (envUrl != null && !envUrl.isEmpty()) {
             dbUrl = envUrl;
         }
@@ -79,23 +79,24 @@ public class DBConnection {
         if (envPassword != null && !envPassword.isEmpty()) {
             dbPassword = envPassword;
         }
-
+        
         // Log cấu hình (không log password)
         System.out.println("Database Configuration:");
         System.out.println("  URL: " + dbUrl);
         System.out.println("  User: " + dbUser);
         System.out.println("  Driver: " + dbDriver);
     }
-
+    
     /**
      * Set giá trị mặc định
      */
     private void setDefaultValues() {
-        dbUrl = "jdbc:mysql://localhost:3306/car_rental_db?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8";
+        dbUrl = "jdbc:mysql://localhost:3306/car_rental_db?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true";
         dbUser = "root";
-        dbPassword = "vanh";
+        dbPassword = "vanh"; 
         dbDriver = "com.mysql.cj.jdbc.Driver";
     }
+    
     /**
      * Load JDBC Driver
      */
@@ -109,7 +110,7 @@ public class DBConnection {
             throw new RuntimeException("MySQL JDBC Driver not found: " + e.getMessage(), e);
         }
     }
-
+    
     public static DBConnection getInstance() {
         if (instance == null) {
             synchronized (DBConnection.class) {
@@ -120,10 +121,9 @@ public class DBConnection {
         }
         return instance;
     }
-
+    
     /**
      * Lấy kết nối database
-     *
      * @return Connection object
      * @throws SQLException nếu không thể kết nối
      */
@@ -145,10 +145,9 @@ public class DBConnection {
             throw e;
         }
     }
-
+    
     /**
      * Test kết nối database
-     *
      * @return true nếu kết nối thành công
      */
     public boolean testConnection() {
@@ -158,7 +157,7 @@ public class DBConnection {
             return false;
         }
     }
-
+    
     public void closeConnection(Connection conn) {
         if (conn != null) {
             try {
@@ -169,14 +168,13 @@ public class DBConnection {
             }
         }
     }
-
+    
     // Getters để debug
     public String getDbUrl() {
         return dbUrl;
     }
-
+    
     public String getDbUser() {
         return dbUser;
     }
-    
 }

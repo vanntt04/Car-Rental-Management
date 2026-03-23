@@ -66,7 +66,7 @@ INSERT INTO user_roles VALUES
 (10,3),(11,3),(12,3),(13,3),(14,3),(15,3);
 
 -- =============================
--- CARS (code: id, owner_id, name, license_plate, brand, model, year, color, seats, transmission, fuel_type, price_per_day, status, image_url, description, created_at, updated_at)
+-- CARS (code: id, owner_id, name, license_plate, brand, model, year, color, seats, transmission, fuel_type, price_per_day, status, is_active, image_url, description, created_at, updated_at)
 -- =============================
 CREATE TABLE cars (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -81,7 +81,8 @@ CREATE TABLE cars (
     transmission ENUM('AUTO','MANUAL'),
     fuel_type ENUM('PETROL','DIESEL','ELECTRIC'),
     price_per_day DECIMAL(12,2) NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE' COMMENT 'AVAILABLE, RENTED, MAINTENANCE,INACTIVE',
+    status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE' COMMENT 'AVAILABLE, RENTED, MAINTENANCE',
+    is_active TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1=còn hoạt động, 0=không còn hoạt động (ẩn khỏi danh sách, không xóa)',
     image_url VARCHAR(500) NULL,
     description TEXT NULL COMMENT 'Mô tả chi tiết xe',
     created_at DATETIME NULL,
@@ -133,7 +134,9 @@ CREATE TABLE car_images (
     FOREIGN KEY(car_id) REFERENCES cars(id) ON DELETE CASCADE
 );
 
-
+-- =============================
+-- BANK_ACCOUNTS (chủ xe nhập TK ngân hàng nhận thanh toán)
+-- =============================
 CREATE TABLE bank_accounts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     owner_id INT NOT NULL,
@@ -141,15 +144,15 @@ CREATE TABLE bank_accounts (
     account_number VARCHAR(50) NOT NULL,
     account_name VARCHAR(100) NOT NULL,
     branch VARCHAR(100),
-    is_active BOOLEAN DEFAULT TRUE,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_bank_user
-        FOREIGN KEY (owner_id)
-        REFERENCES users(user_id)
-        ON DELETE CASCADE
+    CONSTRAINT fk_bank_user FOREIGN KEY (owner_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+-- =============================
+-- BOOKINGS (tham chiếu cars(id))
+-- =============================
 CREATE TABLE bookings (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
     car_id INT NOT NULL,
@@ -207,7 +210,7 @@ CREATE TABLE payments (
     payment_id INT AUTO_INCREMENT PRIMARY KEY,
     booking_id INT NOT NULL,
     amount DECIMAL(12,2) NOT NULL,
-    payment_method ENUM('CASH','MOMO','VNPAY','PAYPAL'),
+    payment_method ENUM('CASH','BANK_TRANSFER','MOMO','VNPAY','PAYPAL'),
     payment_status ENUM('UNPAID','PAID','REFUNDED') DEFAULT 'UNPAID',
     paid_at DATETIME,
     FOREIGN KEY(booking_id) REFERENCES bookings(booking_id)

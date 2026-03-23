@@ -21,12 +21,28 @@ public class Car {
     private String fuelType;     // PETROL, DIESEL, ELECTRIC
     private BigDecimal pricePerDay;
     private String status; // AVAILABLE, RENTED, MAINTENANCE
-    private boolean active = true; // true = còn hoạt động, false = không còn hoạt động
     private String imageUrl;
     private String description;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // Constructors
+    public Car() {
+    }
+
+    public Car(String name, String licensePlate, String brand, String model, 
+               Integer year, String color, BigDecimal pricePerDay, String status) {
+        this.name = name;
+        this.licensePlate = licensePlate;
+        this.brand = brand;
+        this.model = model;
+        this.year = year;
+        this.color = color;
+        this.pricePerDay = pricePerDay;
+        this.status = status;
+    }
+
+    // Getters and Setters
     public int getId() {
         return id;
     }
@@ -91,29 +107,12 @@ public class Car {
         this.color = color;
     }
 
-    public Integer getSeats() {
-        return seats;
-    }
-
-    public void setSeats(Integer seats) {
-        this.seats = seats;
-    }
-
-    public String getTransmission() {
-        return transmission;
-    }
-
-    public void setTransmission(String transmission) {
-        this.transmission = transmission;
-    }
-
-    public String getFuelType() {
-        return fuelType;
-    }
-
-    public void setFuelType(String fuelType) {
-        this.fuelType = fuelType;
-    }
+    public Integer getSeats() { return seats; }
+    public void setSeats(Integer seats) { this.seats = seats; }
+    public String getTransmission() { return transmission; }
+    public void setTransmission(String transmission) { this.transmission = transmission; }
+    public String getFuelType() { return fuelType; }
+    public void setFuelType(String fuelType) { this.fuelType = fuelType; }
 
     public BigDecimal getPricePerDay() {
         return pricePerDay;
@@ -131,14 +130,6 @@ public class Car {
         this.status = status;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
     public String getImageUrl() {
         return imageUrl;
     }
@@ -147,13 +138,8 @@ public class Car {
         this.imageUrl = imageUrl;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
@@ -171,5 +157,14 @@ public class Car {
         this.updatedAt = updatedAt;
     }
 
-    
+    @Override
+    public String toString() {
+        return "Car{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", licensePlate='" + licensePlate + '\'' +
+                ", brand='" + brand + '\'' +
+                ", status='" + status + '\'' +
+                '}';
+    }
 }
