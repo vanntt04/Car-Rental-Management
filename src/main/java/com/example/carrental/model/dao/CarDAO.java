@@ -56,10 +56,10 @@ public class CarDAO {
     }
 
     /**
-     * Tìm kiếm xe của owner với keyword (tên hoặc biển số), lọc status, sắp xếp, phân trang.
+     * Tìm kiếm xe của owner với keyword (tên hoặc biển số), lọc status, brand, sắp xếp, phân trang.
      * sort: "newest" | "oldest" | "date_desc" | "date_asc"
      */
-    public List<Car> searchCarsByOwner(int ownerId, String keyword, String statusFilter, String sort, int offset, int limit) {
+    public List<Car> searchCarsByOwner(int ownerId, String keyword, String statusFilter, String brandFilter, String sort, int offset, int limit) {
         List<Car> cars = new ArrayList<>();
         String order = "oldest".equalsIgnoreCase(sort) || "date_asc".equalsIgnoreCase(sort) ? "id ASC" : "id DESC";
         StringBuilder sql = new StringBuilder("SELECT * FROM cars WHERE owner_id = ? ");
@@ -68,6 +68,9 @@ public class CarDAO {
         }
         if (statusFilter != null && !statusFilter.isEmpty()) {
             sql.append("AND status = ? ");
+        }
+        if (brandFilter != null && !brandFilter.trim().isEmpty()) {
+            sql.append("AND brand = ? ");
         }
         sql.append("ORDER BY ").append(order).append(" LIMIT ? OFFSET ?");
         try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -80,6 +83,9 @@ public class CarDAO {
             }
             if (statusFilter != null && !statusFilter.isEmpty()) {
                 ps.setString(idx++, statusFilter);
+            }
+            if (brandFilter != null && !brandFilter.trim().isEmpty()) {
+                ps.setString(idx++, brandFilter.trim());
             }
             ps.setInt(idx++, limit);
             ps.setInt(idx++, offset);
@@ -112,22 +118,32 @@ public class CarDAO {
     }
 
     /**
-     * Đếm số xe của owner (có thể lọc theo status, active, keyword).
+     * Đếm số xe của owner (có thể lọc theo status, active, keyword, brand).
      */
     public int countCarsByOwnerId(int ownerId, String statusFilter, String activeFilter) {
-        return countCarsByOwnerId(ownerId, statusFilter, activeFilter, null);
+        return countCarsByOwnerId(ownerId, statusFilter, activeFilter, null, null);
     }
 
     /**
-     * Đếm số xe của owner (có thể lọc theo status, active, keyword).
+     * Đếm số xe của owner (có thể lọc theo status, active, keyword, brand).
      */
     public int countCarsByOwnerId(int ownerId, String statusFilter, String activeFilter, String keyword) {
+        return countCarsByOwnerId(ownerId, statusFilter, activeFilter, keyword, null);
+    }
+
+    /**
+     * Đếm số xe của owner (có thể lọc theo status, active, keyword, brand).
+     */
+    public int countCarsByOwnerId(int ownerId, String statusFilter, String activeFilter, String keyword, String brandFilter) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM cars WHERE owner_id = ?");
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (name LIKE ? OR license_plate LIKE ?)");
         }
         if (statusFilter != null && !statusFilter.isEmpty()) {
             sql.append(" AND status = ?");
+        }
+        if (brandFilter != null && !brandFilter.trim().isEmpty()) {
+            sql.append(" AND brand = ?");
         }
         try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             int idx = 1;
@@ -140,6 +156,9 @@ public class CarDAO {
             if (statusFilter != null && !statusFilter.isEmpty()) {
                 ps.setString(idx++, statusFilter);
             }
+            if (brandFilter != null && !brandFilter.trim().isEmpty()) {
+                ps.setString(idx++, brandFilter.trim());
+            }
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1);
@@ -149,6 +168,26 @@ public class CarDAO {
             System.err.println("Error count cars by owner: " + e.getMessage());
         }
         return 0;
+    }
+
+    /**
+     * Lấy danh sách hãng xe distinct của owner (để làm dropdown filter).
+     */
+    public List<String> getDistinctBrandsByOwnerId(int ownerId) {
+        List<String> brands = new ArrayList<>();
+        String sql = "SELECT DISTINCT brand FROM cars WHERE owner_id = ? AND brand IS NOT NULL AND brand != '' ORDER BY brand";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ownerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    brands.add(rs.getString("brand"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getDistinctBrandsByOwnerId: " + e.getMessage());
+        }
+        return brands;
     }
 
     /**

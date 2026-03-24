@@ -231,6 +231,12 @@
                         <option value="RENTED" ${param.status == 'RENTED' ? 'selected' : ''}>Đang thuê</option>
                         <option value="MAINTENANCE" ${param.status == 'MAINTENANCE' ? 'selected' : ''}>Bảo trì</option>
                     </select>
+                    <select name="brand">
+                        <option value="" ${empty param.brand ? 'selected' : ''}>Tất cả hãng</option>
+                        <c:forEach var="b" items="${brands}">
+                            <option value="${b}" ${param.brand == b ? 'selected' : ''}>${b}</option>
+                        </c:forEach>
+                    </select>
 
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-search"></i> Lọc
@@ -256,14 +262,16 @@
                         <c:url var="sortNewest" value="/owner">
                             <c:param name="page" value="1"/>
                             <c:param name="sort" value="newest"/>
-                            <c:if test="${not empty param.status}"><c:param name="status" value="${param.status}"/></c:if>
+                            <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                            <c:if test="${not empty brandFilter}"><c:param name="brand" value="${brandFilter}"/></c:if>
                             <c:if test="${not empty activeFilter}"><c:param name="active" value="${activeFilter}"/></c:if>
                             <c:if test="${not empty param.keyword}"><c:param name="keyword" value="${param.keyword}"/></c:if>
                         </c:url>
                         <c:url var="sortOldest" value="/owner">
                             <c:param name="page" value="1"/>
                             <c:param name="sort" value="oldest"/>
-                            <c:if test="${not empty param.status}"><c:param name="status" value="${param.status}"/></c:if>
+                            <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                            <c:if test="${not empty brandFilter}"><c:param name="brand" value="${brandFilter}"/></c:if>
                             <c:if test="${not empty activeFilter}"><c:param name="active" value="${activeFilter}"/></c:if>
                             <c:if test="${not empty param.keyword}"><c:param name="keyword" value="${param.keyword}"/></c:if>
                         </c:url>
@@ -325,6 +333,7 @@
                                 <c:param name="page" value="${currentPage - 1}"/>
                                 <c:param name="sort" value="${sortBy}"/>
                                 <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                <c:if test="${not empty brandFilter}"><c:param name="brand" value="${brandFilter}"/></c:if>
                                 <c:if test="${not empty activeFilter}"><c:param name="active" value="${activeFilter}"/></c:if>
                                 <c:if test="${not empty param.keyword}"><c:param name="keyword" value="${param.keyword}"/></c:if>
                             </c:url>
@@ -339,6 +348,7 @@
                                             <c:param name="page" value="${p}"/>
                                             <c:param name="sort" value="${sortBy}"/>
                                             <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                            <c:if test="${not empty brandFilter}"><c:param name="brand" value="${brandFilter}"/></c:if>
                                             <c:if test="${not empty activeFilter}"><c:param name="active" value="${activeFilter}"/></c:if>
                                             <c:if test="${not empty param.keyword}"><c:param name="keyword" value="${param.keyword}"/></c:if>
                                         </c:url>
@@ -354,6 +364,7 @@
                                 <c:param name="page" value="${currentPage + 1}"/>
                                 <c:param name="sort" value="${sortBy}"/>
                                 <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                <c:if test="${not empty brandFilter}"><c:param name="brand" value="${brandFilter}"/></c:if>
                                 <c:if test="${not empty activeFilter}"><c:param name="active" value="${activeFilter}"/></c:if>
                                 <c:if test="${not empty param.keyword}"><c:param name="keyword" value="${param.keyword}"/></c:if>
                             </c:url>

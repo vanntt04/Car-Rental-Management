@@ -46,6 +46,7 @@ public class CarServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        //lấy phần đường dẫn phía sau URL mapping của Servlet
         String pathInfo = request.getPathInfo();
         String action = request.getParameter("action");
 
@@ -184,6 +185,7 @@ public class CarServlet extends HttpServlet {
 
         String keyword = request.getParameter("keyword");
         String status = request.getParameter("status");
+        String brand = request.getParameter("brand");
         String sort = request.getParameter("sort");
 
         if (sort == null) {
@@ -199,16 +201,21 @@ public class CarServlet extends HttpServlet {
 
         int offset = (page - 1) * PAGE_SIZE;
 
-        List<Car> cars = carDAO.searchCarsByOwner(ownerId, keyword, status, sort, offset, PAGE_SIZE);
+        List<Car> cars = carDAO.searchCarsByOwner(ownerId, keyword, status, brand, sort, offset, PAGE_SIZE);
 
-        int totalCars = carDAO.countCarsByOwnerId(ownerId, status, null, keyword);
+        int totalCars = carDAO.countCarsByOwnerId(ownerId, status, null, keyword, brand);
         int totalPages = (int) Math.ceil((double) totalCars / PAGE_SIZE);
 
+        List<String> brands = carDAO.getDistinctBrandsByOwnerId(ownerId);
+
         request.setAttribute("cars", cars);
+        request.setAttribute("brands", brands);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalCount", totalCars);
         request.setAttribute("sortBy", sort);
+        request.setAttribute("statusFilter", status);
+        request.setAttribute("brandFilter", brand);
 
         request.getRequestDispatcher("/WEB-INF/views/owner/list.jsp")
                 .forward(request, response);
@@ -245,7 +252,7 @@ public class CarServlet extends HttpServlet {
     // =========================
     private void createCar(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
-
+        //take ìnormation from session
         User user = (User) request.getSession().getAttribute("user");
 
         if (user == null) {
@@ -351,9 +358,9 @@ public class CarServlet extends HttpServlet {
         BigDecimal price = new BigDecimal(request.getParameter("pricePerDay"));
 
         // ===== VALIDATE =====
-        if (price.compareTo(new BigDecimal("100000")) < 0) {
+        if (price.compareTo(new BigDecimal("1000")) < 0) {
 
-            request.setAttribute("error", "Giá thuê phải lớn hơn 100000");
+            request.setAttribute("error", "Giá thuê phải lớn hơn 1000");
             request.setAttribute("car", car);
             request.getRequestDispatcher("/WEB-INF/views/owner/car-form-edit.jsp")
                     .forward(request, response);

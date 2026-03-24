@@ -202,15 +202,6 @@
         document.querySelector('.upload-dropzone').style.display = 'block';
     }
 
-    // Kiểm tra tính hợp lệ trước khi submit
-    document.getElementById('createCarForm').onsubmit = function() {
-        const price = document.getElementsByName('pricePerDay')[0].value;
-        if(price < 100000) {
-            alert('Giá thuê tối thiểu phải từ 100,000 VNĐ');
-            return false;
-        }
-        return confirm('Xác nhận đăng ký xe này vào hệ thống?');
-    };
 </script>
 </body>
 </html>

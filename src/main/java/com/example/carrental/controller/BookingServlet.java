@@ -13,6 +13,7 @@ import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,9 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * @author PC
+ * Servlet xử lý đặt xe.
+ * URL: /booking?carId={id}
  */
+@WebServlet(name = "BookingServlet", urlPatterns = "/booking")
 public class BookingServlet extends HttpServlet {
 
     /**
@@ -69,21 +71,35 @@ public class BookingServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession();
         User cus = (User) session.getAttribute("user");
-        if (cus.getRole().equalsIgnoreCase("customer")) {
-            String carID = request.getParameter("carId");
+        if (cus == null) {
+            String redirect = request.getRequestURI();
+            if (request.getQueryString() != null) redirect += "?" + request.getQueryString();
+            response.sendRedirect(request.getContextPath() + "/login?redirect=" +
+                    java.net.URLEncoder.encode(redirect, "UTF-8"));
+            return;
+        }
+        if (!"customer".equalsIgnoreCase(cus.getRole())) {
+            session.setAttribute("error", "Đăng nhập với tài khoản khách hàng để đặt xe");
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        String carID = request.getParameter("carId");
+        if (carID == null || carID.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/searchcar");
+            return;
+        }
+        try {
             int c = Integer.parseInt(carID);
-            CarDAO car = new CarDAO();
-            Car BookCar = car.getCarById(c);
+            CarDAO carDAO = new CarDAO();
+            Car BookCar = carDAO.getCarById(c);
+            if (BookCar == null) {
+                response.sendRedirect(request.getContextPath() + "/searchcar");
+                return;
+            }
             session.setAttribute("BookCar", BookCar);
-            request.getRequestDispatcher(
-                    "/WEB-INF/views/car/Booking.jsp"
-            ).forward(request, response);
-        } else {
-            String error = "Đăng nhập với customer để booking";
-            session.setAttribute("error", error);
-            request.getRequestDispatcher(
-                    "/WEB-INF/views/auth/login.jsp"
-            ).forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/car/Booking.jsp").forward(request, response);
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/searchcar");
         }
     }
 

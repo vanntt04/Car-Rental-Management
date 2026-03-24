@@ -8,6 +8,8 @@
     String account = ba != null && ba.getAccountNumber() != null ? ba.getAccountNumber().trim() : "";
     String accountName = ba != null && ba.getAccountName() != null ? java.net.URLEncoder.encode(ba.getAccountName(), "UTF-8") : "";
     String addInfo = "thue xe carrental";
+    
+    //link QR VietQR
     String qrUrl = "https://img.vietqr.io/image/" + bankId + "-" + account + "-compact2.png";
     if (accountName != null && !accountName.isEmpty()) {
         qrUrl += "?accountName=" + accountName + "&addInfo=" + java.net.URLEncoder.encode(addInfo, "UTF-8");

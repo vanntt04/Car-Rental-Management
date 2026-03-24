@@ -264,12 +264,9 @@
                         </div>
 
                         <c:if test="${sessionScope.role != 'OWNER' || car_detail.ownerId != sessionScope.userId}">
-                            <form action="${ctx}/searchcar" method="post">
-                                <input type="hidden" name="id" value="${car_detail.id}">
-                                <button type="submit" class="booking-btn shadow-sm">
-                                    <i class="bi bi-calendar-plus me-2"></i> Đặt xe ngay
-                                </button>
-                            </form>
+                            <a href="${ctx}/booking?carId=${car_detail.id}" class="booking-btn shadow-sm" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">
+                                <i class="bi bi-calendar-plus me-2"></i> Đặt xe ngay
+                            </a>
                         </c:if>
                         <c:if test="${sessionScope.role == 'OWNER' || sessionScope.role == 'ADMIN'}">
                             <c:if test="${car_detail.ownerId == sessionScope.userId || sessionScope.role == 'ADMIN'}">

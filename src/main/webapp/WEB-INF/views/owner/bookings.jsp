@@ -33,7 +33,12 @@
 
         <div class="owner-page">
             <c:if test="${not empty param.success}">
-                <div class="owner-alert success">Đã cập nhật trạng thái: ${param.success}</div>
+                <div class="owner-alert success">
+                    <c:choose>
+                        <c:when test="${param.success == 'handover'}">Đã xác nhận bàn giao / cấp quyền truy cập xe cho khách.</c:when>
+                        <c:otherwise>Đã cập nhật trạng thái: ${param.success}</c:otherwise>
+                    </c:choose>
+                </div>
             </c:if>
             <c:if test="${not empty error}">
                 <div class="owner-alert danger">${error}</div>
@@ -111,6 +116,16 @@
                                             <input type="hidden" name="status" value="${statusFilter}"/>
                                             <input type="hidden" name="keyword" value="${keyword}"/>
                                             <button class="owner-btn primary" type="submit">Xác nhận đã nhận tiền</button>
+                                        </form>
+                                    </c:if>
+                                    <c:if test="${b.booking_status == 'APPROVED' && b.paymentStatus == 'PAID'}">
+                                        <form action="${ctx}/owner/bookings" method="post" style="display:inline;">
+                                            <input type="hidden" name="action" value="confirm-handover"/>
+                                            <input type="hidden" name="bookingId" value="${b.booking_id}"/>
+                                            <input type="hidden" name="page" value="${currentPage}"/>
+                                            <input type="hidden" name="status" value="${statusFilter}"/>
+                                            <input type="hidden" name="keyword" value="${keyword}"/>
+                                            <button class="owner-btn primary" type="submit">Xác nhận bàn giao / Cấp quyền</button>
                                         </form>
                                     </c:if>
                                 </td>

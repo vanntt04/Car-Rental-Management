@@ -104,6 +104,9 @@ public class OwnerBookingManageServlet extends HttpServlet {
         } else if ("reject-booking".equals(action)) {
             bookingDAO.updateStatus(bookingId, "REJECTED");
             redirect.append("success=rejected");
+        } else if ("confirm-handover".equals(action)) {
+            bookingDAO.updateStatus(bookingId, "COMPLETED");
+            redirect.append("success=handover");
         } else if ("confirm-transfer".equals(action)) {
             try {
                 paymentDAO.markPaid(bookingId);
