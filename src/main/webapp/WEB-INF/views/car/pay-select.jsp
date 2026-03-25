@@ -113,7 +113,25 @@
             el.classList.add('selected');
             document.getElementById('paymentMethod').value = val;
             document.getElementById('submitBtn').disabled = false;
+
+            // Đảm bảo radio được chọn để fallback/submit handler lấy được
+            try {
+                const radio = el.querySelector('input[name="pm"][value="' + val + '"]');
+                if (radio) radio.checked = true;
+            } catch (e) {}
         }
+
+        // Đảm bảo khi submit luôn gửi đúng phương thức được chọn
+        // (trong trường hợp click UI không chạy selectMethod)
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('payForm');
+            if (!form) return;
+            form.addEventListener('submit', function () {
+                const checked = document.querySelector('input[name="pm"]:checked');
+                const hidden = document.getElementById('paymentMethod');
+                if (checked && hidden) hidden.value = checked.value;
+            });
+        });
     </script>
 </body>
 </html>

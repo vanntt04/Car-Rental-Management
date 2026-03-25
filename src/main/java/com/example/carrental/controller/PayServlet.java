@@ -62,6 +62,10 @@ public class PayServlet extends HttpServlet {
         }
         String bookingIdParam = request.getParameter("bookingId");
         String method = request.getParameter("paymentMethod");
+        if (method == null || method.trim().isEmpty()) {
+            // Fallback nếu hidden paymentMethod không được set kịp
+            method = request.getParameter("pm");
+        }
         if (bookingIdParam == null || method == null || method.trim().isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/home");
             return;
@@ -74,12 +78,13 @@ public class PayServlet extends HttpServlet {
             return;
         }
         Booking booking = bookingDAO.getById(bookingId);
-        if (booking == null || booking.getCustomer_id() != user.getId() || !"APPROVED".equals(booking.getBooking_status())) {
+        if (booking == null || booking.getCustomer_id() != user.getId()) {
             response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
         try {
-            paymentDAO.upsertMethod(bookingId, booking.getTotal_price(), method.trim());
+            String methodNorm = method.trim().toUpperCase();
+            paymentDAO.upsertMethod(bookingId, booking.getTotal_price(), methodNorm);
         } catch (Exception e) {
             request.setAttribute("error", "Lỗi lưu phương thức thanh toán.");
         }
@@ -121,13 +126,6 @@ public class PayServlet extends HttpServlet {
             return;
         }
 
-        if (!"APPROVED".equals(booking.getBooking_status())) {
-            request.setAttribute("error", "Đơn đặt xe đang chờ chủ xe duyệt. Bạn chỉ có thể thanh toán sau khi đơn được duyệt.");
-            request.setAttribute("bookingStatus", booking.getBooking_status());
-            request.getRequestDispatcher("/WEB-INF/views/car/pay-bank-qr.jsp").forward(request, response);
-            return;
-        }
-
         Car car = carDAO.getCarById(booking.getCar_id());
         if (car == null || car.getOwnerId() == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy thông tin xe");
@@ -146,6 +144,7 @@ public class PayServlet extends HttpServlet {
         request.setAttribute("amount", amount);
 
         String method = payment != null ? payment.getPaymentMethod() : null;
+        if (method != null) method = method.trim().toUpperCase();
 
         if (method == null || method.trim().isEmpty()) {
             request.getRequestDispatcher("/WEB-INF/views/car/pay-select.jsp").forward(request, response);

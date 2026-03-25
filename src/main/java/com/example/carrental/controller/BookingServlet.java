@@ -6,6 +6,7 @@ package com.example.carrental.controller;
 
 import com.example.carrental.model.dao.BookingDAO;
 import com.example.carrental.model.dao.CarDAO;
+import com.example.carrental.model.dao.UserDAO;
 import com.example.carrental.model.entity.Booking;
 import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.entity.User;
@@ -20,9 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.format.DateTimeParseException;
 
 /**
  * Servlet xử lý đặt xe.
@@ -117,20 +116,70 @@ public class BookingServlet extends HttpServlet {
         String action = request.getParameter("action");
         if ("accept".equals(action)) {
             HttpSession session = request.getSession();
+            User user = (User) session.getAttribute("user");
+            if (user == null) {
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
+
             String note = request.getParameter("returnLocation");
-            LocalDate start_date = LocalDate.parse(request.getParameter("pickupTime"));
-            LocalDate end_date = LocalDate.parse(request.getParameter("returnTime"));
             BookingDAO book = new BookingDAO();
             Car car = (Car) session.getAttribute("BookCar");
-            User user = (User) session.getAttribute("user");
-            Booking bookcar = new Booking(0, car.getId(), user.getId(), start_date,3,end_date, car.getPricePerDay(), "PENDING");
-            book.insertBooking(bookcar);
-            session.setAttribute("note", note);
+            if (car == null) {
+                response.sendRedirect(request.getContextPath() + "/searchcar");
+                return;
+            }
+
+            LocalDate start_date;
+            LocalDate end_date;
+            try {
+                start_date = LocalDate.parse(request.getParameter("pickupTime"));
+                end_date = LocalDate.parse(request.getParameter("returnTime"));
+            } catch (DateTimeParseException | NullPointerException ex) {
+                request.setAttribute("error", "Vui lòng nhập đúng định dạng ngày lấy và ngày trả xe.");
+                request.getRequestDispatcher("/WEB-INF/views/car/Booking.jsp").forward(request, response);
+                return;
+            }
+
+            LocalDate today = LocalDate.now();
+            if (start_date.isBefore(today)) {
+                request.setAttribute("error", "Ngày lấy xe phải sau hoặc bằng ngày đặt (hôm nay).");
+                request.getRequestDispatcher("/WEB-INF/views/car/Booking.jsp").forward(request, response);
+                return;
+            }
+            if (end_date.isBefore(start_date)) {
+                request.setAttribute("error", "Ngày trả xe không được trước ngày lấy xe.");
+                request.getRequestDispatcher("/WEB-INF/views/car/Booking.jsp").forward(request, response);
+                return;
+            }
+
+            // Cập nhật thông tin khách (họ tên + SĐT) nếu user nhập
+            String fullName = request.getParameter("fullName");
+            String phone = request.getParameter("phone");
+            if (fullName != null && !fullName.trim().isEmpty()) user.setFullName(fullName.trim());
+            if (phone != null && !phone.trim().isEmpty()) user.setPhone(phone.trim());
+            try {
+                UserDAO userDAO = new UserDAO();
+                userDAO.updateUser(user);
+            } catch (Exception ignored) {
+                // Nếu update lỗi thì vẫn cho tạo booking theo user hiện tại trong session
+            }
+
             long days = java.time.temporal.ChronoUnit.DAYS.between(start_date, end_date);
+            if (days <= 0) days = 1; // tối thiểu 1 ngày
+
             BigDecimal pricePerDay = car.getPricePerDay();
             BigDecimal totalPrice = pricePerDay.multiply(BigDecimal.valueOf(days));
+
+            Booking bookcar = new Booking(0, car.getId(), user.getId(), start_date, (int) days, end_date, totalPrice, "PENDING");
+            int bookingId = book.insertBooking(bookcar);
+            if (bookingId > 0) {
+                bookcar.setBooking_id(bookingId);
+            }
+            session.setAttribute("note", note);
             request.setAttribute("total_price", totalPrice);
             session.setAttribute("invoice", bookcar);
+
             RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/Invoice.jsp");
             dispatcher.forward(request, response);
         } else if ("reject".equals(action)) {

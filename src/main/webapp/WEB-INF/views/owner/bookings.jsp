@@ -118,7 +118,7 @@
                                             <button class="owner-btn primary" type="submit">Xác nhận đã nhận tiền</button>
                                         </form>
                                     </c:if>
-                                    <c:if test="${b.booking_status == 'APPROVED' && b.paymentStatus == 'PAID'}">
+                                    <c:if test="${b.booking_status == 'APPROVED' && (b.paymentMethod == 'CASH' || b.paymentStatus == 'PAID')}">
                                         <form action="${ctx}/owner/bookings" method="post" style="display:inline;">
                                             <input type="hidden" name="action" value="confirm-handover"/>
                                             <input type="hidden" name="bookingId" value="${b.booking_id}"/>

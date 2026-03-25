@@ -263,11 +263,24 @@
                             </div>
                         </div>
 
-                        <c:if test="${sessionScope.role != 'OWNER' || car_detail.ownerId != sessionScope.userId}">
-                            <a href="${ctx}/booking?carId=${car_detail.id}" class="booking-btn shadow-sm" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">
-                                <i class="bi bi-calendar-plus me-2"></i> Đặt xe ngay
-                            </a>
-                        </c:if>
+                        <c:choose>
+                            <c:when test="${sessionScope.user == null}">
+                                <c:url var="redirectToBooking" value="/booking">
+                                    <c:param name="carId" value="${car_detail.id}"/>
+                                </c:url>
+                                <c:url var="loginUrl" value="/login">
+                                    <c:param name="redirect" value="${redirectToBooking}"/>
+                                </c:url>
+                                <a href="${loginUrl}" class="btn btn-outline-primary w-100" style="display:inline-flex;align-items:center;justify-content:center;">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập để booking
+                                </a>
+                            </c:when>
+                            <c:when test="${sessionScope.role == 'CUSTOMER'}">
+                                <a href="${ctx}/booking?carId=${car_detail.id}" class="booking-btn shadow-sm" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">
+                                    <i class="bi bi-calendar-plus me-2"></i> Đặt xe ngay
+                                </a>
+                            </c:when>
+                        </c:choose>
                         <c:if test="${sessionScope.role == 'OWNER' || sessionScope.role == 'ADMIN'}">
                             <c:if test="${car_detail.ownerId == sessionScope.userId || sessionScope.role == 'ADMIN'}">
                                 <div class="admin-actions">
@@ -281,7 +294,7 @@
             </div>
 
             <div class="row">
-                <div class="col-lg-4">
+                <div class="col-lg-12">
                     <h4 class="mb-3 fw-bold">Giới thiệu</h4>
                     <div class="p-4 bg-white rounded-4 shadow-sm mb-4" style="line-height: 1.8; color: #555;">
                         <c:choose>
@@ -292,55 +305,6 @@
                                 <p class="text-muted italic">Đang cập nhật mô tả cho mẫu xe này...</p>
                             </c:otherwise>
                         </c:choose>
-                    </div>
-                </div>
-
-                <div class="col-lg-8">
-                    <h4 class="mb-3 fw-bold">Lịch Xe</h4>
-                    <div class="calendar-section p-0 overflow-hidden" style="border: 1px solid #eee;">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead style="background-color: #f8f9fa;">
-                                    <tr>
-                                        <th class="ps-4 py-3">Ngày bắt đầu</th>
-                                        <th class="py-3">Ngày kết thúc</th>
-                                        <th class="py-3">Nội dung bảo trì</th>
-                                        <th class="py-3 text-center">Trạng thái</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:choose>
-                                        <c:when test="${not empty carAvailabilities}">
-                                            <c:forEach items="${carAvailabilities}" var="ava">
-                                                <tr>
-                                                    <td class="ps-4 align-middle">
-                                                        <i class="bi bi-calendar-range me-2 text-primary"></i>
-                                                        ${ava.startDate}
-                                                    </td>
-                                                    <td class="align-middle">
-                                                        ${ava.endDate}
-                                                    </td>
-                                                    <td class="align-middle">
-                                                        <span class="text-muted">${not empty ava.note ? ava.note : 'Bảo trì định kỳ'}</span>
-                                                    </td>
-                                                    <td class="align-middle text-center">
-                                                        <span class="badge bg-info text-white rounded-pill">Có lịch</span>
-                                                    </td>
-                                                </tr>
-                                            </c:forEach>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <tr>
-                                                <td colspan="4" class="text-center py-5 text-muted">
-                                                    <i class="bi bi-info-circle d-block mb-2" style="font-size: 2rem;"></i>
-                                                    Hiện chưa có lịch bảo trì nào được ghi lại cho xe này.
-                                                </td>
-                                            </tr>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -355,6 +319,5 @@
         <jsp:include page="../layout/footer.jsp"/>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-        <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     </body>
 </html>

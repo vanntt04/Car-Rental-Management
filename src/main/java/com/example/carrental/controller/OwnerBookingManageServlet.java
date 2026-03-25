@@ -79,6 +79,7 @@ public class OwnerBookingManageServlet extends HttpServlet {
         request.setAttribute("keyword", keyword);
         request.getRequestDispatcher("/WEB-INF/views/owner/bookings.jsp").forward(request, response);
     }
+    
 
     private void handlePost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -105,6 +106,15 @@ public class OwnerBookingManageServlet extends HttpServlet {
             bookingDAO.updateStatus(bookingId, "REJECTED");
             redirect.append("success=rejected");
         } else if ("confirm-handover".equals(action)) {
+            try {
+                // Với tiền mặt: owner xác nhận bàn giao => coi như đã thu tiền.
+                // Với chuyển khoản: nếu payment chưa PAID thì vẫn markPaid để thống nhất luồng hiển thị biên lai.
+                paymentDAO.markPaid(bookingId);
+            } catch (SQLException e) {
+                request.setAttribute("error", "Lỗi: " + e.getMessage());
+                showBookings(request, response);
+                return;
+            }
             bookingDAO.updateStatus(bookingId, "COMPLETED");
             redirect.append("success=handover");
         } else if ("confirm-transfer".equals(action)) {

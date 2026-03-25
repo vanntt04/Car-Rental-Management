@@ -286,14 +286,7 @@
                                                 <span>/ngày</span>
                                             </div>
 
-                                            <c:choose>
-                                                <c:when test="${not empty user}">
-                                                    <a href="${ctx}/cars?id=${car.id}" class="btn btn-dark rounded-3 px-4 fw-bold">Chọn xe</a>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <a href="${ctx}/login" class="btn btn-outline-primary rounded-3 px-3 fw-bold">Đăng nhập để đặt</a>
-                                                </c:otherwise>
-                                            </c:choose>
+                                            <a href="${ctx}/cars?id=${car.id}" class="btn btn-dark rounded-3 px-4 fw-bold">Xem chi tiết</a>
                                         </div>
                                     </div>
                                 </div>

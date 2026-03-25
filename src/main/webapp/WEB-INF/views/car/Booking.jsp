@@ -32,16 +32,48 @@
                 <div class="col-lg-7">
                     <div class="booking-form-card">
                         <h2 class="mb-4"><i class="bi bi-calendar-check text-primary me-2"></i>Chọn thời gian thuê xe</h2>
+                        <c:if test="${not empty error}">
+                            <div class="alert alert-warning">${error}</div>
+                        </c:if>
                         <form action="${ctx}/booking" method="post" accept-charset="UTF-8" class="form-modern">
                             <input type="hidden" name="action" value="accept"/>
+
+                            <div class="mb-3">
+                                <h4 class="h6 mb-2 fw-bold"><i class="bi bi-person me-2"></i>Thông tin khách hàng</h4>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label"><i class="bi bi-person-badge me-1"></i>Họ và tên *</label>
+                                        <input type="text"
+                                               name="fullName"
+                                               class="form-control"
+                                               value="${sessionScope.user.fullName}"
+                                               required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label"><i class="bi bi-telephone me-1"></i>Số điện thoại *</label>
+                                        <input type="text"
+                                               name="phone"
+                                               class="form-control"
+                                               value="${sessionScope.user.phone}"
+                                               required>
+                                    </div>
+                                </div>
+                                <div class="mt-3 p-2" style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;">
+                                    <div class="small text-muted mb-1"><i class="bi bi-qr-code-scan me-1"></i>Mã QR</div>
+                                    <div class="small text-muted">
+                                        Mã QR thanh toán sẽ được tạo ở trang thanh toán khi bạn chọn <strong>Chuyển khoản</strong>.
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label"><i class="bi bi-calendar-event me-1"></i>Ngày lấy xe *</label>
-                                    <input type="date" name="pickupTime" class="form-control" required/>
+                                    <input type="date" id="pickupTime" name="pickupTime" class="form-control" required/>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label"><i class="bi bi-calendar-x me-1"></i>Ngày trả xe *</label>
-                                    <input type="date" name="returnTime" class="form-control" required/>
+                                    <input type="date" id="returnTime" name="returnTime" class="form-control" required/>
                                 </div>
                             </div>
                             <div class="mt-3">
@@ -79,5 +111,48 @@
 
 <jsp:include page="../layout/footer.jsp"/>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    (function () {
+        const pickup = document.getElementById('pickupTime');
+        const ret = document.getElementById('returnTime');
+        const form = document.querySelector('form.form-modern');
+        if (!pickup || !ret || !form) return;
+
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayStr = yyyy + '-' + mm + '-' + dd;
+
+        // Ngày lấy xe phải >= hôm nay (ngày đặt)
+        pickup.min = todayStr;
+        // Ngày trả xe phải >= ngày lấy xe (set khi user chọn)
+        ret.min = pickup.value ? pickup.value : todayStr;
+
+        pickup.addEventListener('change', function () {
+            if (pickup.value) {
+                ret.min = pickup.value;
+                if (ret.value && ret.value < pickup.value) {
+                    ret.value = pickup.value;
+                }
+            }
+        });
+
+        form.addEventListener('submit', function (e) {
+            const p = pickup.value;
+            const r = ret.value;
+            if (!p || !r) return;
+            if (p < todayStr) {
+                e.preventDefault();
+                alert('Ngày lấy xe phải sau hoặc bằng ngày hiện tại.');
+                return;
+            }
+            if (r < p) {
+                e.preventDefault();
+                alert('Ngày trả xe không được trước ngày lấy xe.');
+            }
+        });
+    })();
+</script>
 </body>
 </html>

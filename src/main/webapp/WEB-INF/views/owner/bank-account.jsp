@@ -98,6 +98,7 @@
                                 <select class="owner-input" name="bankCode" required>
                                     <option value="" disabled ${bankAccount == null ? 'selected' : ''}>-- Chọn ngân hàng --</option>
                                     <option value="VCB" ${bankAccount.bankCode == 'VCB' ? 'selected' : ''}>Vietcombank (VCB)</option>
+                                    <option value="VBA" ${bankAccount.bankCode == 'VBA' ? 'selected' : ''}>Agribank (VBA)</option>
                                     <option value="TCB" ${bankAccount.bankCode == 'TCB' ? 'selected' : ''}>Techcombank (TCB)</option>
                                     <option value="MB" ${bankAccount.bankCode == 'MB' ? 'selected' : ''}>MB Bank (MB)</option>
                                     <option value="BIDV" ${bankAccount.bankCode == 'BIDV' ? 'selected' : ''}>BIDV</option>

@@ -93,6 +93,36 @@ public class BookingDAO {
     }
 
     /**
+     * Kiểm tra có booking nào đang chiếm chỗ (PENDING/APPROVED)
+     * trùng với khoảng ngày người dùng yêu cầu hay không.
+     *
+     * Trùng nếu:
+     *   booking.start_date <= requestedEnd
+     *   AND booking.end_date >= requestedStart
+     */
+    public boolean hasOverlappingBooking(int carId, LocalDate requestedStart, LocalDate requestedEnd) {
+        if (requestedStart == null || requestedEnd == null) return true;
+        if (requestedEnd.isBefore(requestedStart)) return true;
+
+        String sql = "SELECT COUNT(*) FROM bookings " +
+                "WHERE car_id = ? " +
+                "AND booking_status IN ('PENDING','APPROVED') " +
+                "AND start_date <= ? AND end_date >= ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, carId);
+            ps.setDate(2, Date.valueOf(requestedEnd));
+            ps.setDate(3, Date.valueOf(requestedStart));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error hasOverlappingBooking: " + e.getMessage());
+        }
+        return true;
+    }
+
+    /**
      * Đếm số booking theo owner_id với lọc trạng thái và từ khóa (tên xe, tên khách).
      */
     public int countByOwnerId(int ownerId, String statusFilter, String keyword) {

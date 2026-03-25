@@ -308,9 +308,9 @@
                                 </a>
                             </c:when>
                             <c:when test="${invoice.booking_status == 'PENDING'}">
-                                <span class="btn btn-outline-secondary px-4 me-2 disabled">
-                                    <i class="bi bi-clock me-2"></i>Chờ chủ xe duyệt đơn để thanh toán
-                                </span>
+                                <a href="${ctx}/pay?bookingId=${invoice.booking_id}" class="btn btn-outline-primary px-4 me-2">
+                                    <i class="bi bi-list-check me-2"></i>Chọn phương thức thanh toán
+                                </a>
                             </c:when>
                             <c:when test="${invoice.booking_status == 'COMPLETED'}">
                                 <span class="btn btn-outline-success px-4 me-2 disabled">

@@ -189,17 +189,6 @@
 
         <form class="home-search" action="${ctx}/searchcar" method="get">
             <div class="cell">
-                <i class="bi bi-geo-alt" style="font-size: 18px; color: #8a8a8a;"></i>
-                <div style="width: 100%;">
-                    <div class="label">Địa điểm</div>
-                    <select name="location">
-                        <option value="Hà Nội">Hà Nội</option>
-                        <option value="Hồ Chí Minh">Hồ Chí Minh</option>
-                        <option value="Đà Nẵng">Đà Nẵng</option>
-                    </select>
-                </div>
-            </div>
-            <div class="cell">
                 <i class="bi bi-calendar3" style="font-size: 18px; color: #8a8a8a;"></i>
                 <div style="width: 100%;">
                     <div class="label">Thời gian thuê</div>

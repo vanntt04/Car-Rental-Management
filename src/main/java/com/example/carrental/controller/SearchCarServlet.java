@@ -4,14 +4,16 @@
  */
 package com.example.carrental.controller;
 
+import com.example.carrental.model.dao.BookingDAO;
+import com.example.carrental.model.dao.CarAvailabilityDAO;
 import com.example.carrental.model.dao.CarDAO;
 import com.example.carrental.model.entity.Car;
-import com.example.carrental.model.entity.User;
 import com.example.carrental.model.util.HoldCleanupScheduler;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,6 +26,7 @@ import java.util.List;
  *
  * @author PC
  */
+@WebServlet(name = "SearchCarServlet", urlPatterns = "/searchcar")
 public class SearchCarServlet extends HttpServlet {
 
     /**
@@ -64,20 +67,67 @@ public class SearchCarServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Nếu home.jsp gửi start/end (datetime-local), ta lọc theo availability theo khoảng ngày.
+        String startStr = request.getParameter("start");
+        String endStr = request.getParameter("end");
+
         CarDAO carDAO = new CarDAO();
-        List<Car> List = carDAO.getAllCars();
-        List<Car> CarList = new ArrayList<>();
-        /*List<String> BrandList = carDAO.getAllBrandCars();*/
-        /*List<Integer> SeatList = carDAO.getAllSeat();*/
-        HttpSession session = request.getSession(true);
-        for(int i= 0 ; i < List.size();i++){
-            if(!List.get(i).getStatus().equals("RENTED")){
-                CarList.add(List.get(i));
+        CarAvailabilityDAO availabilityDAO = new CarAvailabilityDAO();
+        BookingDAO bookingDAO = new BookingDAO();
+
+        LocalDate pickupTime = null;
+        LocalDate returnTime = null;
+        try {
+            if (startStr != null && !startStr.isEmpty()) {
+                String v = startStr;
+                if (v.contains("T")) v = v.substring(0, v.indexOf('T'));
+                pickupTime = LocalDate.parse(v);
+            }
+            if (endStr != null && !endStr.isEmpty()) {
+                String v = endStr;
+                if (v.contains("T")) v = v.substring(0, v.indexOf('T'));
+                returnTime = LocalDate.parse(v);
+            }
+        } catch (Exception ignored) {
+        }
+
+        List<Car> resultList = new ArrayList<>();
+        String error = null;
+
+        if (pickupTime != null && returnTime != null && !returnTime.isBefore(pickupTime)) {
+            List<Car> candidates = carDAO.getAllCars();
+            for (Car car : candidates) {
+                if (car == null) continue;
+                if (car.getStatus() != null && !"AVAILABLE".equalsIgnoreCase(car.getStatus())) {
+                    continue;
+                }
+
+                boolean available = availabilityDAO.isCarAvailableForRange(car.getId(), pickupTime, returnTime);
+                if (!available) continue;
+
+                boolean hasConflict = bookingDAO.hasOverlappingBooking(car.getId(), pickupTime, returnTime);
+                if (hasConflict) continue;
+
+                resultList.add(car);
+            }
+            if (resultList.isEmpty()) {
+                error = "Không tìm thấy kết quả phù hợp";
+            }
+        } else {
+            // Trường hợp chưa có start/end: hiển thị danh sách xe hiện có
+            List<Car> list = carDAO.getAllCars();
+            for (Car c : list) {
+                if (c != null && (c.getStatus() == null || !"RENTED".equalsIgnoreCase(c.getStatus()))) {
+                    resultList.add(c);
+                }
             }
         }
-        session.setAttribute("CarList", CarList);
-        /*session.setAttribute("BrandList", BrandList);*/
-        /*session.setAttribute("SeatList", SeatList);*/
+
+        request.setAttribute("error", error);
+        request.setAttribute("CarList", resultList);
+        request.setAttribute("pickupTime", pickupTime);
+        request.setAttribute("returnTime", returnTime);
+
         HoldCleanupScheduler.start();
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
         dispatcher.forward(request, response);
@@ -101,7 +151,9 @@ public class SearchCarServlet extends HttpServlet {
         LocalDate pickupTime = null;
         try {
             if (pickupStr != null && !pickupStr.isEmpty()) {
-                pickupTime = LocalDate.parse(pickupStr);
+                String v = pickupStr;
+                if (v.contains("T")) v = v.substring(0, v.indexOf('T'));
+                pickupTime = LocalDate.parse(v);
             }
         } catch (Exception e) {
             System.out.println("pickupTime null hoặc sai định dạng, bỏ qua");
@@ -110,7 +162,9 @@ public class SearchCarServlet extends HttpServlet {
         LocalDate returnTime = null;
         try {
             if (returnStr != null && !returnStr.isEmpty()) {
-                returnTime = LocalDate.parse(returnStr);
+                String v = returnStr;
+                if (v.contains("T")) v = v.substring(0, v.indexOf('T'));
+                returnTime = LocalDate.parse(v);
             }
         } catch (Exception e) {
             System.out.println("returnTime null hoặc sai định dạng, bỏ qua");
@@ -122,17 +176,49 @@ public class SearchCarServlet extends HttpServlet {
             error = "Ngày trả xe phải sau ngày nhận";
         }
         CarDAO carDAO = new CarDAO();
-        List<Car> resultList = null;
+        CarAvailabilityDAO availabilityDAO = new CarAvailabilityDAO();
+        BookingDAO bookingDAO = new BookingDAO();
+
+        List<Car> resultList = new ArrayList<>();
+
+        Integer seatRequested = null;
+        String seat = request.getParameter("seat");
+        try {
+            if (seat != null && !seat.isEmpty()) {
+                seatRequested = Integer.parseInt(seat);
+            }
+        } catch (Exception ignored) {
+        }
 
         if (error == null) {
-            String seat = request.getParameter("seat");
-            /*resultList = carDAO.getCarByDate(Integer.valueOf(seat), pickupTime, returnTime);*/
+            // Lọc theo khoảng ngày người dùng nhập:
+            // 1) phải có car_availability.is_available = 1 bao phủ toàn bộ khoảng
+            // 2) không bị booking trùng (PENDING/APPROVED)
+            List<Car> candidates = carDAO.getAllCars();
+            for (Car car : candidates) {
+                if (car == null) continue;
+                if (car.getStatus() != null && !"AVAILABLE".equalsIgnoreCase(car.getStatus())) {
+                    continue;
+                }
+                Integer carSeats = car.getSeats();
+                if (seatRequested != null) {
+                    if (carSeats == null || carSeats < seatRequested) continue;
+                }
 
-            if (resultList == null || resultList.isEmpty()) {
+                boolean available = availabilityDAO.isCarAvailableForRange(car.getId(), pickupTime, returnTime);
+                if (!available) continue;
+
+                boolean hasConflict = bookingDAO.hasOverlappingBooking(car.getId(), pickupTime, returnTime);
+                if (hasConflict) continue;
+
+                resultList.add(car);
+            }
+
+            if (resultList.isEmpty()) {
                 error = "Không tìm thấy kết quả phù hợp";
-                resultList = carDAO.getAllCars(); // HIỂN THỊ LẠI TOÀN BỘ XE
             }
         } else {
+            // Nếu nhập sai ngày thì trả về danh sách xe hiện có (giữ UX như code cũ)
             resultList = carDAO.getAllCars();
         }
 
