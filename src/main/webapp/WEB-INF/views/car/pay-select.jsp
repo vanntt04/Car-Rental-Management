@@ -49,13 +49,12 @@
                     </div>
                 </div>
 
-                <form action="${ctx}/pay" method="post" id="payForm">
+                <form action="${ctx}/pay" method="post" id="payForm" novalidate>
                     <input type="hidden" name="action" value="select-method">
                     <input type="hidden" name="bookingId" value="${booking.booking_id}">
-                    <input type="hidden" name="paymentMethod" id="paymentMethod" required>
 
-                    <label class="method-option" onclick="selectMethod('BANK_TRANSFER', this)">
-                        <input type="radio" name="pm" value="BANK_TRANSFER">
+                    <label class="method-option" onclick="selectMethod(this)">
+                        <input type="radio" name="paymentMethod" value="BANK_TRANSFER" required>
                         <div class="d-flex align-items-center w-100">
                             <span class="method-icon"><i class="bi bi-bank"></i></span>
                             <div>
@@ -64,8 +63,8 @@
                             </div>
                         </div>
                     </label>
-                    <label class="method-option" onclick="selectMethod('CASH', this)">
-                        <input type="radio" name="pm" value="CASH">
+                    <label class="method-option" onclick="selectMethod(this)">
+                        <input type="radio" name="paymentMethod" value="CASH">
                         <div class="d-flex align-items-center w-100">
                             <span class="method-icon"><i class="bi bi-cash-stack"></i></span>
                             <div>
@@ -73,27 +72,7 @@
                                 <div class="method-desc">Thanh toán khi nhận xe</div>
                             </div>
                         </div>
-                    </label>
-                    <label class="method-option" onclick="selectMethod('MOMO', this)">
-                        <input type="radio" name="pm" value="MOMO">
-                        <div class="d-flex align-items-center w-100">
-                            <span class="method-icon"><i class="bi bi-phone"></i></span>
-                            <div>
-                                <div class="method-label">Ví MoMo</div>
-                                <div class="method-desc">Đang phát triển</div>
-                            </div>
-                        </div>
-                    </label>
-                    <label class="method-option" onclick="selectMethod('VNPAY', this)">
-                        <input type="radio" name="pm" value="VNPAY">
-                        <div class="d-flex align-items-center w-100">
-                            <span class="method-icon"><i class="bi bi-wallet2"></i></span>
-                            <div>
-                                <div class="method-label">VNPay</div>
-                                <div class="method-desc">Đang phát triển</div>
-                            </div>
-                        </div>
-                    </label>
+                    </label>               
 
                     <button type="submit" class="btn btn-primary w-100 py-3 mt-3" id="submitBtn" disabled>
                         <i class="bi bi-arrow-right-circle me-2"></i>Tiếp tục
@@ -108,28 +87,21 @@
     <jsp:include page="../layout/footer.jsp"/>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function selectMethod(val, el) {
+        function selectMethod(el) {
             document.querySelectorAll('.method-option').forEach(o => o.classList.remove('selected'));
             el.classList.add('selected');
-            document.getElementById('paymentMethod').value = val;
+            const radio = el.querySelector('input[type="radio"][name="paymentMethod"]');
+            if (radio) {
+                radio.checked = true;
+            }
             document.getElementById('submitBtn').disabled = false;
-
-            // Đảm bảo radio được chọn để fallback/submit handler lấy được
-            try {
-                const radio = el.querySelector('input[name="pm"][value="' + val + '"]');
-                if (radio) radio.checked = true;
-            } catch (e) {}
         }
 
-        // Đảm bảo khi submit luôn gửi đúng phương thức được chọn
-        // (trong trường hợp click UI không chạy selectMethod)
         document.addEventListener('DOMContentLoaded', function () {
-            const form = document.getElementById('payForm');
-            if (!form) return;
-            form.addEventListener('submit', function () {
-                const checked = document.querySelector('input[name="pm"]:checked');
-                const hidden = document.getElementById('paymentMethod');
-                if (checked && hidden) hidden.value = checked.value;
+            document.querySelectorAll('input[name="paymentMethod"]').forEach(function (r) {
+                r.addEventListener('change', function () {
+                    document.getElementById('submitBtn').disabled = false;
+                });
             });
         });
     </script>

@@ -1,7 +1,11 @@
 package com.example.carrental.controller;
 
 import com.example.carrental.model.dao.BookingDAO;
+import com.example.carrental.model.dao.CarDAO;
 import com.example.carrental.model.dao.PaymentDAO;
+import com.example.carrental.model.entity.Booking;
+import com.example.carrental.model.entity.Car;
+import com.example.carrental.model.entity.Payment;
 import com.example.carrental.model.entity.User;
 
 import jakarta.servlet.ServletException;
@@ -24,6 +28,7 @@ public class OwnerBookingManageServlet extends HttpServlet {
 
     private BookingDAO bookingDAO;
     private PaymentDAO paymentDAO;
+    private CarDAO carDAO;
 
     private static final int PAGE_SIZE = 8;
 
@@ -31,6 +36,15 @@ public class OwnerBookingManageServlet extends HttpServlet {
     public void init() {
         bookingDAO = new BookingDAO();
         paymentDAO = new PaymentDAO();
+        carDAO = new CarDAO();
+    }
+
+    /** Đơn thuộc xe của owner hiện tại */
+    private boolean bookingBelongsToOwner(int bookingId, int ownerId) {
+        Booking b = bookingDAO.getById(bookingId);
+        if (b == null) return false;
+        Car car = carDAO.getCarById(b.getCar_id());
+        return car != null && car.getOwnerId() != null && car.getOwnerId().equals(ownerId);
     }
 
     @Override
@@ -94,37 +108,94 @@ public class OwnerBookingManageServlet extends HttpServlet {
             showBookings(request, response);
             return;
         }
-        int bookingId = Integer.parseInt(bookingIdParam);
+        int bookingId;
+        try {
+            bookingId = Integer.parseInt(bookingIdParam);
+        } catch (NumberFormatException e) {
+            showBookings(request, response);
+            return;
+        }
+        if (!bookingBelongsToOwner(bookingId, user.getId())) {
+            request.setAttribute("error", "Bạn không có quyền thao tác trên đơn này.");
+            showBookings(request, response);
+            return;
+        }
         String pageParam = request.getParameter("page");
         String statusParam = request.getParameter("status");
         String keywordParam = request.getParameter("keyword");
         StringBuilder redirect = new StringBuilder(request.getContextPath()).append("/owner/bookings?");
         if ("approve-booking".equals(action)) {
-            bookingDAO.updateStatus(bookingId, "APPROVED");
-            redirect.append("success=approved");
-        } else if ("reject-booking".equals(action)) {
-            bookingDAO.updateStatus(bookingId, "REJECTED");
-            redirect.append("success=rejected");
-        } else if ("confirm-handover".equals(action)) {
-            try {
-                // Với tiền mặt: owner xác nhận bàn giao => coi như đã thu tiền.
-                // Với chuyển khoản: nếu payment chưa PAID thì vẫn markPaid để thống nhất luồng hiển thị biên lai.
-                paymentDAO.markPaid(bookingId);
-            } catch (SQLException e) {
-                request.setAttribute("error", "Lỗi: " + e.getMessage());
+            Booking b = bookingDAO.getById(bookingId);
+            Payment pay = paymentDAO.getByBookingId(bookingId);
+            if (b == null || !"PENDING".equals(b.getBooking_status())) {
+                request.setAttribute("error", "Chỉ duyệt đơn đang ở trạng thái chờ xử lý.");
                 showBookings(request, response);
                 return;
             }
-            bookingDAO.updateStatus(bookingId, "COMPLETED");
-            redirect.append("success=handover");
-        } else if ("confirm-transfer".equals(action)) {
-            try {
-                paymentDAO.markPaid(bookingId);
-                redirect.append("success=paid");
-            } catch (SQLException e) {
-                request.setAttribute("error", "Lỗi: " + e.getMessage());
+            if (pay == null || pay.getPaymentMethod() == null || pay.getPaymentMethod().trim().isEmpty()
+                    || !"PAID".equals(pay.getPaymentStatus())) {
+                request.setAttribute("error", "Chỉ duyệt sau khi khách đã thanh toán và bạn đã xác nhận đã nhận tiền.");
                 showBookings(request, response);
                 return;
+            }
+            bookingDAO.updateStatus(bookingId, "APPROVED");
+            redirect.append("success=approved");
+        } else if ("reject-booking".equals(action)) {
+            Booking b = bookingDAO.getById(bookingId);
+            if (b == null || !"PENDING".equals(b.getBooking_status())) {
+                request.setAttribute("error", "Chỉ từ chối đơn đang chờ xử lý.");
+                showBookings(request, response);
+                return;
+            }
+            bookingDAO.updateStatus(bookingId, "REJECTED");
+            redirect.append("success=rejected");
+        } else if ("confirm-handover".equals(action)) {
+            Booking b = bookingDAO.getById(bookingId);
+            Payment pay = paymentDAO.getByBookingId(bookingId);
+            if (b == null || !"APPROVED".equals(b.getBooking_status())) {
+                request.setAttribute("error", "Chỉ giao xe khi đơn đang ở trạng thái Đã duyệt.");
+                showBookings(request, response);
+                return;
+            }
+            if (pay == null || pay.getPaymentMethod() == null || pay.getPaymentMethod().trim().isEmpty()) {
+                request.setAttribute("error", "Khách chưa chọn phương thức thanh toán.");
+                showBookings(request, response);
+                return;
+            }
+            if (!"PAID".equals(pay.getPaymentStatus())) {
+                request.setAttribute("error", "Vui lòng xác nhận đã thanh toán trước khi giao xe.");
+                showBookings(request, response);
+                return;
+            }
+            bookingDAO.updateStatus(bookingId, "PICKED_UP");
+            redirect.append("success=handover");
+        } else if ("confirm-return".equals(action)) {
+            bookingDAO.updateStatus(bookingId, "COMPLETED");
+            redirect.append("success=completed");
+        } else if ("confirm-transfer".equals(action)) {
+            Booking b = bookingDAO.getById(bookingId);
+            Payment pay = paymentDAO.getByBookingId(bookingId);
+            if (b == null || !"PENDING".equals(b.getBooking_status())) {
+                request.setAttribute("error", "Chỉ xác nhận thanh toán khi đơn chưa được duyệt (khách thanh toán trước).");
+                showBookings(request, response);
+                return;
+            }
+            if (pay == null || pay.getPaymentMethod() == null || pay.getPaymentMethod().trim().isEmpty()) {
+                request.setAttribute("error", "Khách chưa chọn phương thức thanh toán.");
+                showBookings(request, response);
+                return;
+            }
+            if ("PAID".equals(pay.getPaymentStatus())) {
+                redirect.append("success=paid-already");
+            } else {
+                try {
+                    paymentDAO.markPaid(bookingId);
+                    redirect.append("success=paid");
+                } catch (SQLException e) {
+                    request.setAttribute("error", "Lỗi: " + e.getMessage());
+                    showBookings(request, response);
+                    return;
+                }
             }
         } else {
             showBookings(request, response);

@@ -6,13 +6,10 @@
 package com.example.carrental.model.dao;
 
 import com.example.carrental.model.entity.Booking;
-import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.util.DBConnection;
-import java.math.BigDecimal;
 
 import java.sql.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -106,7 +103,7 @@ public class BookingDAO {
 
         String sql = "SELECT COUNT(*) FROM bookings " +
                 "WHERE car_id = ? " +
-                "AND booking_status IN ('PENDING','APPROVED') " +
+                "AND booking_status IN ('PENDING','APPROVED','PICKED_UP','RETURN') " +
                 "AND start_date <= ? AND end_date >= ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -290,7 +287,7 @@ public class BookingDAO {
         if ("completed".equalsIgnoreCase(filter)) {
             sql.append("AND (b.end_date < CURDATE() OR b.booking_status = 'COMPLETED') ");
         } else if ("upcoming".equalsIgnoreCase(filter)) {
-            sql.append("AND b.end_date >= CURDATE() AND b.booking_status IN ('PENDING','APPROVED') ");
+            sql.append("AND b.end_date >= CURDATE() AND b.booking_status IN ('PENDING','APPROVED','PICKED_UP','RETURN') ");
         }
         sql.append("ORDER BY b.start_date DESC");
         try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {

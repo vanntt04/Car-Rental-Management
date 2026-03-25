@@ -35,7 +35,9 @@
             <c:if test="${not empty param.success}">
                 <div class="owner-alert success">
                     <c:choose>
-                        <c:when test="${param.success == 'handover'}">Đã xác nhận bàn giao / cấp quyền truy cập xe cho khách.</c:when>
+                        <c:when test="${param.success == 'paid'}">Đã xác nhận khách đã thanh toán.</c:when>
+                        <c:when test="${param.success == 'paid-already'}">Đơn này đã được đánh dấu đã thanh toán trước đó.</c:when>
+                        <c:when test="${param.success == 'handover'}">Đã xác nhận giao xe cho khách.</c:when>
                         <c:otherwise>Đã cập nhật trạng thái: ${param.success}</c:otherwise>
                     </c:choose>
                 </div>
@@ -50,8 +52,10 @@
                     <input type="text" name="keyword" placeholder="Tìm xe, khách hàng..." value="${keyword}" style="border:1px solid #d8e0e8; border-radius:8px; padding:8px 12px; font-size:14px; min-width:180px;">
                     <select name="status">
                         <option value="" ${empty statusFilter ? 'selected' : ''}>Tất cả trạng thái</option>
-                        <option value="PENDING" ${statusFilter == 'PENDING' ? 'selected' : ''}>Chờ duyệt</option>
+                        <option value="PENDING" ${statusFilter == 'PENDING' ? 'selected' : ''}>Chờ thanh toán / duyệt</option>
                         <option value="APPROVED" ${statusFilter == 'APPROVED' ? 'selected' : ''}>Đã duyệt</option>
+                        <option value="PICKED_UP" ${statusFilter == 'PICKED_UP' ? 'selected' : ''}>Đã giao xe</option>
+                        <option value="RETURN" ${statusFilter == 'RETURN' ? 'selected' : ''}>Khách đã trả</option>
                         <option value="REJECTED" ${statusFilter == 'REJECTED' ? 'selected' : ''}>Đã từ chối</option>
                         <option value="CANCELLED" ${statusFilter == 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
                         <option value="COMPLETED" ${statusFilter == 'COMPLETED' ? 'selected' : ''}>Hoàn thành</option>
@@ -82,7 +86,15 @@
                                 <td>${b.customerName}</td>
                                 <td>${b.start_date} -> ${b.end_date}</td>
                                 <td>${b.total_price}</td>
-                                <td><span class="badge ${b.booking_status == 'APPROVED' ? 'badge-avail' : b.booking_status == 'PENDING' ? 'badge-rented' : 'badge-maint'}">${b.booking_status}</span></td>
+                                <td>
+                                    <span class="badge ${
+                                        b.booking_status == 'APPROVED' ? 'badge-avail' :
+                                        b.booking_status == 'PENDING' ? 'badge-rented' :
+                                        b.booking_status == 'PICKED_UP' ? 'badge-avail' :
+                                        b.booking_status == 'RETURN' ? 'badge-rented' :
+                                        'badge-maint'
+                                    }">${b.booking_status}</span>
+                                </td>
                                 <td>
                                     <c:choose>
                                         <c:when test="${empty b.paymentMethod}">Chưa chọn</c:when>
@@ -90,14 +102,15 @@
                                     </c:choose>
                                 </td>
                                 <td>
-                                    <c:if test="${b.booking_status == 'PENDING'}">
+                                    <%-- Luồng: khách thanh toán trước → chủ xác nhận tiền (PENDING) → chủ duyệt (đã PAID) --%>
+                                    <c:if test="${b.booking_status == 'PENDING' && not empty b.paymentMethod && b.paymentStatus != 'PAID'}">
                                         <form action="${ctx}/owner/bookings" method="post" style="display:inline;">
-                                            <input type="hidden" name="action" value="approve-booking"/>
+                                            <input type="hidden" name="action" value="confirm-transfer"/>
                                             <input type="hidden" name="bookingId" value="${b.booking_id}"/>
                                             <input type="hidden" name="page" value="${currentPage}"/>
                                             <input type="hidden" name="status" value="${statusFilter}"/>
                                             <input type="hidden" name="keyword" value="${keyword}"/>
-                                            <button class="owner-btn primary" type="submit">Duyệt</button>
+                                            <button class="owner-btn primary" type="submit">Xác nhận đã thanh toán</button>
                                         </form>
                                         <form action="${ctx}/owner/bookings" method="post" style="display:inline;">
                                             <input type="hidden" name="action" value="reject-booking"/>
@@ -108,24 +121,54 @@
                                             <button class="owner-btn outline" type="submit">Từ chối</button>
                                         </form>
                                     </c:if>
-                                    <c:if test="${b.booking_status == 'APPROVED' && b.paymentMethod == 'BANK_TRANSFER' && b.paymentStatus != 'PAID'}">
+                                    <c:if test="${b.booking_status == 'PENDING' && b.paymentStatus == 'PAID'}">
                                         <form action="${ctx}/owner/bookings" method="post" style="display:inline;">
-                                            <input type="hidden" name="action" value="confirm-transfer"/>
+                                            <input type="hidden" name="action" value="approve-booking"/>
                                             <input type="hidden" name="bookingId" value="${b.booking_id}"/>
                                             <input type="hidden" name="page" value="${currentPage}"/>
                                             <input type="hidden" name="status" value="${statusFilter}"/>
                                             <input type="hidden" name="keyword" value="${keyword}"/>
-                                            <button class="owner-btn primary" type="submit">Xác nhận đã nhận tiền</button>
+                                            <button class="owner-btn primary" type="submit">Duyệt đơn</button>
+                                        </form>
+                                        <form action="${ctx}/owner/bookings" method="post" style="display:inline;">
+                                            <input type="hidden" name="action" value="reject-booking"/>
+                                            <input type="hidden" name="bookingId" value="${b.booking_id}"/>
+                                            <input type="hidden" name="page" value="${currentPage}"/>
+                                            <input type="hidden" name="status" value="${statusFilter}"/>
+                                            <input type="hidden" name="keyword" value="${keyword}"/>
+                                            <button class="owner-btn outline" type="submit">Từ chối</button>
                                         </form>
                                     </c:if>
-                                    <c:if test="${b.booking_status == 'APPROVED' && (b.paymentMethod == 'CASH' || b.paymentStatus == 'PAID')}">
+                                    <c:if test="${b.booking_status == 'PENDING' && empty b.paymentMethod}">
+                                        <span class="text-muted small me-2">Chờ khách chọn &amp; thanh toán</span>
+                                        <form action="${ctx}/owner/bookings" method="post" style="display:inline;">
+                                            <input type="hidden" name="action" value="reject-booking"/>
+                                            <input type="hidden" name="bookingId" value="${b.booking_id}"/>
+                                            <input type="hidden" name="page" value="${currentPage}"/>
+                                            <input type="hidden" name="status" value="${statusFilter}"/>
+                                            <input type="hidden" name="keyword" value="${keyword}"/>
+                                            <button class="owner-btn outline" type="submit">Từ chối</button>
+                                        </form>
+                                    </c:if>
+                                    <%-- Chỉ sau khi PAID mới được xác nhận giao xe --%>
+                                    <c:if test="${b.booking_status == 'APPROVED' && b.paymentStatus == 'PAID'}">
                                         <form action="${ctx}/owner/bookings" method="post" style="display:inline;">
                                             <input type="hidden" name="action" value="confirm-handover"/>
                                             <input type="hidden" name="bookingId" value="${b.booking_id}"/>
                                             <input type="hidden" name="page" value="${currentPage}"/>
                                             <input type="hidden" name="status" value="${statusFilter}"/>
                                             <input type="hidden" name="keyword" value="${keyword}"/>
-                                            <button class="owner-btn primary" type="submit">Xác nhận bàn giao / Cấp quyền</button>
+                                            <button class="owner-btn primary" type="submit">Xác nhận giao xe</button>
+                                        </form>
+                                    </c:if>
+                                    <c:if test="${b.booking_status == 'RETURN'}">
+                                        <form action="${ctx}/owner/bookings" method="post" style="display:inline;">
+                                            <input type="hidden" name="action" value="confirm-return"/>
+                                            <input type="hidden" name="bookingId" value="${b.booking_id}"/>
+                                            <input type="hidden" name="page" value="${currentPage}"/>
+                                            <input type="hidden" name="status" value="${statusFilter}"/>
+                                            <input type="hidden" name="keyword" value="${keyword}"/>
+                                            <button class="owner-btn primary" type="submit">Xác nhận đã nhận xe</button>
                                         </form>
                                     </c:if>
                                 </td>

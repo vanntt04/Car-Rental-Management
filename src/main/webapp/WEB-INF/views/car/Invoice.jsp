@@ -205,10 +205,18 @@
                             <div class="section-title">Trạng thái</div>
                             <span class="status-badge status-${invoice.booking_status}">
                                 <c:choose>
-                                    <c:when test="${invoice.booking_status == 'PENDING'}">CHỜ DUYỆT</c:when>
-                                    <c:when test="${invoice.booking_status == 'APPROVED'}">ĐÃ XÁC NHẬN</c:when>
+                                    <c:when test="${invoice.booking_status == 'PENDING'}">
+                                        <c:choose>
+                                            <c:when test="${payment != null && payment.paymentStatus == 'PAID'}">CHỜ CHỦ XE DUYỆT</c:when>
+                                            <c:otherwise>CHỜ THANH TOÁN</c:otherwise>
+                                        </c:choose>
+                                    </c:when>
+                                    <c:when test="${invoice.booking_status == 'APPROVED'}">ĐÃ DUYỆT</c:when>
                                     <c:when test="${invoice.booking_status == 'COMPLETED'}">HOÀN THÀNH</c:when>
                                     <c:when test="${invoice.booking_status == 'CANCELLED'}">ĐÃ HỦY</c:when>
+                                    <c:when test="${invoice.booking_status == 'REJECTED'}">TỪ CHỐI</c:when>
+                                    <c:when test="${invoice.booking_status == 'PICKED_UP'}">ĐANG THUÊ</c:when>
+                                    <c:when test="${invoice.booking_status == 'RETURN'}">KHÁCH ĐÃ TRẢ XE</c:when>
                                     <c:otherwise>${invoice.booking_status}</c:otherwise>
                                 </c:choose>
                             </span>
@@ -302,14 +310,19 @@
                             </a>
                         </c:if>
                         <c:choose>
-                            <c:when test="${invoice.booking_status == 'APPROVED' && (payment == null || payment.paymentStatus != 'PAID')}">
+                            <c:when test="${invoice.booking_status == 'PENDING' && (payment == null || payment.paymentStatus != 'PAID')}">
                                 <a href="${ctx}/pay?bookingId=${invoice.booking_id}" class="btn btn-success px-4 me-2">
-                                    <i class="bi bi-credit-card me-2"></i>Thanh Toán Ngay
+                                    <i class="bi bi-credit-card me-2"></i>Thanh toán (trước khi chủ xe duyệt)
                                 </a>
                             </c:when>
-                            <c:when test="${invoice.booking_status == 'PENDING'}">
+                            <c:when test="${invoice.booking_status == 'PENDING' && payment != null && payment.paymentStatus == 'PAID'}">
+                                <span class="btn btn-outline-secondary px-4 me-2 disabled border-0 bg-light text-dark">
+                                    <i class="bi bi-hourglass-split me-2"></i>Đã thanh toán — chờ chủ xe duyệt đơn
+                                </span>
+                            </c:when>
+                            <c:when test="${invoice.booking_status == 'APPROVED' && (payment == null || payment.paymentStatus != 'PAID')}">
                                 <a href="${ctx}/pay?bookingId=${invoice.booking_id}" class="btn btn-outline-primary px-4 me-2">
-                                    <i class="bi bi-list-check me-2"></i>Chọn phương thức thanh toán
+                                    <i class="bi bi-credit-card me-2"></i>Thanh toán
                                 </a>
                             </c:when>
                             <c:when test="${invoice.booking_status == 'COMPLETED'}">

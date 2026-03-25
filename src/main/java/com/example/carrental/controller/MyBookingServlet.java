@@ -6,11 +6,12 @@ package com.example.carrental.controller;
 
 import com.example.carrental.model.dao.BookingDAO;
 import com.example.carrental.model.dao.CarDAO;
+import com.example.carrental.model.dao.PaymentDAO;
 import com.example.carrental.model.entity.Booking;
 import com.example.carrental.model.entity.Car;
+import com.example.carrental.model.entity.Payment;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +19,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.annotation.WebServlet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Trang hiển thị danh sách booking của customer.
@@ -30,57 +33,64 @@ import java.util.List;
 public class MyBookingServlet extends HttpServlet {
 
     /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * Bước 1–6 (0 = hủy/từ chối). Luồng: thanh toán → chủ duyệt → giao xe → trả xe → hoàn thành.
      */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet MyBookingServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet MyBookingServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+    static int progressStep(Booking b, Payment p) {
+        if (b == null || b.getBooking_status() == null) return 1;
+        String s = b.getBooking_status();
+        switch (s) {
+            case "COMPLETED":
+                return 6;
+            case "RETURN":
+                return 5;
+            case "PICKED_UP":
+                return 4;
+            case "APPROVED":
+                return 3;
+            case "PENDING":
+                if (p != null && "PAID".equals(p.getPaymentStatus())) return 2;
+                return 1;
+            case "REJECTED":
+            case "CANCELLED":
+                return 0;
+            default:
+                return 1;
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         CarDAO car = new CarDAO();
         BookingDAO book = new BookingDAO();
+        PaymentDAO paymentDAO = new PaymentDAO();
         HttpSession session = request.getSession();
-        int userId = (int) session.getAttribute("userId");
+        Object userIdObj = session.getAttribute("userId");
+        if (userIdObj == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        int userId = (int) userIdObj;
         List<Car> list_select = car.getAllSelectCars(userId);
         List<Booking> list_book = book.getAllBookCars(userId);
         List<Car> book_car = new ArrayList<>();
-        for(int i = 0 ; i < list_book.size();i++){
-            Car c = car.getCarById(list_book.get(i).getCar_id());
+        List<Map<String, Object>> bookingRows = new ArrayList<>();
+        for (Booking bk : list_book) {
+            Car c = car.getCarById(bk.getCar_id());
             book_car.add(c);
+            Payment p = paymentDAO.getByBookingId(bk.getBooking_id());
+            Map<String, Object> row = new HashMap<>();
+            row.put("booking", bk);
+            row.put("car", c);
+            row.put("payment", p);
+            row.put("progressStep", progressStep(bk, p));
+            row.put("totalPrice", bk.getTotal_price());
+            bookingRows.add(row);
         }
         request.setAttribute("Select-List", list_select);
         request.setAttribute("Book-List", list_book);
         request.setAttribute("Book-Car", book_car);
+        request.setAttribute("bookingRows", bookingRows);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/MyBooking.jsp");
         dispatcher.forward(request, response);
     }
@@ -96,7 +106,44 @@ public class MyBookingServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        HttpSession session = request.getSession();
+        Object userIdObj = session.getAttribute("userId");
+        if (userIdObj == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        int userId = (int) userIdObj;
+
+        String action = request.getParameter("action");
+        if (!"return-car".equals(action)) {
+            response.sendRedirect(request.getContextPath() + "/mybooking");
+            return;
+        }
+        String bookingIdParam = request.getParameter("bookingId");
+        if (bookingIdParam == null || bookingIdParam.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/mybooking");
+            return;
+        }
+        int bookingId;
+        try {
+            bookingId = Integer.parseInt(bookingIdParam);
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/mybooking");
+            return;
+        }
+
+        BookingDAO bookingDAO = new BookingDAO();
+        Booking b = bookingDAO.getById(bookingId);
+        if (b == null || b.getCustomer_id() != userId) {
+            response.sendRedirect(request.getContextPath() + "/mybooking");
+            return;
+        }
+        if (!"PICKED_UP".equalsIgnoreCase(b.getBooking_status())) {
+            response.sendRedirect(request.getContextPath() + "/mybooking");
+            return;
+        }
+        bookingDAO.updateStatus(bookingId, "RETURN");
+        response.sendRedirect(request.getContextPath() + "/mybooking?success=returned");
     }
 
     /**
@@ -106,7 +153,7 @@ public class MyBookingServlet extends HttpServlet {
      */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+        return "Customer booking list";
+    }
 
 }

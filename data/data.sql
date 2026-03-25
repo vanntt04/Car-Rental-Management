@@ -158,7 +158,7 @@ CREATE TABLE bookings (
     end_date DATE NOT NULL,
     total_days INT NOT NULL,
     total_price DECIMAL(12,2) NOT NULL,
-    booking_status ENUM('PENDING', 'APPROVED', 'PICKED_UP', 'RETURNING', 'COMPLETED', 'CANCELLED', 'REJECTED') DEFAULT 'PENDING',
+    booking_status ENUM('PENDING', 'APPROVED', 'PICKED_UP', 'RETURN', 'COMPLETED', 'CANCELLED', 'REJECTED') DEFAULT 'PENDING',
     FOREIGN KEY(car_id) REFERENCES cars(id),
     FOREIGN KEY(customer_id) REFERENCES users(user_id),
     CHECK (end_date >= start_date)
@@ -232,7 +232,7 @@ CREATE TABLE payments (
     payment_id INT AUTO_INCREMENT PRIMARY KEY,
     booking_id INT NOT NULL,
     amount DECIMAL(12,2) NOT NULL,
-    payment_method ENUM('CASH','MOMO','VNPAY','PAYPAL'),
+    payment_method ENUM('CASH','BANK_TRANSFER','MOMO','VNPAY','PAYPAL'),
     payment_status ENUM('UNPAID','PAID','REFUNDED') DEFAULT 'UNPAID',
     paid_at DATETIME,
     FOREIGN KEY(booking_id) REFERENCES bookings(booking_id)

@@ -18,6 +18,9 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Trang thanh toán cho khách hàng.
@@ -86,7 +89,10 @@ public class PayServlet extends HttpServlet {
             String methodNorm = method.trim().toUpperCase();
             paymentDAO.upsertMethod(bookingId, booking.getTotal_price(), methodNorm);
         } catch (Exception e) {
-            request.setAttribute("error", "Lỗi lưu phương thức thanh toán.");
+            e.printStackTrace();
+            String msg = URLEncoder.encode("Không lưu được phương thức thanh toán. Kiểm tra CSDL hoặc thử lại.", StandardCharsets.UTF_8);
+            response.sendRedirect(request.getContextPath() + "/pay?bookingId=" + bookingId + "&error=" + msg);
+            return;
         }
         response.sendRedirect(request.getContextPath() + "/pay?bookingId=" + bookingId);
     }
@@ -99,6 +105,15 @@ public class PayServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login?redirect=" +
                     java.net.URLEncoder.encode("/pay?bookingId=" + request.getParameter("bookingId"), "UTF-8"));
             return;
+        }
+
+        String errParam = request.getParameter("error");
+        if (errParam != null && !errParam.trim().isEmpty()) {
+            try {
+                request.setAttribute("error", URLDecoder.decode(errParam, StandardCharsets.UTF_8));
+            } catch (Exception ignored) {
+                request.setAttribute("error", errParam);
+            }
         }
 
         String bookingIdParam = request.getParameter("bookingId");

@@ -161,7 +161,7 @@ CREATE TABLE bookings (
     end_date DATE NOT NULL,
     total_days INT NOT NULL,
     total_price DECIMAL(12,2) NOT NULL,
-    booking_status ENUM('PENDING','APPROVED','REJECTED','CANCELLED','COMPLETED') DEFAULT 'PENDING',
+    booking_status ENUM('PENDING','APPROVED','REJECTED','CANCELLED','PICKED_UP','RETURN','COMPLETED') DEFAULT 'PENDING',
     FOREIGN KEY(car_id) REFERENCES cars(id),
     FOREIGN KEY(customer_id) REFERENCES users(user_id),
     CHECK (end_date >= start_date)
