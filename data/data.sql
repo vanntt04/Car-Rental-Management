@@ -89,24 +89,23 @@ CREATE TABLE cars (
     FOREIGN KEY(owner_id) REFERENCES users(user_id)
 );
 
-INSERT INTO cars
-(owner_id, name, license_plate, brand, model, year, color, seats, transmission, fuel_type, price_per_day, status)
+INSERT INTO cars (owner_id, name, license_plate, brand, model, year, color, seats, transmission, fuel_type, price_per_day, status, image_url, description, created_at, updated_at)
 VALUES
-(2,'Toyota Altis','30A-11111','Toyota','Altis',2023,'White',5,'AUTO','PETROL',900000,'AVAILABLE'),
-(2,'Kia K3','30A-22222','Kia','K3',2023,'Red',5,'AUTO','PETROL',950000,'AVAILABLE'),
-(2,'Mazda 6','30A-33333','Mazda','6',2022,'Black',5,'AUTO','PETROL',1200000,'AVAILABLE'),
-(2,'Hyundai Tucson','30A-44444','Hyundai','Tucson',2022,'White',5,'AUTO','PETROL',1300000,'AVAILABLE'),
-(2,'Honda CRV','30A-55555','Honda','CRV',2023,'Blue',5,'AUTO','PETROL',1500000,'AVAILABLE'),
-(3,'Ford Everest','30B-11111','Ford','Everest',2023,'Grey',7,'AUTO','DIESEL',1800000,'AVAILABLE'),
-(3,'Vinfast VF9','30B-22222','Vinfast','VF9',2024,'Black',7,'AUTO','ELECTRIC',2000000,'AVAILABLE'),
-(3,'Toyota Hilux','30B-33333','Toyota','Hilux',2022,'Silver',5,'MANUAL','DIESEL',1400000,'AVAILABLE'),
-(3,'Mitsubishi Attrage','30B-44444','Mitsubishi','Attrage',2021,'White',5,'AUTO','PETROL',600000,'AVAILABLE'),
-(3,'BMW 320i','30B-55555','BMW','320i',2023,'Black',5,'AUTO','PETROL',3000000,'AVAILABLE'),
-(2,'Mercedes GLC','30C-11111','Mercedes','GLC',2023,'White',5,'AUTO','PETROL',3500000,'AVAILABLE'),
-(2,'Audi A6','30C-22222','Audi','A6',2023,'Black',5,'AUTO','PETROL',3200000,'AVAILABLE'),
-(2,'Suzuki XL7','30C-33333','Suzuki','XL7',2022,'Orange',7,'AUTO','PETROL',900000,'AVAILABLE'),
-(3,'Toyota Innova','30C-44444','Toyota','Innova',2022,'Silver',7,'MANUAL','PETROL',1000000,'AVAILABLE'),
-(3,'Hyundai i10','30C-55555','Hyundai','i10',2021,'White',5,'AUTO','PETROL',500000,'AVAILABLE');
+(1,'Toyota Vios 1','43A-10001','Toyota','Vios',2022,'White',5,'AUTO','PETROL',500000,'AVAILABLE','img/1.jpg','Xe tốt',NOW(),NOW()),
+(2,'Toyota Vios 2','43A-10002','Toyota','Vios',2021,'Black',5,'AUTO','PETROL',520000,'AVAILABLE','img/2.jpg','Xe đẹp',NOW(),NOW()),
+(1,'Honda Civic 1','43A-10003','Honda','Civic',2020,'Red',5,'AUTO','PETROL',700000,'AVAILABLE','img/3.jpg','Xe mạnh',NOW(),NOW()),
+(2,'Honda Civic 2','43A-10004','Honda','Civic',2022,'Blue',5,'AUTO','PETROL',720000,'AVAILABLE','img/4.jpg','Xe mới',NOW(),NOW()),
+(1,'Hyundai Accent 1','43A-10005','Hyundai','Accent',2019,'White',5,'MANUAL','PETROL',400000,'AVAILABLE','img/5.jpg','Tiết kiệm',NOW(),NOW()),
+(2,'Hyundai Accent 2','43A-10006','Hyundai','Accent',2020,'Gray',5,'MANUAL','PETROL',420000,'AVAILABLE','img/6.jpg','Ổn định',NOW(),NOW()),
+(1,'Mazda 3 1','43A-10007','Mazda','3',2021,'Black',5,'AUTO','PETROL',650000,'AVAILABLE','img/7.jpg','Sang trọng',NOW(),NOW()),
+(2,'Mazda 3 2','43A-10008','Mazda','3',2022,'Red',5,'AUTO','PETROL',680000,'AVAILABLE','img/8.jpg','Đẹp',NOW(),NOW()),
+(1,'Kia Cerato 1','43A-10009','Kia','Cerato',2020,'Blue',5,'AUTO','PETROL',600000,'AVAILABLE','img/9.jpg','Bền',NOW(),NOW()),
+(2,'Kia Cerato 2','43A-10010','Kia','Cerato',2021,'White',5,'AUTO','PETROL',620000,'AVAILABLE','img/10.jpg','Ngon',NOW(),NOW()),
+(1,'Ford Ranger 1','43A-10011','Ford','Ranger',2022,'Black',5,'AUTO','DIESEL',900000,'AVAILABLE','img/11.jpg','Bán tải',NOW(),NOW()),
+(2,'Ford Ranger 2','43A-10012','Ford','Ranger',2021,'Gray',5,'AUTO','DIESEL',880000,'AVAILABLE','img/12.jpg','Mạnh',NOW(),NOW()),
+(1,'VinFast VF e34 1','43A-10013','VinFast','VF e34',2023,'Blue',5,'AUTO','ELECTRIC',800000,'AVAILABLE','img/13.jpg','Xe điện',NOW(),NOW()),
+(2,'VinFast VF e34 2','43A-10014','VinFast','VF e34',2023,'White',5,'AUTO','ELECTRIC',820000,'AVAILABLE','img/14.jpg','Hiện đại',NOW(),NOW()),
+(1,'Toyota Fortuner','43A-10015','Toyota','Fortuner',2022,'Black',7,'AUTO','DIESEL',1000000,'AVAILABLE','img/15.jpg','SUV',NOW(),NOW());
 
 -- =============================
 -- CAR_AVAILABILITY (code: CarAvailabilityDAO)
@@ -120,7 +119,23 @@ CREATE TABLE car_availability (
     note VARCHAR(255),
     FOREIGN KEY(car_id) REFERENCES cars(id) ON DELETE CASCADE
 );
-
+INSERT INTO car_availability (car_id, start_date, end_date, is_available, note)
+VALUES
+(1,'2026-03-25','2026-03-30',1,'OK'),
+(2,'2026-03-25','2026-03-30',1,'OK'),
+(3,'2026-03-25','2026-03-30',0,'Booked'),
+(4,'2026-03-25','2026-03-30',1,'OK'),
+(5,'2026-03-25','2026-03-30',1,'OK'),
+(6,'2026-03-25','2026-03-30',0,'Busy'),
+(7,'2026-03-25','2026-03-30',1,'OK'),
+(8,'2026-03-25','2026-03-30',1,'OK'),
+(9,'2026-03-25','2026-03-30',1,'OK'),
+(10,'2026-03-25','2026-03-30',0,'Booked'),
+(11,'2026-03-25','2026-03-30',1,'OK'),
+(12,'2026-03-25','2026-03-30',1,'OK'),
+(13,'2026-03-25','2026-03-30',1,'OK'),
+(14,'2026-03-25','2026-03-30',0,'Busy'),
+(15,'2026-03-25','2026-03-30',1,'OK');
 -- =============================
 -- CAR_IMAGES (code: CarImageDAO)
 -- =============================
@@ -164,67 +179,26 @@ CREATE TABLE bookings (
     CHECK (end_date >= start_date)
 );
 
-INSERT INTO bookings
-(car_id, customer_id, start_date, end_date, total_days, total_price, booking_status)
+INSERT INTO bookings (car_id, customer_id, start_date, end_date, total_days, total_price, booking_status)
 VALUES
-(1,4,'2025-01-01','2025-01-03',3,2700000,'APPROVED'),
-(2,5,'2025-01-05','2025-01-07',3,2850000,'COMPLETED'),
-(3,6,'2025-01-10','2025-01-12',3,3600000,'APPROVED'),
-(4,7,'2025-01-15','2025-01-17',3,3900000,'PENDING'),
-(5,8,'2025-01-20','2025-01-22',3,4500000,'APPROVED'),
-(6,9,'2025-02-01','2025-02-03',3,5400000,'APPROVED'),
-(7,10,'2025-02-05','2025-02-07',3,6000000,'APPROVED'),
-(8,11,'2025-02-10','2025-02-12',3,4200000,'PENDING'),
-(9,12,'2025-02-15','2025-02-17',3,1800000,'APPROVED'),
-(10,13,'2025-02-20','2025-02-22',3,9000000,'COMPLETED'),
-(11,14,'2025-03-01','2025-03-03',3,10500000,'APPROVED'),
-(12,15,'2025-03-05','2025-03-07',3,9600000,'APPROVED'),
-(13,4,'2025-03-10','2025-03-12',3,2700000,'PENDING'),
-(14,5,'2025-03-15','2025-03-17',3,3000000,'APPROVED'),
-(15,6,'2025-03-20','2025-03-22',3,1500000,'COMPLETED'),
+(1,3,'2026-03-25','2026-03-27',3,1500000,'PENDING'),
+(2,4,'2026-03-25','2026-03-27',3,1600000,'APPROVED'),
+(3,5,'2026-03-25','2026-03-27',3,2100000,'COMPLETED'),
+(4,3,'2026-03-25','2026-03-26',2,1400000,'PENDING'),
+(5,4,'2026-03-25','2026-03-28',4,1600000,'APPROVED'),
+(6,5,'2026-03-25','2026-03-27',3,1260000,'COMPLETED'),
+(7,3,'2026-03-25','2026-03-27',3,1950000,'PENDING'),
+(8,4,'2026-03-25','2026-03-27',3,2040000,'APPROVED'),
+(9,5,'2026-03-25','2026-03-27',3,1800000,'COMPLETED'),
+(10,3,'2026-03-25','2026-03-27',3,1860000,'PENDING'),
+(11,4,'2026-03-25','2026-03-27',3,2700000,'APPROVED'),
+(12,5,'2026-03-25','2026-03-27',3,2640000,'COMPLETED'),
+(13,3,'2026-03-25','2026-03-27',3,2400000,'PENDING'),
+(14,4,'2026-03-25','2026-03-27',3,2460000,'APPROVED'),
+(15,5,'2026-03-25','2026-03-27',3,3000000,'COMPLETED');
 
--- Bookings sắp tới (thời gian trong tương lai - 2026)
-(1,7,'2026-01-05','2026-01-08',3,2700000,'APPROVED'),
-(2,8,'2026-01-12','2026-01-15',3,2850000,'PENDING'),
-(3,9,'2026-01-20','2026-01-23',3,3600000,'APPROVED'),
-(4,10,'2026-02-01','2026-02-04',3,3900000,'APPROVED'),
-(5,11,'2026-02-10','2026-02-13',3,4500000,'PENDING'),
-(6,12,'2026-02-15','2026-02-18',3,5400000,'APPROVED'),
-(7,13,'2026-02-20','2026-02-23',3,6000000,'PENDING'),
-(8,14,'2026-03-01','2026-03-04',3,4200000,'APPROVED'),
-(9,15,'2026-03-05','2026-03-08',3,1800000,'PENDING'),
-(10,4,'2026-03-10','2026-03-13',3,9000000,'APPROVED'),
-(11,5,'2026-03-15','2026-03-18',3,10500000,'PENDING'),
-(12,6,'2026-03-20','2026-03-23',3,9600000,'APPROVED'),
-(13,7,'2026-04-01','2026-04-05',4,3600000,'APPROVED'),
-(14,8,'2026-04-10','2026-04-12',2,2000000,'PENDING'),
-(15,9,'2026-04-15','2026-04-18',3,1500000,'APPROVED');
 
--- =============================
--- CAR_RETURNS
--- =============================
-CREATE TABLE car_returns (
-    return_id INT AUTO_INCREMENT PRIMARY KEY,
-    booking_id INT NOT NULL UNIQUE, -- Mỗi booking chỉ có 1 lượt trả xe
-    return_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    
-    -- Tình trạng xe khi trả
-    fuel_level INT COMMENT 'Phần trăm xăng/dầu còn lại (0-100)',
-    current_mileage INT COMMENT 'Số km trên đồng hồ khi trả',
-    car_condition_notes TEXT COMMENT 'Ghi chú về trầy xước, hỏng hóc nếu có',
-    
-    -- Trạng thái xác nhận từ 2 phía
-    customer_confirmed BOOLEAN DEFAULT FALSE,
-    owner_confirmed BOOLEAN DEFAULT FALSE,
-    
-    -- Hình ảnh minh chứng lúc trả xe
-    return_image_url VARCHAR(500), 
-    
-    -- Phụ phí phát thêm (nếu trả muộn, thiếu xăng, làm hỏng đồ)
-    additional_fees DECIMAL(12,2) DEFAULT 0,
-    
-    FOREIGN KEY(booking_id) REFERENCES bookings(booking_id) ON DELETE CASCADE
-);
+
 -- =============================
 -- PAYMENTS
 -- =============================
@@ -238,37 +212,20 @@ CREATE TABLE payments (
     FOREIGN KEY(booking_id) REFERENCES bookings(booking_id)
 );
 
-INSERT INTO payments
-(booking_id, amount, payment_method, payment_status, paid_at)
+INSERT INTO payments (booking_id, amount, payment_method, payment_status, paid_at)
 VALUES
-(1,2700000,'VNPAY','PAID','2024-12-30 10:00:00'),
-(2,2850000,'MOMO','PAID','2025-01-07 15:00:00'),
-(3,3600000,'PAYPAL','PAID','2025-01-09 09:00:00'),
-(4,0,'CASH','UNPAID',NULL),
-(5,4500000,'VNPAY','PAID','2025-01-19 11:00:00'),
-(6,5400000,'PAYPAL','PAID','2025-01-30 18:00:00'),
-(7,6000000,'MOMO','PAID','2025-02-07 20:00:00'),
-(8,0,'CASH','UNPAID',NULL),
-(9,1800000,'CASH','PAID','2025-02-14 10:00:00'),
-(10,9000000,'MOMO','PAID','2025-02-22 19:00:00'),
-(11,10500000,'PAYPAL','PAID','2025-02-28 21:00:00'),
-(12,9600000,'VNPAY','PAID','2025-03-04 14:00:00'),
-(13,0,'CASH','UNPAID',NULL),
-(14,3000000,'MOMO','PAID','2025-03-14 16:00:00'),
-(15,1500000,'CASH','PAID','2025-03-22 19:00:00'),
--- Thanh toán cho các booking sắp tới (16-30, phần lớn UNPAID)
-(16,2700000,'VNPAY','PAID',NULL),
-(17,0,'CASH','UNPAID',NULL),
-(18,3600000,'MOMO','PAID',NULL),
-(19,3900000,'VNPAY','PAID',NULL),
-(20,0,'CASH','UNPAID',NULL),
-(21,5400000,'MOMO','PAID',NULL),
-(22,0,'CASH','UNPAID',NULL),
-(23,0,'CASH','UNPAID',NULL),
-(24,1800000,'VNPAY','PAID',NULL),
-(25,0,'CASH','UNPAID',NULL),
-(26,10500000,'MOMO','PAID',NULL),
-(27,0,'CASH','UNPAID',NULL),
-(28,3600000,'VNPAY','PAID',NULL),
-(29,0,'CASH','UNPAID',NULL),
-(30,1500000,'CASH','PAID',NULL);
+(1,1500000,'CASH','UNPAID',NULL),
+(2,1600000,'BANK_TRANSFER','PAID',NOW()),
+(3,2100000,'CASH','PAID',NOW()),
+(4,1400000,'CASH','UNPAID',NULL),
+(5,1600000,'BANK_TRANSFER','PAID',NOW()),
+(6,1260000,'CASH','PAID',NOW()),
+(7,1950000,'CASH','UNPAID',NULL),
+(8,2040000,'BANK_TRANSFER','PAID',NOW()),
+(9,1800000,'CASH','PAID',NOW()),
+(10,1860000,'CASH','UNPAID',NULL),
+(11,2700000,'BANK_TRANSFER','PAID',NOW()),
+(12,2640000,'CASH','PAID',NOW()),
+(13,2400000,'CASH','UNPAID',NULL),
+(14,2460000,'BANK_TRANSFER','PAID',NOW()),
+(15,3000000,'CASH','PAID',NOW());
