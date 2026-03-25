@@ -6,19 +6,19 @@ package com.example.carrental.controller;
 
 import com.example.carrental.model.dao.BookingDAO;
 import com.example.carrental.model.dao.CarDAO;
-import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 /**
- *
- * @author PC
+ * Hủy đơn / bỏ giữ chỗ (yêu cầu đăng nhập CUSTOMER — {@link com.example.carrental.filter.LoginAndRoleFilter}).
  */
+@WebServlet(name = "RemoveServlet", urlPatterns = "/remove")
 public class RemoveServlet extends HttpServlet {
 
     /**
@@ -59,11 +59,18 @@ public class RemoveServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        Object userIdObj = session.getAttribute("userId");
-        int userId = 0;
-        if (userIdObj != null) {
+        HttpSession session = request.getSession(false);
+        Object userIdObj = session != null ? session.getAttribute("userId") : null;
+        if (userIdObj == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        int userId;
+        try {
             userId = Integer.parseInt(userIdObj.toString());
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
         }
         String book_id = request.getParameter("book_id");
         if (book_id != null) {
