@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package com.example.carrental.controller;
 
 import com.example.carrental.model.dao.BookingDAO;
@@ -10,66 +6,117 @@ import com.example.carrental.model.dao.CarDAO;
 import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.util.HoldCleanupScheduler;
 import jakarta.servlet.RequestDispatcher;
-import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * @author PC
+ * Danh sách / tìm xe khách hàng — có phân trang và lọc theo trạng thái xe (AVAILABLE, RENTED, ...).
  */
 @WebServlet(name = "SearchCarServlet", urlPatterns = "/searchcar")
 public class SearchCarServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet SearchCarServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet SearchCarServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
+    private static final int CAR_LIST_PAGE_SIZE = 9;
+
+    private static LocalDate parseDateParam(String raw) {
+        if (raw == null || raw.isEmpty()) return null;
+        String v = raw;
+        if (v.contains("T")) v = v.substring(0, v.indexOf('T'));
+        return LocalDate.parse(v);
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static Integer parseSeatParam(String seat) {
+        try {
+            if (seat != null && !seat.isEmpty()) return Integer.parseInt(seat);
+        } catch (NumberFormatException ignored) {}
+        return null;
+    }
+
+    private List<Car> filterByDateRange(CarDAO carDAO, CarAvailabilityDAO availabilityDAO, BookingDAO bookingDAO,
+                                        LocalDate pickupTime, LocalDate returnTime, Integer seatRequested) {
+        List<Car> resultList = new ArrayList<>();
+        List<Car> candidates = carDAO.getAllCars();
+        for (Car car : candidates) {
+            if (car == null) continue;
+            if (car.getStatus() != null && !"AVAILABLE".equalsIgnoreCase(car.getStatus())) continue;
+            if (seatRequested != null) {
+                if (car.getSeats() == null || car.getSeats() < seatRequested) continue;
+            }
+            if (!availabilityDAO.isCarAvailableForRange(car.getId(), pickupTime, returnTime)) continue;
+            if (bookingDAO.hasOverlappingBooking(car.getId(), pickupTime, returnTime)) continue;
+            resultList.add(car);
+        }
+        return resultList;
+    }
+
+    private List<Car> listDefaultCars(CarDAO carDAO) {
+        List<Car> resultList = new ArrayList<>();
+        for (Car c : carDAO.getAllCars()) {
+            if (c != null && (c.getStatus() == null || !"RENTED".equalsIgnoreCase(c.getStatus()))) {
+                resultList.add(c);
+            }
+        }
+        return resultList;
+    }
+
+    private void setPaginationLinkParams(HttpServletRequest request, String pickup, String ret, String seat, String start, String end) {
+        request.setAttribute("paginationPickup", pickup != null ? pickup : "");
+        request.setAttribute("paginationReturn", ret != null ? ret : "");
+        request.setAttribute("paginationSeat", seat != null ? seat : "");
+        request.setAttribute("paginationStart", start != null ? start : "");
+        request.setAttribute("paginationEnd", end != null ? end : "");
+    }
+
+    private void applyCarListPagination(List<Car> fullList, HttpServletRequest request) {
+        String carStatus = request.getParameter("carStatus");
+        if (carStatus != null && carStatus.trim().isEmpty()) carStatus = null;
+
+        List<Car> filtered = new ArrayList<>();
+        if (carStatus == null) {
+            filtered.addAll(fullList);
+        } else {
+            for (Car c : fullList) {
+                if (c != null && carStatus.equalsIgnoreCase(c.getStatus())) filtered.add(c);
+            }
+        }
+
+        int page = 1;
+        try {
+            String p = request.getParameter("page");
+            if (p != null && !p.isEmpty()) page = Math.max(1, Integer.parseInt(p));
+        } catch (NumberFormatException ignored) {}
+
+        int total = filtered.size();
+        int totalPages = total <= 0 ? 1 : (int) Math.ceil((double) total / CAR_LIST_PAGE_SIZE);
+        page = Math.min(page, totalPages);
+        int from = (page - 1) * CAR_LIST_PAGE_SIZE;
+        List<Car> pageList = new ArrayList<>();
+        if (from < total) {
+            pageList.addAll(filtered.subList(from, Math.min(from + CAR_LIST_PAGE_SIZE, total)));
+        }
+
+        request.setAttribute("CarList", pageList);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalCarCount", total);
+        request.setAttribute("carStatusFilter", carStatus != null ? carStatus : "");
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Nếu home.jsp gửi start/end (datetime-local), ta lọc theo availability theo khoảng ngày.
         String startStr = request.getParameter("start");
         String endStr = request.getParameter("end");
+        String pickupGet = request.getParameter("pickupTime");
+        String returnGet = request.getParameter("returnTime");
+        String seatStr = request.getParameter("seat");
 
         CarDAO carDAO = new CarDAO();
         CarAvailabilityDAO availabilityDAO = new CarAvailabilityDAO();
@@ -77,169 +124,109 @@ public class SearchCarServlet extends HttpServlet {
 
         LocalDate pickupTime = null;
         LocalDate returnTime = null;
+        Integer seatRequested = parseSeatParam(seatStr);
+
         try {
-            if (startStr != null && !startStr.isEmpty()) {
-                String v = startStr;
-                if (v.contains("T")) v = v.substring(0, v.indexOf('T'));
-                pickupTime = LocalDate.parse(v);
-            }
-            if (endStr != null && !endStr.isEmpty()) {
-                String v = endStr;
-                if (v.contains("T")) v = v.substring(0, v.indexOf('T'));
-                returnTime = LocalDate.parse(v);
+            if (pickupGet != null && !pickupGet.isEmpty() && returnGet != null && !returnGet.isEmpty()) {
+                pickupTime = parseDateParam(pickupGet);
+                returnTime = parseDateParam(returnGet);
+            } else if (startStr != null && !startStr.isEmpty() && endStr != null && !endStr.isEmpty()) {
+                pickupTime = parseDateParam(startStr);
+                returnTime = parseDateParam(endStr);
+                seatRequested = null;
             }
         } catch (Exception ignored) {
+            pickupTime = null;
+            returnTime = null;
         }
 
-        List<Car> resultList = new ArrayList<>();
+        List<Car> resultList;
         String error = null;
 
         if (pickupTime != null && returnTime != null && !returnTime.isBefore(pickupTime)) {
-            List<Car> candidates = carDAO.getAllCars();
-            for (Car car : candidates) {
-                if (car == null) continue;
-                if (car.getStatus() != null && !"AVAILABLE".equalsIgnoreCase(car.getStatus())) {
-                    continue;
-                }
-
-                boolean available = availabilityDAO.isCarAvailableForRange(car.getId(), pickupTime, returnTime);
-                if (!available) continue;
-
-                boolean hasConflict = bookingDAO.hasOverlappingBooking(car.getId(), pickupTime, returnTime);
-                if (hasConflict) continue;
-
-                resultList.add(car);
-            }
+            resultList = filterByDateRange(carDAO, availabilityDAO, bookingDAO, pickupTime, returnTime, seatRequested);
             if (resultList.isEmpty()) {
                 error = "Không tìm thấy kết quả phù hợp";
             }
         } else {
-            // Trường hợp chưa có start/end: hiển thị danh sách xe hiện có
-            List<Car> list = carDAO.getAllCars();
-            for (Car c : list) {
-                if (c != null && (c.getStatus() == null || !"RENTED".equalsIgnoreCase(c.getStatus()))) {
-                    resultList.add(c);
-                }
-            }
+            resultList = listDefaultCars(carDAO);
         }
 
+        setPaginationLinkParams(request,
+                pickupGet != null ? pickupGet : "",
+                returnGet != null ? returnGet : "",
+                seatStr != null ? seatStr : "",
+                startStr != null ? startStr : "",
+                endStr != null ? endStr : "");
+
         request.setAttribute("error", error);
-        request.setAttribute("CarList", resultList);
         request.setAttribute("pickupTime", pickupTime);
         request.setAttribute("returnTime", returnTime);
+        applyCarListPagination(resultList, request);
 
         HoldCleanupScheduler.start();
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
-        dispatcher.forward(request, response);
-
+        request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp").forward(request, response);
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
+
         String pickupStr = request.getParameter("pickupTime");
-        LocalDate pickupTime = null;
-        try {
-            if (pickupStr != null && !pickupStr.isEmpty()) {
-                String v = pickupStr;
-                if (v.contains("T")) v = v.substring(0, v.indexOf('T'));
-                pickupTime = LocalDate.parse(v);
-            }
-        } catch (Exception e) {
-            System.out.println("pickupTime null hoặc sai định dạng, bỏ qua");
-        }
         String returnStr = request.getParameter("returnTime");
+        String seat = request.getParameter("seat");
+
+        LocalDate pickupTime = null;
         LocalDate returnTime = null;
         try {
-            if (returnStr != null && !returnStr.isEmpty()) {
-                String v = returnStr;
-                if (v.contains("T")) v = v.substring(0, v.indexOf('T'));
-                returnTime = LocalDate.parse(v);
-            }
+            if (pickupStr != null && !pickupStr.isEmpty()) pickupTime = parseDateParam(pickupStr);
+            if (returnStr != null && !returnStr.isEmpty()) returnTime = parseDateParam(returnStr);
         } catch (Exception e) {
-            System.out.println("returnTime null hoặc sai định dạng, bỏ qua");
+            pickupTime = null;
+            returnTime = null;
         }
+
         String error = null;
         if (pickupTime == null || returnTime == null) {
             error = "Vui lòng nhập đủ ngày nhận và trả xe";
         } else if (returnTime.isBefore(pickupTime)) {
             error = "Ngày trả xe phải sau ngày nhận";
         }
+
         CarDAO carDAO = new CarDAO();
         CarAvailabilityDAO availabilityDAO = new CarAvailabilityDAO();
         BookingDAO bookingDAO = new BookingDAO();
+        Integer seatRequested = parseSeatParam(seat);
 
-        List<Car> resultList = new ArrayList<>();
-
-        Integer seatRequested = null;
-        String seat = request.getParameter("seat");
-        try {
-            if (seat != null && !seat.isEmpty()) {
-                seatRequested = Integer.parseInt(seat);
-            }
-        } catch (Exception ignored) {
-        }
-
+        List<Car> resultList;
         if (error == null) {
-            // Lọc theo khoảng ngày người dùng nhập:
-            // 1) phải có car_availability.is_available = 1 bao phủ toàn bộ khoảng
-            // 2) không bị booking trùng (PENDING/APPROVED)
-            List<Car> candidates = carDAO.getAllCars();
-            for (Car car : candidates) {
-                if (car == null) continue;
-                if (car.getStatus() != null && !"AVAILABLE".equalsIgnoreCase(car.getStatus())) {
-                    continue;
-                }
-                Integer carSeats = car.getSeats();
-                if (seatRequested != null) {
-                    if (carSeats == null || carSeats < seatRequested) continue;
-                }
-
-                boolean available = availabilityDAO.isCarAvailableForRange(car.getId(), pickupTime, returnTime);
-                if (!available) continue;
-
-                boolean hasConflict = bookingDAO.hasOverlappingBooking(car.getId(), pickupTime, returnTime);
-                if (hasConflict) continue;
-
-                resultList.add(car);
-            }
-
+            resultList = filterByDateRange(carDAO, availabilityDAO, bookingDAO, pickupTime, returnTime, seatRequested);
             if (resultList.isEmpty()) {
                 error = "Không tìm thấy kết quả phù hợp";
             }
         } else {
-            // Nếu nhập sai ngày thì trả về danh sách xe hiện có (giữ UX như code cũ)
-            resultList = carDAO.getAllCars();
+            resultList = listDefaultCars(carDAO);
         }
 
-        request.setAttribute("error", error);
-        request.setAttribute("CarList", resultList);  // CHỈ DÙNG 1 BIẾN
+        setPaginationLinkParams(request,
+                pickupStr != null ? pickupStr : "",
+                returnStr != null ? returnStr : "",
+                seat != null ? seat : "",
+                "",
+                "");
+
         request.setAttribute("error", error);
         request.setAttribute("pickupTime", pickupTime);
         request.setAttribute("returnTime", returnTime);
-        request.setAttribute("CarList", resultList);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp");
-        dispatcher.forward(request, response);
+        applyCarListPagination(resultList, request);
+
+        request.getRequestDispatcher("/WEB-INF/views/car/SearchCar.jsp").forward(request, response);
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "Search cars with pagination";
+    }
 }

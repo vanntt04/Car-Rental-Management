@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <!DOCTYPE html>
 <html lang="vi">
@@ -241,22 +242,51 @@
         <main class="container my-5">
             <div class="row">
                 <div class="col-12 mb-4">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                        <h3 class="fw-bold m-0">Danh sách xe </h3>
-                        <form action="${ctx}/filter" method="get" class="d-flex gap-2">
-                            <select name="brand" class="form-select rounded-3 border-secondary-subtle">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                        <div>
+                            <h3 class="fw-bold m-0">Danh sách xe</h3>
+                            <p class="text-secondary small mb-0 mt-1">
+                                Tổng: <strong>${not empty totalCarCount ? totalCarCount : fn:length(CarList)}</strong> xe
+                            </p>
+                        </div>
+                        <form action="${ctx}/searchcar" method="get" class="d-flex flex-wrap gap-2 align-items-center">
+                            <c:if test="${not empty param.pickupTime}"><input type="hidden" name="pickupTime" value="${param.pickupTime}"/></c:if>
+                            <c:if test="${not empty param.returnTime}"><input type="hidden" name="returnTime" value="${param.returnTime}"/></c:if>
+                            <c:if test="${not empty param.seat}"><input type="hidden" name="seat" value="${param.seat}"/></c:if>
+                            <c:if test="${not empty param.start}"><input type="hidden" name="start" value="${param.start}"/></c:if>
+                            <c:if test="${not empty param.end}"><input type="hidden" name="end" value="${param.end}"/></c:if>
+                            <input type="hidden" name="page" value="1"/>
+                            <label class="visually-hidden" for="carStatusSel">Trạng thái xe</label>
+                            <select id="carStatusSel" name="carStatus" class="form-select rounded-3 border-secondary-subtle" style="min-width:12rem;">
+                                <option value="" ${empty carStatusFilter ? 'selected' : ''}>Tất cả trạng thái</option>
+                                <option value="AVAILABLE" ${carStatusFilter == 'AVAILABLE' ? 'selected' : ''}>AVAILABLE</option>
+                                <option value="RENTED" ${carStatusFilter == 'RENTED' ? 'selected' : ''}>RENTED</option>
+                                <option value="MAINTENANCE" ${carStatusFilter == 'MAINTENANCE' ? 'selected' : ''}>MAINTENANCE</option>
+                            </select>
+                            <button type="submit" class="btn btn-outline-primary rounded-3"><i class="bi bi-funnel me-1"></i> Lọc theo trạng thái</button>
+                        </form>
+                    </div>
+                    <div class="d-flex justify-content-end flex-wrap gap-2 mt-3">
+                        <form action="${ctx}/filter" method="get" class="d-flex gap-2 flex-wrap align-items-center">
+                            <c:if test="${not empty param.pickupTime}"><input type="hidden" name="pickupTime" value="${param.pickupTime}"/></c:if>
+                            <c:if test="${not empty param.returnTime}"><input type="hidden" name="returnTime" value="${param.returnTime}"/></c:if>
+                            <c:if test="${not empty param.seat}"><input type="hidden" name="seat" value="${param.seat}"/></c:if>
+                            <c:if test="${not empty param.start}"><input type="hidden" name="start" value="${param.start}"/></c:if>
+                            <c:if test="${not empty param.end}"><input type="hidden" name="end" value="${param.end}"/></c:if>
+                            <c:if test="${not empty carStatusFilter}"><input type="hidden" name="carStatus" value="${carStatusFilter}"/></c:if>
+                            <select name="brand" class="form-select rounded-3 border-secondary-subtle" style="min-width:10rem;">
                                 <option value="">Hãng xe</option>
                                 <c:forEach var="brand" items="${BrandList}">
                                     <option value="${brand}">${brand}</option>
                                 </c:forEach>
                             </select>
-                            <select name="price" class="form-select rounded-3 border-secondary-subtle">
+                            <select name="price" class="form-select rounded-3 border-secondary-subtle" style="min-width:10rem;">
                                 <option value="">Giá thuê</option>
                                 <option value="0-1000000">Dưới 1 triệu</option>
                                 <option value="1000000-2000000">1 - 2 triệu</option>
                                 <option value="2000000-5000000">Trên 2 triệu</option>
                             </select>
-                            <button class="btn btn-outline-dark rounded-3">Lọc</button>
+                            <button type="submit" class="btn btn-outline-dark rounded-3">Lọc hãng / giá</button>
                         </form>
                     </div>
                 </div>
@@ -294,6 +324,58 @@
                         </c:forEach>
                     </div>
                 </div>
+                <c:if test="${not empty totalPages && totalPages > 1}">
+                    <div class="col-12 mt-4">
+                        <nav aria-label="Phân trang">
+                            <ul class="pagination justify-content-center flex-wrap mb-0">
+                                <c:if test="${currentPage > 1}">
+                                    <li class="page-item">
+                                        <c:url var="puPrev" value="/searchcar">
+                                            <c:param name="page" value="${currentPage - 1}"/>
+                                            <c:if test="${not empty carStatusFilter}"><c:param name="carStatus" value="${carStatusFilter}"/></c:if>
+                                            <c:if test="${not empty paginationPickup}"><c:param name="pickupTime" value="${paginationPickup}"/></c:if>
+                                            <c:if test="${not empty paginationReturn}"><c:param name="returnTime" value="${paginationReturn}"/></c:if>
+                                            <c:if test="${not empty paginationSeat}"><c:param name="seat" value="${paginationSeat}"/></c:if>
+                                            <c:if test="${not empty paginationStart}"><c:param name="start" value="${paginationStart}"/></c:if>
+                                            <c:if test="${not empty paginationEnd}"><c:param name="end" value="${paginationEnd}"/></c:if>
+                                        </c:url>
+                                        <a class="page-link" href="${puPrev}">Trước</a>
+                                    </li>
+                                </c:if>
+                                <c:forEach begin="1" end="${totalPages}" var="tp">
+                                    <c:if test="${tp == 1 || tp == totalPages || (tp >= currentPage - 1 && tp <= currentPage + 1)}">
+                                        <li class="page-item ${tp == currentPage ? 'active' : ''}">
+                                            <c:url var="puP" value="/searchcar">
+                                                <c:param name="page" value="${tp}"/>
+                                                <c:if test="${not empty carStatusFilter}"><c:param name="carStatus" value="${carStatusFilter}"/></c:if>
+                                                <c:if test="${not empty paginationPickup}"><c:param name="pickupTime" value="${paginationPickup}"/></c:if>
+                                                <c:if test="${not empty paginationReturn}"><c:param name="returnTime" value="${paginationReturn}"/></c:if>
+                                                <c:if test="${not empty paginationSeat}"><c:param name="seat" value="${paginationSeat}"/></c:if>
+                                                <c:if test="${not empty paginationStart}"><c:param name="start" value="${paginationStart}"/></c:if>
+                                                <c:if test="${not empty paginationEnd}"><c:param name="end" value="${paginationEnd}"/></c:if>
+                                            </c:url>
+                                            <a class="page-link" href="${puP}">${tp}</a>
+                                        </li>
+                                    </c:if>
+                                </c:forEach>
+                                <c:if test="${currentPage < totalPages}">
+                                    <li class="page-item">
+                                        <c:url var="puNext" value="/searchcar">
+                                            <c:param name="page" value="${currentPage + 1}"/>
+                                            <c:if test="${not empty carStatusFilter}"><c:param name="carStatus" value="${carStatusFilter}"/></c:if>
+                                            <c:if test="${not empty paginationPickup}"><c:param name="pickupTime" value="${paginationPickup}"/></c:if>
+                                            <c:if test="${not empty paginationReturn}"><c:param name="returnTime" value="${paginationReturn}"/></c:if>
+                                            <c:if test="${not empty paginationSeat}"><c:param name="seat" value="${paginationSeat}"/></c:if>
+                                            <c:if test="${not empty paginationStart}"><c:param name="start" value="${paginationStart}"/></c:if>
+                                            <c:if test="${not empty paginationEnd}"><c:param name="end" value="${paginationEnd}"/></c:if>
+                                        </c:url>
+                                        <a class="page-link" href="${puNext}">Sau</a>
+                                    </li>
+                                </c:if>
+                            </ul>
+                        </nav>
+                    </div>
+                </c:if>
             </div>
         </main>
 

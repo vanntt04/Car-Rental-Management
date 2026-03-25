@@ -47,9 +47,29 @@
         <div class="error"><c:out value="${error}"/></div>
     </c:if>
 
+    <form method="get" action="<c:url value='/users'/>" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:1.25rem; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        <input type="hidden" name="page" value="1"/>
+        <input type="text" name="keyword" placeholder="Tên, username, email..." value="<c:out value='${keyword}'/>"
+               style="flex:1; min-width:180px; padding:8px 12px; border:1px solid #e2e8f0; border-radius:6px; font-size:14px;">
+        <select name="status" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:6px; font-size:14px; min-width:160px;">
+            <option value="" ${empty statusFilter ? 'selected' : ''}>Mọi trạng thái</option>
+            <option value="ACTIVE" ${statusFilter == 'ACTIVE' ? 'selected' : ''}>ACTIVE</option>
+            <option value="BLOCKED" ${statusFilter == 'BLOCKED' ? 'selected' : ''}>BLOCKED</option>
+        </select>
+        <select name="role" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:6px; font-size:14px; min-width:140px;">
+            <option value="" ${empty roleFilter ? 'selected' : ''}>Mọi vai trò</option>
+            <option value="ADMIN" ${roleFilter == 'ADMIN' ? 'selected' : ''}>ADMIN</option>
+            <option value="OWNER" ${roleFilter == 'OWNER' ? 'selected' : ''}>OWNER</option>
+            <option value="CUSTOMER" ${roleFilter == 'CUSTOMER' ? 'selected' : ''}>CUSTOMER</option>
+        </select>
+        <button type="submit" style="padding:8px 16px; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:14px;">Lọc</button>
+    </form>
+
+    <p style="color:#64748b; font-size:14px; margin-bottom:1rem;">Tổng: <strong>${totalCount != null ? totalCount : 0}</strong> người dùng</p>
+
     <c:choose>
         <c:when test="${empty users}">
-            <p class="empty">Chưa có người dùng nào.</p>
+            <p class="empty">Không có người dùng nào khớp bộ lọc.</p>
         </c:when>
         <c:otherwise>
             <table>
@@ -61,6 +81,7 @@
                     <th>Email</th>
                     <th>Điện thoại</th>
                     <th>Vai trò</th>
+                    <th>Trạng thái</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -72,10 +93,52 @@
                         <td><c:out value="${u.email}"/></td>
                         <td><c:out value="${u.phone}"/></td>
                         <td><c:out value="${u.role}"/></td>
+                        <td><c:out value="${u.active ? 'Hoạt động' : 'Đã khóa'}"/></td>
                     </tr>
                 </c:forEach>
                 </tbody>
             </table>
+
+            <c:if test="${not empty totalPages && totalPages > 1}">
+                <nav style="margin-top:1.25rem; display:flex; flex-wrap:wrap; justify-content:center; gap:6px;" aria-label="Phân trang">
+                    <c:if test="${currentPage > 1}">
+                        <c:url var="upPrev" value="/users">
+                            <c:param name="page" value="${currentPage - 1}"/>
+                            <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                            <c:if test="${not empty roleFilter}"><c:param name="role" value="${roleFilter}"/></c:if>
+                            <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                        </c:url>
+                        <a href="${upPrev}" style="padding:7px 11px; border-radius:6px; border:1px solid #e2e8f0; text-decoration:none; color:#334155; background:#fff;">Trước</a>
+                    </c:if>
+                    <c:forEach begin="1" end="${totalPages}" var="tp">
+                        <c:if test="${tp == 1 || tp == totalPages || (tp >= currentPage - 1 && tp <= currentPage + 1)}">
+                            <c:choose>
+                                <c:when test="${tp == currentPage}">
+                                    <span style="padding:7px 11px; border-radius:6px; background:#2563eb; color:#fff;">${tp}</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:url var="upP" value="/users">
+                                        <c:param name="page" value="${tp}"/>
+                                        <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                        <c:if test="${not empty roleFilter}"><c:param name="role" value="${roleFilter}"/></c:if>
+                                        <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                                    </c:url>
+                                    <a href="${upP}" style="padding:7px 11px; border-radius:6px; border:1px solid #e2e8f0; text-decoration:none; color:#334155; background:#fff;">${tp}</a>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:if>
+                    </c:forEach>
+                    <c:if test="${currentPage < totalPages}">
+                        <c:url var="upNext" value="/users">
+                            <c:param name="page" value="${currentPage + 1}"/>
+                            <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                            <c:if test="${not empty roleFilter}"><c:param name="role" value="${roleFilter}"/></c:if>
+                            <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                        </c:url>
+                        <a href="${upNext}" style="padding:7px 11px; border-radius:6px; border:1px solid #e2e8f0; text-decoration:none; color:#334155; background:#fff;">Sau</a>
+                    </c:if>
+                </nav>
+            </c:if>
         </c:otherwise>
     </c:choose>
 </div>

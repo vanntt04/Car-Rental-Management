@@ -235,6 +235,35 @@ public class CarDAO {
         return cars;
     }
 
+    public int countSelectCarsByUser(int userId) {
+        String sql = "SELECT COUNT(*) FROM car_select WHERE user_id = ?";
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error countSelectCarsByUser: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public List<Car> getSelectCarsByUserPage(int userId, int offset, int limit) {
+        String sql = "SELECT c.* FROM cars c INNER JOIN car_select cs ON c.id = cs.car_id WHERE cs.user_id = ? ORDER BY c.id DESC LIMIT ? OFFSET ?";
+        List<Car> cars = new ArrayList<>();
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            pstmt.setInt(2, limit);
+            pstmt.setInt(3, offset);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) cars.add(mapResultSetToCar(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getSelectCarsByUserPage: " + e.getMessage());
+        }
+        return cars;
+    }
+
     /**
      * Lấy danh sách xe còn hoạt động (cho khách xem danh sách công khai).
      * Nếu bảng có cột is_active thì lọc theo đó; ngược lại lấy tất cả.

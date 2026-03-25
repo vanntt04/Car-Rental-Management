@@ -18,6 +18,9 @@ import java.util.List;
  */
 @WebServlet(name = "UserServlet", urlPatterns = "/users")
 public class UserServlet extends HttpServlet {
+
+    private static final int PAGE_SIZE = 10;
+
     private UserDAO userDAO;
 
     @Override
@@ -64,10 +67,35 @@ public class UserServlet extends HttpServlet {
      */
     private void showUserList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        List<User> users = userDAO.getAllUsers();
+
+        String statusFilter = request.getParameter("status");
+        if (statusFilter != null && statusFilter.trim().isEmpty()) statusFilter = null;
+        String roleFilter = request.getParameter("role");
+        if (roleFilter != null && roleFilter.trim().isEmpty()) roleFilter = null;
+        String keyword = request.getParameter("keyword");
+        if (keyword != null && keyword.trim().isEmpty()) keyword = null;
+
+        int page = 1;
+        try {
+            String p = request.getParameter("page");
+            if (p != null && !p.isEmpty()) page = Math.max(1, Integer.parseInt(p));
+        } catch (NumberFormatException ignored) {}
+
+        int total = userDAO.countUsers(statusFilter, roleFilter, keyword);
+        int totalPages = total <= 0 ? 1 : (int) Math.ceil((double) total / PAGE_SIZE);
+        page = Math.min(page, totalPages);
+
+        List<User> users = userDAO.searchUsersPage(
+                statusFilter, roleFilter, keyword, (page - 1) * PAGE_SIZE, PAGE_SIZE);
+
         request.setAttribute("users", users);
-        
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalCount", total);
+        request.setAttribute("statusFilter", statusFilter != null ? statusFilter : "");
+        request.setAttribute("roleFilter", roleFilter != null ? roleFilter : "");
+        request.setAttribute("keyword", keyword != null ? keyword : "");
+
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/user/list.jsp");
         dispatcher.forward(request, response);
     }

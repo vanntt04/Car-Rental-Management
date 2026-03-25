@@ -71,6 +71,64 @@ public class BookingDAO {
         return book;
     }
 
+    /** Đếm booking của khách, lọc theo booking_status (null = tất cả). */
+    public int countBookingsByCustomer(int customerId, String statusFilter) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM bookings WHERE customer_id = ?");
+        try (Connection conn = dbConnection.getConnection()) {
+            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                sql.append(" AND booking_status = ?");
+                try (PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+                    pstmt.setInt(1, customerId);
+                    pstmt.setString(2, statusFilter.trim());
+                    ResultSet rs = pstmt.executeQuery();
+                    if (rs.next()) return rs.getInt(1);
+                }
+            } else {
+                try (PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+                    pstmt.setInt(1, customerId);
+                    ResultSet rs = pstmt.executeQuery();
+                    if (rs.next()) return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error countBookingsByCustomer: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    /** Danh sách booking khách có phân trang, sắp xếp mới nhất trước. */
+    public List<Booking> getBookingsByCustomerPage(int customerId, String statusFilter, int offset, int limit) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM bookings WHERE customer_id = ?");
+        List<Booking> list = new ArrayList<>();
+        try (Connection conn = dbConnection.getConnection()) {
+            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                sql.append(" AND booking_status = ? ORDER BY booking_id DESC LIMIT ? OFFSET ?");
+                try (PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+                    pstmt.setInt(1, customerId);
+                    pstmt.setString(2, statusFilter.trim());
+                    pstmt.setInt(3, limit);
+                    pstmt.setInt(4, offset);
+                    try (ResultSet rs = pstmt.executeQuery()) {
+                        while (rs.next()) list.add(mapResultSetToBook(rs));
+                    }
+                }
+            } else {
+                sql.append(" ORDER BY booking_id DESC LIMIT ? OFFSET ?");
+                try (PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+                    pstmt.setInt(1, customerId);
+                    pstmt.setInt(2, limit);
+                    pstmt.setInt(3, offset);
+                    try (ResultSet rs = pstmt.executeQuery()) {
+                        while (rs.next()) list.add(mapResultSetToBook(rs));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getBookingsByCustomerPage: " + e.getMessage());
+        }
+        return list;
+    }
+
     /** Alias cho updateStatus - giữ tương thích */
     public void updateBookingStatus(int bookingId, String status) {
         updateStatus(bookingId, status);

@@ -32,6 +32,9 @@ import java.util.Map;
 @WebServlet(name = "MyBookingServlet", urlPatterns = "/mybooking")
 public class MyBookingServlet extends HttpServlet {
 
+    private static final int BOOK_PAGE_SIZE = 6;
+    private static final int HOLD_PAGE_SIZE = 6;
+
     /**
      * Bước 1–6 (0 = hủy/từ chối). Luồng: thanh toán → chủ duyệt → giao xe → trả xe → hoàn thành.
      */
@@ -71,8 +74,28 @@ public class MyBookingServlet extends HttpServlet {
             return;
         }
         int userId = (int) userIdObj;
-        List<Car> list_select = car.getAllSelectCars(userId);
-        List<Booking> list_book = book.getAllBookCars(userId);
+
+        String bookingStatus = request.getParameter("bookingStatus");
+        if (bookingStatus != null && bookingStatus.trim().isEmpty()) bookingStatus = null;
+
+        int bookPage = 1;
+        try {
+            String bp = request.getParameter("bookPage");
+            if (bp != null && !bp.isEmpty()) bookPage = Math.max(1, Integer.parseInt(bp));
+        } catch (NumberFormatException ignored) {}
+
+        int holdPage = 1;
+        try {
+            String hp = request.getParameter("holdPage");
+            if (hp != null && !hp.isEmpty()) holdPage = Math.max(1, Integer.parseInt(hp));
+        } catch (NumberFormatException ignored) {}
+
+        int bookTotal = book.countBookingsByCustomer(userId, bookingStatus);
+        int bookTotalPages = bookTotal <= 0 ? 1 : (int) Math.ceil((double) bookTotal / BOOK_PAGE_SIZE);
+        bookPage = Math.min(bookPage, bookTotalPages);
+        int bookOffset = (bookPage - 1) * BOOK_PAGE_SIZE;
+
+        List<Booking> list_book = book.getBookingsByCustomerPage(userId, bookingStatus, bookOffset, BOOK_PAGE_SIZE);
         List<Car> book_car = new ArrayList<>();
         List<Map<String, Object>> bookingRows = new ArrayList<>();
         for (Booking bk : list_book) {
@@ -87,6 +110,20 @@ public class MyBookingServlet extends HttpServlet {
             row.put("totalPrice", bk.getTotal_price());
             bookingRows.add(row);
         }
+
+        int holdTotal = car.countSelectCarsByUser(userId);
+        int holdTotalPages = holdTotal <= 0 ? 1 : (int) Math.ceil((double) holdTotal / HOLD_PAGE_SIZE);
+        holdPage = Math.min(holdPage, holdTotalPages);
+        int holdOffset = (holdPage - 1) * HOLD_PAGE_SIZE;
+        List<Car> list_select = car.getSelectCarsByUserPage(userId, holdOffset, HOLD_PAGE_SIZE);
+
+        request.setAttribute("bookingStatusFilter", bookingStatus != null ? bookingStatus : "");
+        request.setAttribute("bookCurrentPage", bookPage);
+        request.setAttribute("bookTotalPages", bookTotalPages);
+        request.setAttribute("bookTotalCount", bookTotal);
+        request.setAttribute("holdCurrentPage", holdPage);
+        request.setAttribute("holdTotalPages", holdTotalPages);
+        request.setAttribute("holdTotalCount", holdTotal);
         request.setAttribute("Select-List", list_select);
         request.setAttribute("Book-List", list_book);
         request.setAttribute("Book-Car", book_car);

@@ -262,6 +262,80 @@ public class UserDAO {
         }
     }
 
+    /** statusFilter: ACTIVE | BLOCKED | null; roleFilter: CUSTOMER | OWNER | ADMIN | null */
+    public int countUsers(String statusFilter, String roleFilter, String keyword) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(DISTINCT u.user_id) FROM users u "
+                        + "LEFT JOIN user_roles ur ON u.user_id = ur.user_id "
+                        + "LEFT JOIN roles r ON ur.role_id = r.role_id WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+        appendUserListFilters(sql, params, statusFilter, roleFilter, keyword);
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            bindUserListParams(pstmt, params);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error countUsers: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public List<User> searchUsersPage(String statusFilter, String roleFilter, String keyword, int offset, int limit) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT DISTINCT u.user_id, u.username, u.full_name, u.email, u.password, u.phone, u.status, u.created_at "
+                        + "FROM users u "
+                        + "LEFT JOIN user_roles ur ON u.user_id = ur.user_id "
+                        + "LEFT JOIN roles r ON ur.role_id = r.role_id WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+        appendUserListFilters(sql, params, statusFilter, roleFilter, keyword);
+        sql.append(" ORDER BY u.user_id DESC LIMIT ? OFFSET ?");
+        params.add(limit);
+        params.add(offset);
+        List<User> users = new ArrayList<>();
+        try (Connection conn = dbConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            bindUserListParams(pstmt, params);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    User u = mapResultSetToUser(rs);
+                    try {
+                        loadUserRole(conn, u);
+                    } catch (Exception ignored) {
+                    }
+                    users.add(u);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error searchUsersPage: " + e.getMessage());
+        }
+        return users;
+    }
+
+    private void appendUserListFilters(StringBuilder sql, List<Object> params, String statusFilter, String roleFilter, String keyword) {
+        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            sql.append(" AND UPPER(u.status) = ?");
+            params.add(statusFilter.trim().toUpperCase());
+        }
+        if (roleFilter != null && !roleFilter.trim().isEmpty()) {
+            sql.append(" AND UPPER(r.role_name) = ?");
+            params.add(roleFilter.trim().toUpperCase());
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (u.full_name LIKE ? OR u.username LIKE ? OR u.email LIKE ?)");
+            String k = "%" + keyword.trim() + "%";
+            params.add(k);
+            params.add(k);
+            params.add(k);
+        }
+    }
+
+    private void bindUserListParams(PreparedStatement pstmt, List<Object> params) throws SQLException {
+        int i = 1;
+        for (Object o : params) {
+            pstmt.setObject(i++, o);
+        }
+    }
+
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
 
         User user = new User();
