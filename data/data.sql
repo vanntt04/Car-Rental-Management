@@ -201,6 +201,31 @@ VALUES
 (15,9,'2026-04-15','2026-04-18',3,1500000,'APPROVED');
 
 -- =============================
+-- CAR_RETURNS
+-- =============================
+CREATE TABLE car_returns (
+    return_id INT AUTO_INCREMENT PRIMARY KEY,
+    booking_id INT NOT NULL UNIQUE, -- Mỗi booking chỉ có 1 lượt trả xe
+    return_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Tình trạng xe khi trả
+    fuel_level INT COMMENT 'Phần trăm xăng/dầu còn lại (0-100)',
+    current_mileage INT COMMENT 'Số km trên đồng hồ khi trả',
+    car_condition_notes TEXT COMMENT 'Ghi chú về trầy xước, hỏng hóc nếu có',
+    
+    -- Trạng thái xác nhận từ 2 phía
+    customer_confirmed BOOLEAN DEFAULT FALSE,
+    owner_confirmed BOOLEAN DEFAULT FALSE,
+    
+    -- Hình ảnh minh chứng lúc trả xe
+    return_image_url VARCHAR(500), 
+    
+    -- Phụ phí phát thêm (nếu trả muộn, thiếu xăng, làm hỏng đồ)
+    additional_fees DECIMAL(12,2) DEFAULT 0,
+    
+    FOREIGN KEY(booking_id) REFERENCES bookings(booking_id) ON DELETE CASCADE
+);
+-- =============================
 -- PAYMENTS
 -- =============================
 CREATE TABLE payments (

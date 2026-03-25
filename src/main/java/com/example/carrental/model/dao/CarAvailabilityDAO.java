@@ -12,6 +12,52 @@ public class CarAvailabilityDAO {
 
     private final DBConnection dbConnection = DBConnection.getInstance();
 
+    /**
+     * Kiểm tra xe có "available" bao phủ toàn bộ khoảng thời gian yêu cầu (theo DATE)
+     * hay không.
+     *
+     * Điều kiện phủ toàn bộ:
+     *   start_date <= requestedStart
+     *   AND end_date >= requestedEnd
+     *   AND is_available = 1
+     */
+    public boolean isCarAvailableForRange(int carId, LocalDate requestedStart, LocalDate requestedEnd) {
+        if (requestedStart == null || requestedEnd == null) return false;
+        // Nếu user nhập ngược ngày, coi như không hợp lệ
+        if (requestedEnd.isBefore(requestedStart)) return false;
+
+        // UX: nếu xe chưa có bất kỳ record car_availability nào thì mặc định coi là sẵn.
+        String anySql = "SELECT COUNT(*) FROM car_availability WHERE car_id = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(anySql)) {
+            ps.setInt(1, carId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error isCarAvailableForRange(anySql): " + e.getMessage());
+            // Nếu lỗi DB, chọn an toàn: coi như không sẵn.
+            return false;
+        }
+
+        String sql = "SELECT COUNT(*) FROM car_availability " +
+                "WHERE car_id = ? AND is_available = 1 AND start_date <= ? AND end_date >= ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, carId);
+            ps.setDate(2, Date.valueOf(requestedStart));
+            ps.setDate(3, Date.valueOf(requestedEnd));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error isCarAvailableForRange: " + e.getMessage());
+        }
+        return false;
+    }
+
     public List<CarAvailability> getByCarId(int carId) {
         List<CarAvailability> list = new ArrayList<>();
         String sql = "SELECT * FROM car_availability WHERE car_id = ? ORDER BY start_date ASC";

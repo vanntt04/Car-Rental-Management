@@ -1,6 +1,7 @@
 package com.example.carrental.model.entity;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Entity đại diện cho lịch sẵn có / không sẵn có của xe
@@ -69,5 +70,14 @@ public class CarAvailability {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    /** Chuỗi dd/MM/yyyy cho JSP (fmt:formatDate không hỗ trợ LocalDate) */
+    public String getFormattedStartDate() {
+        return startDate != null ? startDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+    }
+
+    public String getFormattedEndDate() {
+        return endDate != null ? endDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
     }
 }

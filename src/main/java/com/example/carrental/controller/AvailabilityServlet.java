@@ -70,7 +70,8 @@ public class AvailabilityServlet extends HttpServlet {
         av.setCarId(carId);
         av.setStartDate(LocalDate.parse(request.getParameter("startDate")));
         av.setEndDate(LocalDate.parse(request.getParameter("endDate")));
-        av.setAvailable(true);
+        String isAvail = request.getParameter("isAvailable");
+        av.setAvailable(isAvail == null || "1".equals(isAvail));
         av.setNote(request.getParameter("note"));
 
         availabilityDAO.add(av);

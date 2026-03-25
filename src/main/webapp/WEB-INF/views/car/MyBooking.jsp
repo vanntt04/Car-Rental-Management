@@ -259,7 +259,7 @@
                                                         <div class="d-flex justify-content-center gap-2">
                                                             <c:choose>
                                                                 <c:when test="${book.booking_status == 'APPROVED' || book.booking_status == 'PENDING'}">
-                                                                    <a href="invoice?id=${car.id}&book_id=${book.booking_id}" class="btn btn-sm btn-primary btn-action text-white">
+                                                                    <a href="${ctx}/invoice?book_id=${book.booking_id}&id=${car.id}" class="btn btn-sm btn-primary btn-action text-white">
                                                                         <i class="fa-solid fa-circle-info me-1"></i>Detail
                                                                     </a>
                                                                     <a href="remove?book_id=${book.booking_id}" class="btn btn-sm btn-light btn-action text-danger border" onclick="return confirm('Are you sure?')">

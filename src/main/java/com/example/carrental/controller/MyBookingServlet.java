@@ -16,13 +16,17 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.annotation.WebServlet;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Trang hiển thị danh sách booking của customer.
+ * URL: /mybooking
  *
  * @author PC
  */
+@WebServlet(name = "MyBookingServlet", urlPatterns = "/mybooking")
 public class MyBookingServlet extends HttpServlet {
 
     /**

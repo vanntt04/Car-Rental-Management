@@ -17,7 +17,8 @@ public class DBConnection {
     private String dbDriver;
     
     private static DBConnection instance;
-    
+    private static boolean driverLoaded = false;
+
     private DBConnection() {
         loadProperties();
         loadDriver();
@@ -98,16 +99,15 @@ public class DBConnection {
     }
     
     /**
-     * Load JDBC Driver
+     * Load JDBC Driver - không throw để app vẫn start được (lỗi sẽ xuất khi gọi getConnection)
      */
     private void loadDriver() {
         try {
-            Class.forName(dbDriver);
+            Class.forName(dbDriver != null ? dbDriver : "com.mysql.cj.jdbc.Driver");
+            driverLoaded = true;
             System.out.println("MySQL JDBC Driver loaded successfully");
         } catch (ClassNotFoundException e) {
-            System.err.println("ERROR: MySQL JDBC Driver not found!");
-            System.err.println("Please check if mysql-connector-j is in your classpath");
-            throw new RuntimeException("MySQL JDBC Driver not found: " + e.getMessage(), e);
+            System.err.println("WARN: MySQL JDBC Driver not found. DB operations will fail. " + e.getMessage());
         }
     }
     
@@ -128,6 +128,9 @@ public class DBConnection {
      * @throws SQLException nếu không thể kết nối
      */
     public Connection getConnection() throws SQLException {
+        if (!driverLoaded) {
+            throw new SQLException("MySQL JDBC Driver chưa load. Kiểm tra mysql-connector-j trong pom.xml.");
+        }
         try {
             Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
             System.out.println("Database connection established successfully");

@@ -7,16 +7,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang chủ - CarRental | Thuê xe tự lái giá tốt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="${ctx}/assets/css/woox-customer.css" rel="stylesheet">
 </head>
-<body>
+<body style="font-family: 'Roboto', 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased;">
 <jsp:include page="layout/header.jsp">
     <jsp:param name="page" value="home"/>
 </jsp:include>
 
 <style>
+    body, .home-hero, .home-search, .home-card, .home-card h2, .home-card p, .btn-soft, .btn-fill, input, select, button, label, a { font-family: 'Roboto', 'Segoe UI', sans-serif !important; }
     .home-hero {
         border-radius: 18px;
         overflow: hidden;
@@ -57,41 +61,56 @@
         overflow: hidden;
     }
     .home-search .cell {
-        padding: 14px 16px;
+        padding: 18px 20px;
         border-right: 1px solid #f0f0f0;
         display: flex;
-        gap: 12px;
+        gap: 14px;
         align-items: center;
     }
     .home-search .cell:last-child { border-right: none; }
     .home-search .label {
         font-size: 12px;
-        color: #8a8a8a;
-        margin-bottom: 4px;
+        color: #6b7280;
+        margin-bottom: 6px;
+        font-weight: 500;
     }
     .home-search select,
     .home-search input {
         border: none;
         outline: none;
         width: 100%;
-        font-size: 14px;
-        color: #333;
+        font-size: 15px;
+        color: #1f2937;
         padding: 0;
         background: transparent;
+        font-weight: 500;
+    }
+    .home-search select:focus,
+    .home-search input:focus {
+        outline: none;
     }
     .home-search .date-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        gap: 12px;
+    }
+    .home-search .date-grid input {
+        padding: 2px 0;
     }
     .home-search .btn {
         border: none;
-        background: #41c17b;
+        background: linear-gradient(135deg, #22b3c1 0%, #1a9ba8 100%);
         color: #fff;
         font-weight: 700;
-        padding: 0 22px;
+        padding: 0 28px;
         border-radius: 0;
-        min-width: 120px;
+        min-width: 140px;
+        font-size: 16px;
+        transition: opacity 0.2s, transform 0.15s;
+    }
+    .home-search .btn:hover {
+        opacity: 0.95;
+        transform: scale(1.02);
     }
     .home-section {
         padding: 44px 0;
@@ -168,18 +187,7 @@
             <h1>Thuê xe tự lái tại Hà Nội</h1>
         </div>
 
-        <form class="home-search" action="${ctx}/cars" method="get">
-            <div class="cell">
-                <i class="bi bi-geo-alt" style="font-size: 18px; color: #8a8a8a;"></i>
-                <div style="width: 100%;">
-                    <div class="label">Địa điểm</div>
-                    <select name="location">
-                        <option value="Hà Nội">Hà Nội</option>
-                        <option value="Hồ Chí Minh">Hồ Chí Minh</option>
-                        <option value="Đà Nẵng">Đà Nẵng</option>
-                    </select>
-                </div>
-            </div>
+        <form class="home-search" action="${ctx}/searchcar" method="get">
             <div class="cell">
                 <i class="bi bi-calendar3" style="font-size: 18px; color: #8a8a8a;"></i>
                 <div style="width: 100%;">
@@ -198,9 +206,9 @@
         <div class="home-card">
             <div class="media" style="background-image:url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80');"></div>
             <div class="content">
-                <div style="text-align:center; color:#22b3c1; font-weight:800; letter-spacing:1px;">MIOTO</div>
-                <h2>Bạn muốn biết thêm về Mioto?</h2>
-                <p>Mioto kết nối khách hàng có nhu cầu thuê xe với hàng ngàn chủ xe ở Hà Nội và các tỉnh thành khác. Tối ưu trải nghiệm đặt xe nhanh, minh bạch và tiện lợi.</p>
+                <div style="text-align:center; color:#22b3c1; font-weight:800; letter-spacing:1px;">CarRental</div>
+                <h2>Bạn muốn biết thêm về CarRental?</h2>
+                <p>CarRental kết nối khách hàng có nhu cầu thuê xe với hàng ngàn chủ xe ở Hà Nội và các tỉnh thành khác. Tối ưu trải nghiệm đặt xe nhanh, minh bạch và tiện lợi.</p>
                 <div class="home-actions">
                     <a class="btn-fill" href="${ctx}/home#about">Tìm hiểu thêm</a>
                 </div>

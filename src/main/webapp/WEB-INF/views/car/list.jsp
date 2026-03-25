@@ -73,7 +73,7 @@
                                     <c:if test="${not empty car.transmission}"><span><i class="bi bi-gear"></i>${car.transmission == 'AUTO' ? 'Số tự động' : 'Số sàn'}</span></c:if>
                                     <c:if test="${not empty car.fuelType}"><span><i class="bi bi-fuel-pump"></i><c:choose><c:when test="${car.fuelType == 'PETROL'}">Xăng</c:when><c:when test="${car.fuelType == 'DIESEL'}">Dầu</c:when><c:when test="${car.fuelType == 'ELECTRIC'}">Điện</c:when><c:otherwise>${car.fuelType}</c:otherwise></c:choose></span></c:if>
                                 </div>
-                                <span class="main-button"><a href="${ctx}/cars?id=${car.id}">Xem chi tiết</a></span>
+                                <span class="main-button"><a href="${ctx}/searchcar?id=${car.id}">Xem chi tiết</a></span>
                             </div>
                         </div>
                     </c:forEach>

@@ -5,7 +5,7 @@
     <div class="container">
         <p>
             <a href="${ctx}/home">Trang chủ</a> &middot;
-            <a href="${ctx}/cars">Danh sách xe</a> &middot;
+            <a href="${ctx}/searchcar">Danh sách xe</a> &middot;
             <a href="${ctx}/home#about">Về chúng tôi</a> &middot;
             <a href="${ctx}/login">Đăng nhập</a>
         </p>

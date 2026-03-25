@@ -7,11 +7,9 @@ import com.example.carrental.model.entity.User;
 import com.example.carrental.model.dao.CarImageDAO;
 import com.example.carrental.model.dao.CarAvailabilityDAO;
 import com.example.carrental.model.dao.BookingDAO;
-import com.example.carrental.model.dao.BankAccountDAO;
 import com.example.carrental.model.entity.CarImage;
 import com.example.carrental.model.entity.CarAvailability;
 import com.example.carrental.model.entity.Booking;
-import com.example.carrental.model.entity.BankAccount;
 
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.*;
@@ -22,6 +20,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
+import jakarta.servlet.http.Part;
+import com.example.carrental.model.util.ImageUploadUtil;
 
 @MultipartConfig
 @WebServlet(name = "CarOwnerServlet", urlPatterns = {"/owner", "/owner/*"})
@@ -31,7 +31,6 @@ public class CarServlet extends HttpServlet {
     private CarImageDAO carImageDAO;
     private CarAvailabilityDAO availabilityDAO;
     private BookingDAO bookingDAO;
-    private BankAccountDAO bankAccountDAO;
 
     private static final int PAGE_SIZE = 5;
 
@@ -42,14 +41,16 @@ public class CarServlet extends HttpServlet {
         carImageDAO = new CarImageDAO();
         availabilityDAO = new CarAvailabilityDAO();
         bookingDAO = new BookingDAO();
-        bankAccountDAO = new BankAccountDAO();
-
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        //lấy phần đường dẫn phía sau URL mapping của Servlet
+        String pathInfo = request.getPathInfo();
+        String action = request.getParameter("action");
 
+<<<<<<< HEAD
         String action = request.getParameter("action");
 
         if (action == null) {
@@ -65,24 +66,79 @@ public class CarServlet extends HttpServlet {
             showBankAccountForm(request, response);
         }
 
+=======
+        if (pathInfo != null && !pathInfo.isEmpty()) {
+            if ("/new".equals(pathInfo)) {
+                showForm(request, response);
+                return;
+            }
+            if (pathInfo.startsWith("/edit/")) {
+                String idStr = pathInfo.substring(6).split("/")[0];
+                try {
+                    int id = Integer.parseInt(idStr);
+                    Car car = carDAO.getCarById(id);
+                    if (car != null) {
+                        request.setAttribute("car", car);
+                        request.getRequestDispatcher("/WEB-INF/views/owner/car-form-edit.jsp").forward(request, response);
+                    } else {
+                        listCars(request, response);
+                    }
+                } catch (NumberFormatException e) {
+                    listCars(request, response);
+                }
+                return;
+            }
+        }
+
+        if (action != null) {
+            if ("new".equals(action)) {
+                showForm(request, response);
+                return;
+            }
+            if ("edit".equals(action)) {
+                String idParam = request.getParameter("id");
+                if (idParam != null) {
+                    try {
+                        showEditForm(request, response);
+                        return;
+                    } catch (Exception e) {
+                        listCars(request, response);
+                        return;
+                    }
+                }
+            }
+            if ("detail".equals(action)) {
+                String idParam = request.getParameter("id");
+                if (idParam != null) {
+                    try {
+                        int id = Integer.parseInt(idParam);
+                        showCarDetail(request, response, id);
+                        return;
+                    } catch (NumberFormatException e) {
+                    }
+                }
+            }
+        }
+
+        listCars(request, response);
+>>>>>>> vanntt
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+<<<<<<< HEAD
 
+=======
+>>>>>>> vanntt
         String action = request.getParameter("action");
 
         try {
-
             if ("create".equals(action)) {
                 createCar(request, response);
-            } else if ("update".equals(action)) {
+            } else if ("edit".equals(action) || "update".equals(action)) {
                 updateCar(request, response);
-            } else if ("saveBankAccount".equals(action)) {
-                saveBankAccount(request, response);
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
             throw new ServletException(e);
@@ -124,6 +180,17 @@ public class CarServlet extends HttpServlet {
         List<CarImage> carImages = carImageDAO.getByCarId(carId);
         List<CarAvailability> carAvailabilities = availabilityDAO.getByCarId(carId);
         List<Booking> carBookings = bookingDAO.getByCarId(carId, "all");
+<<<<<<< HEAD
+=======
+        if (car.getImageUrl() == null || car.getImageUrl().trim().isEmpty()) {
+            if (!carImages.isEmpty()) {
+                String firstUrl = carImages.get(0).getImageUrl();
+                if (firstUrl != null && !firstUrl.startsWith("/")) firstUrl = "/" + firstUrl;
+                car.setImageUrl(firstUrl);
+            }
+        }
+        request.setAttribute("car_detail", car);
+>>>>>>> vanntt
         request.setAttribute("car", car);
         request.setAttribute("carImages", carImages);
         request.setAttribute("carAvailabilities", carAvailabilities);
@@ -134,12 +201,16 @@ public class CarServlet extends HttpServlet {
 
     private void listCars(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
         int ownerId = user.getId();
 
         String keyword = request.getParameter("keyword");
         String status = request.getParameter("status");
+        String brand = request.getParameter("brand");
         String sort = request.getParameter("sort");
 
         if (sort == null) {
@@ -155,16 +226,21 @@ public class CarServlet extends HttpServlet {
 
         int offset = (page - 1) * PAGE_SIZE;
 
-        List<Car> cars = carDAO.searchCarsByOwner(ownerId, keyword, status, sort, offset, PAGE_SIZE);
+        List<Car> cars = carDAO.searchCarsByOwner(ownerId, keyword, status, brand, sort, offset, PAGE_SIZE);
 
-        int totalCars = carDAO.countCarsByOwnerId(ownerId, status, null);
+        int totalCars = carDAO.countCarsByOwnerId(ownerId, status, null, keyword, brand);
         int totalPages = (int) Math.ceil((double) totalCars / PAGE_SIZE);
 
+        List<String> brands = carDAO.getDistinctBrandsByOwnerId(ownerId);
+
         request.setAttribute("cars", cars);
+        request.setAttribute("brands", brands);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalCount", totalCars);
         request.setAttribute("sortBy", sort);
+        request.setAttribute("statusFilter", status);
+        request.setAttribute("brandFilter", brand);
 
         request.getRequestDispatcher("/WEB-INF/views/owner/list.jsp")
                 .forward(request, response);
@@ -197,92 +273,11 @@ public class CarServlet extends HttpServlet {
     }
 
     // =========================
-    // BANK ACCOUNT (tài khoản ngân hàng)
-    // =========================
-    private void showBankAccountForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-        BankAccount bank = bankAccountDAO.getByOwnerId(user.getId());
-        if (bank == null) {
-            bank = new BankAccount();
-            bank.setOwnerId(user.getId());
-            bank.setActive(true);
-        }
-        request.setAttribute("bankAccount", bank);
-        request.getRequestDispatcher("/WEB-INF/views/owner/bank-account.jsp").forward(request, response);
-    }
-
-    private void saveBankAccount(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-        String bankCode = request.getParameter("bankCode");
-        String accountNumber = request.getParameter("accountNumber");
-        String accountName = request.getParameter("accountName");
-        String branch = request.getParameter("branch");
-
-        if (bankCode == null || bankCode.trim().isEmpty()) {
-            request.setAttribute("error", "Mã ngân hàng không được để trống");
-            forwardBankFormWithParams(request, response, user.getId(), bankCode, accountNumber, accountName, branch);
-            return;
-        }
-        if (accountNumber == null || accountNumber.trim().isEmpty()) {
-            request.setAttribute("error", "Số tài khoản không được để trống");
-            forwardBankFormWithParams(request, response, user.getId(), bankCode, accountNumber, accountName, branch);
-            return;
-        }
-        if (accountName == null || accountName.trim().isEmpty()) {
-            request.setAttribute("error", "Tên chủ tài khoản không được để trống");
-            forwardBankFormWithParams(request, response, user.getId(), bankCode, accountNumber, accountName, branch);
-            return;
-        }
-
-        BankAccount ba = bankAccountDAO.getByOwnerId(user.getId());
-        if (ba == null) {
-            ba = new BankAccount();
-            ba.setOwnerId(user.getId());
-            ba.setActive(true);
-        }
-        ba.setBankCode(bankCode.trim());
-        ba.setAccountNumber(accountNumber.trim());
-        ba.setAccountName(accountName.trim());
-        ba.setBranch(branch != null ? branch.trim() : "");
-
-        if (bankAccountDAO.save(ba)) {
-            response.sendRedirect(request.getContextPath() + "/owner?action=bankAccount&success=saved");
-        } else {
-            request.setAttribute("error", "Lưu thất bại. Vui lòng thử lại.");
-            request.setAttribute("bankAccount", ba);
-            request.getRequestDispatcher("/WEB-INF/views/owner/bank-account.jsp").forward(request, response);
-        }
-    }
-
-    private void forwardBankFormWithParams(HttpServletRequest request, HttpServletResponse response, int ownerId,
-            String bankCode, String accountNumber, String accountName, String branch) throws ServletException, IOException {
-        BankAccount ba = new BankAccount();
-        ba.setOwnerId(ownerId);
-        ba.setBankCode(bankCode != null ? bankCode : "");
-        ba.setAccountNumber(accountNumber != null ? accountNumber : "");
-        ba.setAccountName(accountName != null ? accountName : "");
-        ba.setBranch(branch != null ? branch : "");
-        ba.setActive(true);
-        request.setAttribute("bankAccount", ba);
-        request.getRequestDispatcher("/WEB-INF/views/owner/bank-account.jsp").forward(request, response);
-    }
-
-    // =========================
     // CREATE CAR
     // =========================
     private void createCar(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
-
+        //take ìnormation from session
         User user = (User) request.getSession().getAttribute("user");
 
         if (user == null) {
@@ -356,7 +351,19 @@ public class CarServlet extends HttpServlet {
         car.setDescription(description);
         car.setOwnerId(user.getId());
 
-        carDAO.addCar(car);
+        int carId = carDAO.addCar(car);
+        if (carId > 0) {
+            Part imagePart = request.getPart("imageFile");
+            if (imagePart != null && imagePart.getSize() > 0) {
+                String path = ImageUploadUtil.saveCarImage(imagePart, getServletContext());
+                if (path != null) {
+                    car.setImageUrl(path);
+                    carDAO.updateCarImageUrl(carId, path);
+                    CarImage img = new CarImage(carId, path, true, 0);
+                    carImageDAO.add(img);
+                }
+            }
+        }
 
         response.sendRedirect(request.getContextPath() + "/owner?success=created");
 //        System.out.println("licensePlate = [" + request.getParameter("licensePlate") + "]");
@@ -400,10 +407,32 @@ public class CarServlet extends HttpServlet {
         car.setBrand(request.getParameter("brand"));
         car.setModel(request.getParameter("model"));
         car.setPricePerDay(price);
-        car.setYear(Integer.parseInt(request.getParameter("year")));
+        String yearParam = request.getParameter("year");
+        if (yearParam != null && !yearParam.isEmpty()) {
+            car.setYear(Integer.parseInt(yearParam));
+        }
         car.setColor(request.getParameter("color"));
+        String seatsParam = request.getParameter("seats");
+        if (seatsParam != null && !seatsParam.isEmpty()) {
+            car.setSeats(Integer.parseInt(seatsParam));
+        }
         car.setStatus(request.getParameter("status"));
         car.setDescription(request.getParameter("description"));
+
+        Part imagePart = request.getPart("imageFile");
+        if (imagePart != null && imagePart.getSize() > 0) {
+            String path = ImageUploadUtil.saveCarImage(imagePart, getServletContext());
+            if (path != null) {
+                car.setImageUrl(path);
+                List<CarImage> existing = carImageDAO.getByCarId(id);
+                CarImage newImg = new CarImage(id, path, true, existing.size());
+                int newImgId = carImageDAO.addAndGetId(newImg);
+                if (newImgId > 0) {
+                    carImageDAO.setPrimary(id, newImgId);
+                }
+                carDAO.updateCarImageUrl(id, path);
+            }
+        }
 
         carDAO.updateCar(car);
 
