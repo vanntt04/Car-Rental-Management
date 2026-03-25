@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Danh sách người dùng - Car Rental</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="<c:url value='/assets/css/pagination-pills.css'/>" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Roboto', sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; }
@@ -99,22 +100,25 @@
                 </tbody>
             </table>
 
-            <c:if test="${not empty totalPages && totalPages > 1}">
-                <nav style="margin-top:1.25rem; display:flex; flex-wrap:wrap; justify-content:center; gap:6px;" aria-label="Phân trang">
-                    <c:if test="${currentPage > 1}">
-                        <c:url var="upPrev" value="/users">
-                            <c:param name="page" value="${currentPage - 1}"/>
-                            <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
-                            <c:if test="${not empty roleFilter}"><c:param name="role" value="${roleFilter}"/></c:if>
-                            <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
-                        </c:url>
-                        <a href="${upPrev}" style="padding:7px 11px; border-radius:6px; border:1px solid #e2e8f0; text-decoration:none; color:#334155; background:#fff;">Trước</a>
-                    </c:if>
+            <c:if test="${totalCount > 0}">
+                <nav class="cr-pagination-flat" style="margin-top:1.25rem;" aria-label="Phân trang">
+                    <c:choose>
+                        <c:when test="${currentPage > 1}">
+                            <c:url var="upPrev" value="/users">
+                                <c:param name="page" value="${currentPage - 1}"/>
+                                <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                <c:if test="${not empty roleFilter}"><c:param name="role" value="${roleFilter}"/></c:if>
+                                <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                            </c:url>
+                            <a href="${upPrev}">Trước</a>
+                        </c:when>
+                        <c:otherwise><span class="cr-pag-pill is-muted">Trước</span></c:otherwise>
+                    </c:choose>
                     <c:forEach begin="1" end="${totalPages}" var="tp">
                         <c:if test="${tp == 1 || tp == totalPages || (tp >= currentPage - 1 && tp <= currentPage + 1)}">
                             <c:choose>
                                 <c:when test="${tp == currentPage}">
-                                    <span style="padding:7px 11px; border-radius:6px; background:#2563eb; color:#fff;">${tp}</span>
+                                    <span class="cr-pag-pill is-active">${tp}</span>
                                 </c:when>
                                 <c:otherwise>
                                     <c:url var="upP" value="/users">
@@ -123,20 +127,23 @@
                                         <c:if test="${not empty roleFilter}"><c:param name="role" value="${roleFilter}"/></c:if>
                                         <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
                                     </c:url>
-                                    <a href="${upP}" style="padding:7px 11px; border-radius:6px; border:1px solid #e2e8f0; text-decoration:none; color:#334155; background:#fff;">${tp}</a>
+                                    <a href="${upP}">${tp}</a>
                                 </c:otherwise>
                             </c:choose>
                         </c:if>
                     </c:forEach>
-                    <c:if test="${currentPage < totalPages}">
-                        <c:url var="upNext" value="/users">
-                            <c:param name="page" value="${currentPage + 1}"/>
-                            <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
-                            <c:if test="${not empty roleFilter}"><c:param name="role" value="${roleFilter}"/></c:if>
-                            <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
-                        </c:url>
-                        <a href="${upNext}" style="padding:7px 11px; border-radius:6px; border:1px solid #e2e8f0; text-decoration:none; color:#334155; background:#fff;">Sau</a>
-                    </c:if>
+                    <c:choose>
+                        <c:when test="${currentPage < totalPages}">
+                            <c:url var="upNext" value="/users">
+                                <c:param name="page" value="${currentPage + 1}"/>
+                                <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                <c:if test="${not empty roleFilter}"><c:param name="role" value="${roleFilter}"/></c:if>
+                                <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                            </c:url>
+                            <a href="${upNext}" class="cr-pag-next">Sau &gt;</a>
+                        </c:when>
+                        <c:otherwise><span class="cr-pag-pill is-muted cr-pag-next">Sau &gt;</span></c:otherwise>
+                    </c:choose>
                 </nav>
             </c:if>
         </c:otherwise>

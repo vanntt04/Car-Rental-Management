@@ -1,0 +1,121 @@
+/**
+ * Phân trang dạng nút bo tròn (trang active nền xanh nhạt, Trước / số / Sau >).
+ */
+.cr-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.cr-pagination .page-item {
+    margin: 0;
+}
+
+/* Ghi đè gom nối nút mặc định của Bootstrap */
+.cr-pagination .page-item:not(:first-child) .page-link {
+    margin-left: 0;
+}
+
+.cr-pagination .page-item:first-child .page-link,
+.cr-pagination .page-item:last-child .page-link {
+    border-radius: 10px;
+}
+
+.cr-pagination .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d8dde4;
+    border-radius: 10px;
+    background: #fff;
+    color: #4a5568;
+    padding: 8px 16px;
+    min-width: 44px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    line-height: 1.2;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.cr-pagination .page-item.active .page-link {
+    background: #5dade2;
+    border-color: #5dade2;
+    color: #fff;
+}
+
+.cr-pagination .page-item:not(.active):not(.disabled) .page-link:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+
+.cr-pagination .page-item.disabled .page-link {
+    opacity: 0.45;
+    pointer-events: none;
+    cursor: default;
+}
+
+.cr-pagination .page-item.nav-next .page-link {
+    padding-left: 18px;
+    padding-right: 18px;
+    gap: 4px;
+}
+
+/* Owner / user list: flex row of links + spans */
+.cr-pagination-flat {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.cr-pagination-flat > a,
+.cr-pagination-flat > span.cr-pag-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d8dde4;
+    border-radius: 10px;
+    background: #fff;
+    color: #4a5568;
+    padding: 8px 16px;
+    min-width: 44px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    line-height: 1.2;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    box-sizing: border-box;
+}
+
+.cr-pagination-flat > a:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+
+.cr-pagination-flat > span.cr-pag-pill.is-active {
+    background: #5dade2;
+    border-color: #5dade2;
+    color: #fff;
+    cursor: default;
+}
+
+.cr-pagination-flat > span.cr-pag-pill.is-muted {
+    opacity: 0.45;
+    pointer-events: none;
+    border-color: #e8ecf0;
+}
+
+.cr-pagination-flat > a.cr-pag-next {
+ padding-left: 18px;
+ padding-right: 18px;
+}

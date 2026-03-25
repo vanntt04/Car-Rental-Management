@@ -5,7 +5,6 @@ import com.example.carrental.model.dao.CarAvailabilityDAO;
 import com.example.carrental.model.dao.CarDAO;
 import com.example.carrental.model.entity.Car;
 import com.example.carrental.model.util.HoldCleanupScheduler;
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -15,10 +14,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
- * Danh sách / tìm xe khách hàng — có phân trang và lọc theo trạng thái xe (AVAILABLE, RENTED, ...).
+ * Danh sách / tìm xe khách hàng — phân trang, sắp xếp theo giá thuê tăng dần.
  */
 @WebServlet(name = "SearchCarServlet", urlPatterns = "/searchcar")
 public class SearchCarServlet extends HttpServlet {
@@ -75,17 +75,12 @@ public class SearchCarServlet extends HttpServlet {
     }
 
     private void applyCarListPagination(List<Car> fullList, HttpServletRequest request) {
-        String carStatus = request.getParameter("carStatus");
-        if (carStatus != null && carStatus.trim().isEmpty()) carStatus = null;
-
         List<Car> filtered = new ArrayList<>();
-        if (carStatus == null) {
-            filtered.addAll(fullList);
-        } else {
-            for (Car c : fullList) {
-                if (c != null && carStatus.equalsIgnoreCase(c.getStatus())) filtered.add(c);
-            }
+        for (Car c : fullList) {
+            if (c != null) filtered.add(c);
         }
+
+        filtered.sort(Comparator.comparing(Car::getPricePerDay, Comparator.nullsLast(Comparator.naturalOrder())));
 
         int page = 1;
         try {
@@ -106,7 +101,6 @@ public class SearchCarServlet extends HttpServlet {
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalCarCount", total);
-        request.setAttribute("carStatusFilter", carStatus != null ? carStatus : "");
     }
 
     @Override

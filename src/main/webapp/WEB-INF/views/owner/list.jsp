@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="${ctx}/assets/css/owner-dashboard.css" rel="stylesheet">
+    <link href="${ctx}/assets/css/pagination-pills.css" rel="stylesheet">
     <style>
         :root { --cyan: #28a9e0; --blue: #5b8de3; --yellow: #f4c300; --red: #f46666; --radius: 10px; --border-color: #d8e0e8; --text-sub: #7a8c9e; --text-main: #2f3b48; --card-bg: #fff; --sidebar-active: #2ea1f8; }
         .stats-grid {
@@ -151,32 +152,6 @@
         .badge-avail { background: #eaf8ef; color: #1e8f44; }
         .badge-rented { background: #fff3e5; color: #c87e14; }
         .badge-maint { background: #ffecef; color: #c93550; }
-
-        .pagination-wrap {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 16px;
-        }
-        .pagination-wrap a, .pagination-wrap span {
-            padding: 7px 11px;
-            border-radius: 7px;
-            font-size: 13px;
-            text-decoration: none;
-            border: 1px solid var(--border-color);
-            color: #5c6b7b;
-            background: #fff;
-        }
-        .pagination-wrap span.current {
-            background: var(--sidebar-active);
-            color: #fff;
-            border-color: var(--sidebar-active);
-        }
-        .pagination-wrap span.ellipsis {
-            border-color: transparent;
-            background: transparent;
-        }
 
         .empty {
             text-align: center;
@@ -326,23 +301,26 @@
                     </div>
                 </c:if>
 
-                <c:if test="${totalPages > 1}">
-                    <div class="pagination-wrap">
-                        <c:if test="${currentPage > 1}">
-                            <c:url var="prevUrl" value="/owner">
-                                <c:param name="page" value="${currentPage - 1}"/>
-                                <c:param name="sort" value="${sortBy}"/>
-                                <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
-                                <c:if test="${not empty brandFilter}"><c:param name="brand" value="${brandFilter}"/></c:if>
-                                <c:if test="${not empty activeFilter}"><c:param name="active" value="${activeFilter}"/></c:if>
-                                <c:if test="${not empty param.keyword}"><c:param name="keyword" value="${param.keyword}"/></c:if>
-                            </c:url>
-                            <a href="${prevUrl}"><i class="bi bi-chevron-left"></i> Trước</a>
-                        </c:if>
+                <c:if test="${not empty cars && totalCount > 0}">
+                    <div class="cr-pagination-flat">
+                        <c:choose>
+                            <c:when test="${currentPage > 1}">
+                                <c:url var="prevUrl" value="/owner">
+                                    <c:param name="page" value="${currentPage - 1}"/>
+                                    <c:param name="sort" value="${sortBy}"/>
+                                    <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                    <c:if test="${not empty brandFilter}"><c:param name="brand" value="${brandFilter}"/></c:if>
+                                    <c:if test="${not empty activeFilter}"><c:param name="active" value="${activeFilter}"/></c:if>
+                                    <c:if test="${not empty param.keyword}"><c:param name="keyword" value="${param.keyword}"/></c:if>
+                                </c:url>
+                                <a href="${prevUrl}">Trước</a>
+                            </c:when>
+                            <c:otherwise><span class="cr-pag-pill is-muted">Trước</span></c:otherwise>
+                        </c:choose>
                         <c:forEach begin="1" end="${totalPages}" var="p">
                             <c:if test="${p == 1 || p == totalPages || (p >= currentPage - 1 && p <= currentPage + 1)}">
                                 <c:choose>
-                                    <c:when test="${p == currentPage}"><span class="current">${p}</span></c:when>
+                                    <c:when test="${p == currentPage}"><span class="cr-pag-pill is-active">${p}</span></c:when>
                                     <c:otherwise>
                                         <c:url var="pageUrl" value="/owner">
                                             <c:param name="page" value="${p}"/>
@@ -356,20 +334,21 @@
                                     </c:otherwise>
                                 </c:choose>
                             </c:if>
-                            <c:if test="${p == currentPage - 2 && currentPage > 3}"><span class="ellipsis">...</span></c:if>
-                            <c:if test="${p == currentPage + 2 && currentPage < totalPages - 2}"><span class="ellipsis">...</span></c:if>
                         </c:forEach>
-                        <c:if test="${currentPage < totalPages}">
-                            <c:url var="nextUrl" value="/owner">
-                                <c:param name="page" value="${currentPage + 1}"/>
-                                <c:param name="sort" value="${sortBy}"/>
-                                <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
-                                <c:if test="${not empty brandFilter}"><c:param name="brand" value="${brandFilter}"/></c:if>
-                                <c:if test="${not empty activeFilter}"><c:param name="active" value="${activeFilter}"/></c:if>
-                                <c:if test="${not empty param.keyword}"><c:param name="keyword" value="${param.keyword}"/></c:if>
-                            </c:url>
-                            <a href="${nextUrl}">Sau <i class="bi bi-chevron-right"></i></a>
-                        </c:if>
+                        <c:choose>
+                            <c:when test="${currentPage < totalPages}">
+                                <c:url var="nextUrl" value="/owner">
+                                    <c:param name="page" value="${currentPage + 1}"/>
+                                    <c:param name="sort" value="${sortBy}"/>
+                                    <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                    <c:if test="${not empty brandFilter}"><c:param name="brand" value="${brandFilter}"/></c:if>
+                                    <c:if test="${not empty activeFilter}"><c:param name="active" value="${activeFilter}"/></c:if>
+                                    <c:if test="${not empty param.keyword}"><c:param name="keyword" value="${param.keyword}"/></c:if>
+                                </c:url>
+                                <a href="${nextUrl}" class="cr-pag-next">Sau &gt;</a>
+                            </c:when>
+                            <c:otherwise><span class="cr-pag-pill is-muted cr-pag-next">Sau &gt;</span></c:otherwise>
+                        </c:choose>
                     </div>
                 </c:if>
             </div>

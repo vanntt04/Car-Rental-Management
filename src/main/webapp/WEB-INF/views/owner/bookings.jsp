@@ -10,13 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="${ctx}/assets/css/owner-dashboard.css" rel="stylesheet">
+    <link href="${ctx}/assets/css/pagination-pills.css" rel="stylesheet">
     <style>
         .owner-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; }
         .owner-toolbar select { border: 1px solid #d8e0e8; border-radius: 8px; padding: 8px 12px; font-size: 14px; min-width: 180px; }
-        .pagination-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 16px; }
-        .pagination-wrap a, .pagination-wrap span { padding: 7px 11px; border-radius: 7px; font-size: 13px; text-decoration: none; border: 1px solid #d8e0e8; color: #5c6b7b; background: #fff; }
-        .pagination-wrap span.current { background: #2ea1f8; color: #fff; border-color: #2ea1f8; }
-        .pagination-wrap span.ellipsis { border-color: transparent; background: transparent; }
     </style>
 </head>
 <body>
@@ -178,20 +175,23 @@
                     </table>
                 </div>
 
-                <c:if test="${totalPages > 1}">
-                    <div class="pagination-wrap">
-                        <c:if test="${currentPage > 1}">
-                            <c:url var="prevUrl" value="/owner/bookings">
-                                <c:param name="page" value="${currentPage - 1}"/>
-                                <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
-                                <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
-                            </c:url>
-                            <a href="${prevUrl}"><i class="bi bi-chevron-left"></i> Trước</a>
-                        </c:if>
+                <c:if test="${totalCount > 0}">
+                    <div class="cr-pagination-flat">
+                        <c:choose>
+                            <c:when test="${currentPage > 1}">
+                                <c:url var="prevUrl" value="/owner/bookings">
+                                    <c:param name="page" value="${currentPage - 1}"/>
+                                    <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                    <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                                </c:url>
+                                <a href="${prevUrl}">Trước</a>
+                            </c:when>
+                            <c:otherwise><span class="cr-pag-pill is-muted">Trước</span></c:otherwise>
+                        </c:choose>
                         <c:forEach begin="1" end="${totalPages}" var="p">
                             <c:if test="${p == 1 || p == totalPages || (p >= currentPage - 1 && p <= currentPage + 1)}">
                                 <c:choose>
-                                    <c:when test="${p == currentPage}"><span class="current">${p}</span></c:when>
+                                    <c:when test="${p == currentPage}"><span class="cr-pag-pill is-active">${p}</span></c:when>
                                     <c:otherwise>
                                         <c:url var="pageUrl" value="/owner/bookings">
                                             <c:param name="page" value="${p}"/>
@@ -202,18 +202,20 @@
                                     </c:otherwise>
                                 </c:choose>
                             </c:if>
-                            <c:if test="${p == currentPage - 2 && currentPage > 3}"><span class="ellipsis">...</span></c:if>
-                            <c:if test="${p == currentPage + 2 && currentPage < totalPages - 2}"><span class="ellipsis">...</span></c:if>
                         </c:forEach>
-                        <c:if test="${currentPage < totalPages}">
-                            <c:url var="nextUrl" value="/owner/bookings">
-                                <c:param name="page" value="${currentPage + 1}"/>
-                                <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
-                                <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
-                            </c:url>
-                            <a href="${nextUrl}">Sau <i class="bi bi-chevron-right"></i></a>
-                        </c:if>
+                        <c:choose>
+                            <c:when test="${currentPage < totalPages}">
+                                <c:url var="nextUrl" value="/owner/bookings">
+                                    <c:param name="page" value="${currentPage + 1}"/>
+                                    <c:if test="${not empty statusFilter}"><c:param name="status" value="${statusFilter}"/></c:if>
+                                    <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                                </c:url>
+                                <a href="${nextUrl}" class="cr-pag-next">Sau &gt;</a>
+                            </c:when>
+                            <c:otherwise><span class="cr-pag-pill is-muted cr-pag-next">Sau &gt;</span></c:otherwise>
+                        </c:choose>
                     </div>
+                    <p class="summary-row" style="margin-top:10px; text-align:center;">Trang <strong>${currentPage}</strong> / ${totalPages}</p>
                 </c:if>
             </div>
         </div>

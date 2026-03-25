@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="${ctx}/assets/css/woox-customer.css" rel="stylesheet">
+    <link href="${ctx}/assets/css/pagination-pills.css" rel="stylesheet">
     <style>
         :root {
             --mb-primary: #2563eb;
@@ -339,45 +340,49 @@
                     </div>
                 </article>
             </c:forEach>
-            <c:if test="${bookTotalPages > 1}">
-                <nav class="mt-3" aria-label="Phân trang đơn">
-                    <ul class="pagination pagination-sm justify-content-center flex-wrap mb-0">
-                        <c:if test="${bookCurrentPage > 1}">
-                            <li class="page-item">
+            <nav class="mt-3" aria-label="Phân trang đơn">
+                <ul class="pagination pagination-sm cr-pagination justify-content-center flex-wrap mb-0">
+                    <li class="page-item ${bookCurrentPage <= 1 ? 'disabled' : ''}">
+                        <c:choose>
+                            <c:when test="${bookCurrentPage > 1}">
                                 <c:url var="bookPrev" value="/mybooking">
                                     <c:param name="bookPage" value="${bookCurrentPage - 1}"/>
                                     <c:param name="holdPage" value="${holdCurrentPage}"/>
                                     <c:if test="${not empty bookingStatusFilter}"><c:param name="bookingStatus" value="${bookingStatusFilter}"/></c:if>
                                 </c:url>
                                 <a class="page-link" href="${bookPrev}">Trước</a>
+                            </c:when>
+                            <c:otherwise><span class="page-link">Trước</span></c:otherwise>
+                        </c:choose>
+                    </li>
+                    <c:forEach begin="1" end="${bookTotalPages}" var="p">
+                        <c:if test="${p == 1 || p == bookTotalPages || (p >= bookCurrentPage - 1 && p <= bookCurrentPage + 1)}">
+                            <li class="page-item ${p == bookCurrentPage ? 'active' : ''}">
+                                <c:url var="bookPu" value="/mybooking">
+                                    <c:param name="bookPage" value="${p}"/>
+                                    <c:param name="holdPage" value="${holdCurrentPage}"/>
+                                    <c:if test="${not empty bookingStatusFilter}"><c:param name="bookingStatus" value="${bookingStatusFilter}"/></c:if>
+                                </c:url>
+                                <a class="page-link" href="${bookPu}">${p}</a>
                             </li>
                         </c:if>
-                        <c:forEach begin="1" end="${bookTotalPages}" var="p">
-                            <c:if test="${p == 1 || p == bookTotalPages || (p >= bookCurrentPage - 1 && p <= bookCurrentPage + 1)}">
-                                <li class="page-item ${p == bookCurrentPage ? 'active' : ''}">
-                                    <c:url var="bookPu" value="/mybooking">
-                                        <c:param name="bookPage" value="${p}"/>
-                                        <c:param name="holdPage" value="${holdCurrentPage}"/>
-                                        <c:if test="${not empty bookingStatusFilter}"><c:param name="bookingStatus" value="${bookingStatusFilter}"/></c:if>
-                                    </c:url>
-                                    <a class="page-link" href="${bookPu}">${p}</a>
-                                </li>
-                            </c:if>
-                        </c:forEach>
-                        <c:if test="${bookCurrentPage < bookTotalPages}">
-                            <li class="page-item">
+                    </c:forEach>
+                    <li class="page-item nav-next ${bookCurrentPage >= bookTotalPages ? 'disabled' : ''}">
+                        <c:choose>
+                            <c:when test="${bookCurrentPage < bookTotalPages}">
                                 <c:url var="bookNext" value="/mybooking">
                                     <c:param name="bookPage" value="${bookCurrentPage + 1}"/>
                                     <c:param name="holdPage" value="${holdCurrentPage}"/>
                                     <c:if test="${not empty bookingStatusFilter}"><c:param name="bookingStatus" value="${bookingStatusFilter}"/></c:if>
                                 </c:url>
-                                <a class="page-link" href="${bookNext}">Sau</a>
-                            </li>
-                        </c:if>
-                    </ul>
-                </nav>
-                <p class="text-center small text-muted mb-0">Trang ${bookCurrentPage}/${bookTotalPages} · ${bookTotalCount} đơn</p>
-            </c:if>
+                                <a class="page-link" href="${bookNext}">Sau &gt;</a>
+                            </c:when>
+                            <c:otherwise><span class="page-link">Sau &gt;</span></c:otherwise>
+                        </c:choose>
+                    </li>
+                </ul>
+            </nav>
+            <p class="text-center small text-muted mb-0">Trang ${bookCurrentPage}/${bookTotalPages} · ${bookTotalCount} đơn</p>
     </c:if>
     <c:if test="${bookTotalCount == 0 && holdTotalCount == 0}">
             <div class="order-card p-5 text-center text-muted">
@@ -424,45 +429,49 @@
                     </tbody>
                 </table>
             </div>
-            <c:if test="${holdTotalPages > 1}">
-                <nav class="mt-3" aria-label="Phân trang giữ chỗ">
-                    <ul class="pagination pagination-sm justify-content-center flex-wrap mb-0">
-                        <c:if test="${holdCurrentPage > 1}">
-                            <li class="page-item">
+            <nav class="mt-3" aria-label="Phân trang giữ chỗ">
+                <ul class="pagination pagination-sm cr-pagination justify-content-center flex-wrap mb-0">
+                    <li class="page-item ${holdCurrentPage <= 1 ? 'disabled' : ''}">
+                        <c:choose>
+                            <c:when test="${holdCurrentPage > 1}">
                                 <c:url var="hPrev" value="/mybooking">
                                     <c:param name="holdPage" value="${holdCurrentPage - 1}"/>
                                     <c:param name="bookPage" value="${bookCurrentPage}"/>
                                     <c:if test="${not empty bookingStatusFilter}"><c:param name="bookingStatus" value="${bookingStatusFilter}"/></c:if>
                                 </c:url>
                                 <a class="page-link" href="${hPrev}">Trước</a>
+                            </c:when>
+                            <c:otherwise><span class="page-link">Trước</span></c:otherwise>
+                        </c:choose>
+                    </li>
+                    <c:forEach begin="1" end="${holdTotalPages}" var="hp">
+                        <c:if test="${hp == 1 || hp == holdTotalPages || (hp >= holdCurrentPage - 1 && hp <= holdCurrentPage + 1)}">
+                            <li class="page-item ${hp == holdCurrentPage ? 'active' : ''}">
+                                <c:url var="hPu" value="/mybooking">
+                                    <c:param name="holdPage" value="${hp}"/>
+                                    <c:param name="bookPage" value="${bookCurrentPage}"/>
+                                    <c:if test="${not empty bookingStatusFilter}"><c:param name="bookingStatus" value="${bookingStatusFilter}"/></c:if>
+                                </c:url>
+                                <a class="page-link" href="${hPu}">${hp}</a>
                             </li>
                         </c:if>
-                        <c:forEach begin="1" end="${holdTotalPages}" var="hp">
-                            <c:if test="${hp == 1 || hp == holdTotalPages || (hp >= holdCurrentPage - 1 && hp <= holdCurrentPage + 1)}">
-                                <li class="page-item ${hp == holdCurrentPage ? 'active' : ''}">
-                                    <c:url var="hPu" value="/mybooking">
-                                        <c:param name="holdPage" value="${hp}"/>
-                                        <c:param name="bookPage" value="${bookCurrentPage}"/>
-                                        <c:if test="${not empty bookingStatusFilter}"><c:param name="bookingStatus" value="${bookingStatusFilter}"/></c:if>
-                                    </c:url>
-                                    <a class="page-link" href="${hPu}">${hp}</a>
-                                </li>
-                            </c:if>
-                        </c:forEach>
-                        <c:if test="${holdCurrentPage < holdTotalPages}">
-                            <li class="page-item">
+                    </c:forEach>
+                    <li class="page-item nav-next ${holdCurrentPage >= holdTotalPages ? 'disabled' : ''}">
+                        <c:choose>
+                            <c:when test="${holdCurrentPage < holdTotalPages}">
                                 <c:url var="hNext" value="/mybooking">
                                     <c:param name="holdPage" value="${holdCurrentPage + 1}"/>
                                     <c:param name="bookPage" value="${bookCurrentPage}"/>
                                     <c:if test="${not empty bookingStatusFilter}"><c:param name="bookingStatus" value="${bookingStatusFilter}"/></c:if>
                                 </c:url>
-                                <a class="page-link" href="${hNext}">Sau</a>
-                            </li>
-                        </c:if>
-                    </ul>
-                </nav>
-                <p class="text-center small text-muted">Giữ chỗ: trang ${holdCurrentPage}/${holdTotalPages} · ${holdTotalCount} xe</p>
-            </c:if>
+                                <a class="page-link" href="${hNext}">Sau &gt;</a>
+                            </c:when>
+                            <c:otherwise><span class="page-link">Sau &gt;</span></c:otherwise>
+                        </c:choose>
+                    </li>
+                </ul>
+            </nav>
+            <p class="text-center small text-muted mb-0">Giữ chỗ: trang ${holdCurrentPage}/${holdTotalPages} · ${holdTotalCount} xe</p>
         </div>
     </c:if>
 </div>
