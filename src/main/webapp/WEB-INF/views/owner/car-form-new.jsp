@@ -113,7 +113,7 @@
                         <div class="owner-form-grid cols-3">
                             <div>
                                 <label class="owner-label">Năm sản xuất</label>
-                                <input class="owner-input" type="number" name="year" min="2015" max="2026" placeholder="2023" value="${car != null ? car.year : ''}" required>
+                                <input class="owner-input" type="number" name="year" min="0" max="<%= java.time.Year.now().getValue() %>" placeholder="2023" value="${car != null ? car.year : ''}" required>
                             </div>
                             <div>
                                 <label class="owner-label">Màu ngoại thất</label>

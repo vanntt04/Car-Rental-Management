@@ -77,7 +77,8 @@ public class SearchCarServlet extends HttpServlet {
     private void applyCarListPagination(List<Car> fullList, HttpServletRequest request) {
         List<Car> filtered = new ArrayList<>();
         for (Car c : fullList) {
-            if (c != null) filtered.add(c);
+            if (c == null) continue;
+            filtered.add(c);
         }
 
         filtered.sort(Comparator.comparing(Car::getPricePerDay, Comparator.nullsLast(Comparator.naturalOrder())));

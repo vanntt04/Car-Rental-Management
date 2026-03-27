@@ -85,6 +85,11 @@ public class PayServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
+        if (!"APPROVED".equalsIgnoreCase(booking.getBooking_status())) {
+            String msg = URLEncoder.encode("Chủ xe cần duyệt đơn trước, sau đó bạn mới có thể thanh toán.", StandardCharsets.UTF_8);
+            response.sendRedirect(request.getContextPath() + "/pay?bookingId=" + bookingId + "&error=" + msg);
+            return;
+        }
         try {
             String methodNorm = method.trim().toUpperCase();
             paymentDAO.upsertMethod(bookingId, booking.getTotal_price(), methodNorm);
@@ -138,6 +143,15 @@ public class PayServlet extends HttpServlet {
 
         if (booking.getCustomer_id() != user.getId()) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thanh toán đơn này");
+            return;
+        }
+        if (!"APPROVED".equalsIgnoreCase(booking.getBooking_status())) {
+            request.setAttribute("error", "Chủ xe cần xác nhận đơn trước, sau đó bạn mới có thể thanh toán.");
+            request.setAttribute("booking", booking);
+            request.setAttribute("car", carDAO.getCarById(booking.getCar_id()));
+            request.setAttribute("payment", paymentDAO.getByBookingId(bookingId));
+            request.setAttribute("amount", booking.getTotal_price());
+            request.getRequestDispatcher("/WEB-INF/views/car/pay-select.jsp").forward(request, response);
             return;
         }
 

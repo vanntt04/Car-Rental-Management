@@ -238,17 +238,11 @@
                     </div>
                 </div>
             </form>
+
+            </form>
         </div>
 
         <main class="container my-5">
-            <div class="row">
-                <div class="col-12 mb-4">
-                    <h3 class="fw-bold m-0">Danh sách xe</h3>
-                    <p class="text-secondary small mb-0 mt-1">
-                        Tổng: <strong>${not empty totalCarCount ? totalCarCount : fn:length(CarList)}</strong> xe
-                        <span class="d-block text-muted" style="font-size:0.85em;">Đã sắp xếp theo giá thuê tăng dần (thấp → cao)</span>
-                    </p>
-                </div>
 
                 <div class="col-12">
                     <div class="row g-4">
@@ -256,7 +250,7 @@
                             <div class="col-xl-4 col-lg-6">
                                 <div class="car-card">
                                     <div class="image-container">
-                                        <img src="${car.imageUrl}" alt="${car.name}">
+                                        <img src="${ctx}/${car.imageUrl}" alt="${car.name}">
                                         <span class="badge-status ${car.status == 'AVAILABLE' ? 'status-available' : 'status-rented'}">
                                             <i class="bi bi-circle-fill me-1 small"></i> ${car.status}
                                         </span>

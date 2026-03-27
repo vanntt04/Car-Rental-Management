@@ -214,9 +214,9 @@
                                                 <div class="dot">${s}</div>
                                                 <div class="lbl">
                                                     <c:choose>
-                                                        <c:when test="${s == 1}">Chờ thanh toán</c:when>
-                                                        <c:when test="${s == 2}">Chờ chủ duyệt</c:when>
-                                                        <c:when test="${s == 3}">Đã duyệt</c:when>
+                                                        <c:when test="${s == 1}">Chờ chủ duyệt</c:when>
+                                                        <c:when test="${s == 2}">Chờ thanh toán</c:when>
+                                                        <c:when test="${s == 3}">Đã thanh toán</c:when>
                                                         <c:when test="${s == 4}">Đã giao xe</c:when>
                                                         <c:when test="${s == 5}">Đã trả xe</c:when>
                                                         <c:when test="${s == 6}">Hoàn thành</c:when>
@@ -293,14 +293,14 @@
                         <div class="mt-3 small text-muted">
                             <c:if test="${pStep > 0}">
                                 <c:choose>
-                                    <c:when test="${book.booking_status == 'PENDING' && (empty pay || pay.paymentStatus != 'PAID')}">
-                                        Bước tiếp theo: thanh toán trước; sau đó chủ xe xác nhận tiền rồi mới duyệt đơn.
+                                    <c:when test="${book.booking_status == 'PENDING'}">
+                                        Bước tiếp theo: chờ chủ xe duyệt đơn trước khi bạn thanh toán.
                                     </c:when>
-                                    <c:when test="${book.booking_status == 'PENDING' && pay.paymentStatus == 'PAID'}">
-                                        Bước tiếp theo: chờ chủ xe duyệt đơn.
+                                    <c:when test="${book.booking_status == 'APPROVED' && (empty pay || pay.paymentStatus != 'PAID')}">
+                                        Bước tiếp theo: đơn đã duyệt, vui lòng thanh toán để chủ xe xác nhận giao/không giao xe.
                                     </c:when>
-                                    <c:when test="${book.booking_status == 'APPROVED'}">
-                                        Bước tiếp theo: chủ xe xác nhận giao xe khi bạn đến nhận xe.
+                                    <c:when test="${book.booking_status == 'APPROVED' && pay.paymentStatus == 'PAID'}">
+                                        Bước tiếp theo: chờ chủ xe xác nhận giao xe.
                                     </c:when>
                                     <c:when test="${book.booking_status == 'PICKED_UP'}">Bước tiếp theo: khi kết thúc hành trình, bấm <strong>Trả xe</strong>.</c:when>
                                     <c:when test="${book.booking_status == 'RETURN'}">Bước tiếp theo: chờ chủ xe xác nhận nhận xe (hoàn thành).</c:when>
@@ -316,7 +316,7 @@
                                     <i class="fa-solid fa-file-invoice me-1"></i>Chi tiết / Hóa đơn
                                 </a>
                             </c:if>
-                            <c:if test="${(book.booking_status == 'PENDING' && (empty pay || pay.paymentStatus != 'PAID')) || (book.booking_status == 'APPROVED' && (empty pay || pay.paymentStatus != 'PAID'))}">
+                            <c:if test="${book.booking_status == 'APPROVED' && (empty pay || pay.paymentStatus != 'PAID')}">
                                 <a href="${ctx}/pay?bookingId=${book.booking_id}" class="btn btn-outline-primary btn-sm btn-action">
                                     <i class="fa-solid fa-wallet me-1"></i>Thanh toán
                                 </a>

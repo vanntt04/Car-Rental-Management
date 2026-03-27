@@ -1,4 +1,4 @@
-package com.example.carrental.filter;
+package com.example.carrental.controller;
 
 import com.example.carrental.model.entity.User;
 import jakarta.servlet.Filter;

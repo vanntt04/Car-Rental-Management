@@ -36,7 +36,7 @@ public class MyBookingServlet extends HttpServlet {
     private static final int HOLD_PAGE_SIZE = 6;
 
     /**
-     * Bước 1–6 (0 = hủy/từ chối). Luồng: thanh toán → chủ duyệt → giao xe → trả xe → hoàn thành.
+     * Bước 1–6 (0 = hủy/từ chối). Luồng: chủ duyệt -> khách thanh toán -> giao xe -> trả xe -> hoàn thành.
      */
     static int progressStep(Booking b, Payment p) {
         if (b == null || b.getBooking_status() == null) return 1;
@@ -49,9 +49,9 @@ public class MyBookingServlet extends HttpServlet {
             case "PICKED_UP":
                 return 4;
             case "APPROVED":
+                if (p == null || !"PAID".equals(p.getPaymentStatus())) return 2;
                 return 3;
             case "PENDING":
-                if (p != null && "PAID".equals(p.getPaymentStatus())) return 2;
                 return 1;
             case "REJECTED":
             case "CANCELLED":

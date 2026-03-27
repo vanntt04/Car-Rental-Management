@@ -19,6 +19,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.time.Year;
 import java.util.List;
 import jakarta.servlet.http.Part;
 import com.example.carrental.model.util.ImageUploadUtil;
@@ -33,6 +34,18 @@ public class CarServlet extends HttpServlet {
     private BookingDAO bookingDAO;
 
     private static final int PAGE_SIZE = 5;
+
+    private Integer parseAndValidateYear(String yearStr) {
+        if (yearStr == null || yearStr.trim().isEmpty()) return null;
+        try {
+            int year = Integer.parseInt(yearStr.trim());
+            int currentYear = Year.now().getValue();
+            if (year < 0 || year > currentYear) return null;
+            return year;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
 
     @Override
     public void init() {
@@ -302,7 +315,12 @@ public class CarServlet extends HttpServlet {
 
         Integer year = null;
         if (yearStr != null && !yearStr.isEmpty()) {
-            year = Integer.parseInt(yearStr);
+            year = parseAndValidateYear(yearStr);
+            if (year == null) {
+                request.setAttribute("error", "Năm sản xuất phải từ 0 đến năm hiện tại.");
+                showForm(request, response);
+                return;
+            }
         }
 
         Integer seatNum = null;
@@ -356,8 +374,18 @@ public class CarServlet extends HttpServlet {
 
         String license = request.getParameter("licensePlate");
         BigDecimal price = new BigDecimal(request.getParameter("pricePerDay"));
+        String yearParam = request.getParameter("year");
+        Integer year = parseAndValidateYear(yearParam);
 
         // ===== VALIDATE =====
+        if (yearParam != null && !yearParam.trim().isEmpty() && year == null) {
+            request.setAttribute("error", "Năm sản xuất phải từ 0 đến năm hiện tại.");
+            request.setAttribute("car", car);
+            request.getRequestDispatcher("/WEB-INF/views/owner/car-form-edit.jsp")
+                    .forward(request, response);
+            return;
+        }
+
         if (price.compareTo(new BigDecimal("1000")) < 0) {
 
             request.setAttribute("error", "Giá thuê phải lớn hơn 1000");
@@ -382,9 +410,8 @@ public class CarServlet extends HttpServlet {
         car.setBrand(request.getParameter("brand"));
         car.setModel(request.getParameter("model"));
         car.setPricePerDay(price);
-        String yearParam = request.getParameter("year");
         if (yearParam != null && !yearParam.isEmpty()) {
-            car.setYear(Integer.parseInt(yearParam));
+            car.setYear(year);
         }
         car.setColor(request.getParameter("color"));
         String seatsParam = request.getParameter("seats");
